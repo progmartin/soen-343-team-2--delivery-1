@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollBar?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane fx:id="parentPane" prefHeight="592.0" prefWidth="819.0" stylesheets="@GUIStyle.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.SimulationWindowController">
+   <children>
+      <AnchorPane layoutX="23.0" layoutY="22.0" prefHeight="553.0" prefWidth="200.0" styleClass="simulationAnchor">
+         <children>
+            <Label alignment="CENTER" layoutX="9.0" layoutY="-12.0" prefHeight="25.0" prefWidth="91.0" styleClass="simulationLabel" text="Label" textFill="WHITE" />
+            <ToggleButton layoutX="53.0" layoutY="35.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="95.0" text="ON" />
+            <ImageView fitHeight="20.0" fitWidth="20.0" layoutX="91.0" layoutY="86.0" onMouseClicked="#handleEditProfilePic" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../assets/editProfilePic.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="userProfilePic" fitHeight="67.0" fitWidth="118.0" layoutX="56.0" layoutY="117.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../assets/defaultUserProfile.png" />
+               </image>
+            </ImageView>
+            <Hyperlink alignment="CENTER" layoutX="62.0" layoutY="184.0" prefHeight="23.0" prefWidth="78.0" text="parent" underline="true" />
+            <Label alignment="CENTER" layoutX="61.0" layoutY="227.0" prefHeight="17.0" prefWidth="78.0" text="Location:" />
+            <Hyperlink alignment="CENTER" layoutX="26.0" layoutY="244.0" prefHeight="23.0" prefWidth="149.0" text="location" underline="true" />
+         </children>
+      </AnchorPane>
+      <TabPane layoutX="237.0" layoutY="22.0" prefHeight="349.0" prefWidth="234.0" styleClass="simulationAnchor" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="SHS">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="283.0" prefWidth="210.0" />
+            </content>
+          </Tab>
+          <Tab text="+">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+      <AnchorPane layoutX="237.0" layoutY="449.0" prefHeight="124.0" prefWidth="538.0" styleClass="simulationAnchor">
+         <children>
+            <ScrollBar layoutX="517.0" layoutY="7.0" orientation="VERTICAL" prefHeight="109.0" prefWidth="14.0" />
+            <Label layoutX="33.0" layoutY="23.0" prefHeight="67.0" prefWidth="263.0" text="Label" />
+         </children>
+      </AnchorPane>
+      <AnchorPane layoutX="488.0" layoutY="74.0" prefHeight="230.0" prefWidth="306.0" styleClass="simulationAnchor" />
+      <Label alignment="CENTER" layoutX="410.0" layoutY="418.0" prefHeight="23.0" prefWidth="110.0" text="Output Console">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
+      <Label alignment="CENTER" layoutX="586.0" layoutY="320.0" prefHeight="23.0" prefWidth="110.0" text="House view">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
+   </children>
+</AnchorPane>

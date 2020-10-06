@@ -1,0 +1,19 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 5-Oct-2020, 8:44:41 PM
+    Author     : DRC
+*/
+
+.simulationAnchor{
+    -fx-border-color:black;
+    -fx-border-radius:10;
+}
+
+.simulationLabel{
+    -fx-background-radius:5;
+    -fx-background-color:#0099ff;
+}
