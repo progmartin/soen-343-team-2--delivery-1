@@ -49,11 +49,12 @@ public class Driver extends Application {
             //ArrayList of rooms
             ArrayList<Room> roomArray = new ArrayList<Room>();
             FileChooser fileChooserWindow = new FileChooser();
+            fileChooserWindow.setTitle("Open House Layout File");
             fileChooserWindow.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text", "*.txt"), new FileChooser.ExtensionFilter("All Files", "*"));
             File chosenFile = fileChooserWindow.showOpenDialog(Driver.mainStage);
             // Informs the user that no file was selected.
             if (chosenFile == null || !chosenFile.isFile()) {
-                System.out.println("No file was selected try again");
+                System.out.println("No House Layout File was selected try again");
                 System.exit(1);
                 // Informs the user that an incorrect file type was selected.
             }
