@@ -1,6 +1,12 @@
 package gui;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Scanner;
+import java.util.ArrayList;
+import HouseObjects.*;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -36,6 +42,12 @@ public class Driver extends Application {
             Scene scene = new Scene(root);
             scene.getRoot().requestFocus();
             Driver.simulationScene = scene;
+            
+            //ArrayList of rooms
+            ArrayList<Room> roomArray = new ArrayList<Room>();
+            
+        	String f = "HouseLayout.txt";
+        	readFile(f, roomArray);
             
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");
@@ -77,5 +89,74 @@ public class Driver extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+    
+    //READ HOUSE LAYOUT FILE
+    //Passes file name and room array as parameters
+    /**
+     * Read House Layout file
+     * @param f
+     * @param rooms
+     */
+    public static void readFile(String f, ArrayList<Room> rooms){
+    	
+    	//new scanner
+    	Scanner input = null;
+    	
+		try{
+			//create file input stream
+			input = new Scanner(new FileInputStream(f));
+		}
+		catch(FileNotFoundException e){
+			//if issue creating stream
+			System.out.println("Error reading.");
+			System.exit(0);
+		}
+		
+		int roomCount = 0;
+		int doorID = 1;
+		int windowID = 1;
+		//create room array
+		while(input.hasNext()){
+			
+			if(input.next().equals("Room:")){
+				input.next();
+				//room name
+				String name = input.next() + " ";
+				int temp = -1;
+				//takes into consideration rooms with names more than one word
+				while(temp < 0){
+					String s = input.next();
+					if(s.equals("Temperature:")){
+						//room temperature
+						temp = input.nextInt();
+						break;
+					}
+					else{
+						name = name + s + " ";
+					}
+				}
+				
+				//create new room object
+				rooms.add(new Room(name, temp));
+				input.next();
+				
+				//add doors to array in room object
+				int nbDoors = input.nextInt();
+				for(int d=0;d<nbDoors;d++){
+					rooms.get(roomCount).addDoor(new Door(doorID++, false));
+				}
+				input.next();
+				
+				//add windows to array in room object
+				int nbWindows = input.nextInt();
+				for(int w=0;w<nbWindows;w++){
+					rooms.get(roomCount).addWindow(new Window(windowID++, false, false));
+				}
+				roomCount++;
+			}
+		}
+		input.close();
+    }
+    //End of readFile
 
 }
