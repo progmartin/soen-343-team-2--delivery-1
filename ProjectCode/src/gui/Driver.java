@@ -18,6 +18,9 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import gui.AssetManager;
+import java.io.File;
+import javafx.scene.image.Image;
+import javafx.stage.FileChooser;
 
 /**
  *
@@ -45,9 +48,18 @@ public class Driver extends Application {
             
             //ArrayList of rooms
             ArrayList<Room> roomArray = new ArrayList<Room>();
-            
-        	String f = "HouseLayout.txt";
-        	readFile(f, roomArray);
+            FileChooser fileChooserWindow = new FileChooser();
+            fileChooserWindow.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text", "*.txt"), new FileChooser.ExtensionFilter("All Files", "*"));
+            File chosenFile = fileChooserWindow.showOpenDialog(Driver.mainStage);
+            // Informs the user that no file was selected.
+            if (chosenFile == null || !chosenFile.isFile()) {
+                System.out.println("No file was selected try again");
+                System.exit(1);
+                // Informs the user that an incorrect file type was selected.
+            }
+
+            String f = "HouseLayout.txt";
+            readFile(chosenFile.getPath(), roomArray);
             
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");
