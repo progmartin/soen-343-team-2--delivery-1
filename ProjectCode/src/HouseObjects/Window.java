@@ -42,7 +42,7 @@ public class Window {
 	 * Get Window ID
 	 * @return id
 	 */
-	public int getId(){
+	public int getID(){
 		return id;
 	}
 	
@@ -67,7 +67,7 @@ public class Window {
 	 * Set ID
 	 * @param i
 	 */
-	public void setId(int i){
+	public void setID(int i){
 		id = i;
 	}
 	

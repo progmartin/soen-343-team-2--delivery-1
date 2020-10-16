@@ -1,11 +1,12 @@
 package gui;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Scanner;
 import java.util.ArrayList;
+import HouseObjects.*;
 
-import HouseObjects.Door;
-import HouseObjects.Room;
-import HouseObjects.Window;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Rectangle2D;
@@ -13,14 +14,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import gui.AssetManager;
 
+import gui.AssetManager;
+import java.io.File;
+import javafx.scene.image.Image;
+import javafx.stage.FileChooser;
 
 /**
  *
@@ -41,45 +41,26 @@ public class Driver extends Application {
             Driver.mainStage = primaryStage;
             
             // Set the simulation scene to swap between scenes if needed.
-            Pane root = FXMLLoader.load(getClass().getResource("SimulationWindow.fxml"));
+            Parent root = FXMLLoader.load(getClass().getResource("SimulationWindow.fxml"));
             Scene scene = new Scene(root);
             scene.getRoot().requestFocus();
             Driver.simulationScene = scene;
             
-            //Martin-> adding visual buttons   
-         // circles
-            //Rectangle redCircle = RectangleRoom.createRectangle(root, 50, 50,  Color.RED);
-          //  redCircle.setX(550);
-           // redCircle.setY(100);
-            
-            //creating test rooms and doors and windows
-            Room r1 = new Room();
-            Window w1 = new Window();
-            Door d1 = new Door();
-            r1.addWindow(w1);
-            r1.addDoor(d1);
-            
-            Room r2 = new Room();
-            Window w2 = new Window();
-            r2.addWindow(w2);
-            r2.addDoor(d1);
-            
-            Room r3 = new Room();
-            Window w3 = new Window();
-            Door d3 = new Door();
-            r3.addWindow(w3);
-            r3.addDoor(d3);
-            
-            
-            ArrayList<Room> roomArray = new ArrayList<Room>();// creating temp roomArrayList
-            roomArray.add(r1);//adding all rooms to temp arraylist of room
-            roomArray.add(r2);
-            roomArray.add(r3);        
-            RectangleRoom.createRectangle( root,roomArray);
-      	  
-            
-           
+            //ArrayList of rooms
+            ArrayList<Room> roomArray = new ArrayList<Room>();
+            FileChooser fileChooserWindow = new FileChooser();
+            fileChooserWindow.setTitle("Open House Layout File");
+            fileChooserWindow.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text", "*.txt"), new FileChooser.ExtensionFilter("All Files", "*"));
+            File chosenFile = fileChooserWindow.showOpenDialog(Driver.mainStage);
+            // Informs the user that no file was selected.
+            if (chosenFile == null || !chosenFile.isFile()) {
+                System.out.println("No House Layout File was selected try again");
+                System.exit(1);
+                // Informs the user that an incorrect file type was selected.
+            }
 
+            String f = "HouseLayout.txt";
+            readFile(chosenFile.getPath(), roomArray);
             
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");
@@ -101,19 +82,12 @@ public class Driver extends Application {
                 continueWindow.getButtonTypes().remove(0, continueWindow.getButtonTypes().size());
                 continueWindow.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
                 continueWindow.showAndWait();
-                
-                
-                
                 // If the use selects to not close;
                 if (continueWindow.getResult().equals(ButtonType.NO)) {
                     event.consume();
                 }
-                
-                
             });
 
-           
-            
             // Display the UI to the user
             primaryStage.show();
         } catch (IOException ex) {
@@ -128,5 +102,74 @@ public class Driver extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+    
+    //READ HOUSE LAYOUT FILE
+    //Passes file name and room array as parameters
+    /**
+     * Read House Layout file
+     * @param f
+     * @param rooms
+     */
+    public static void readFile(String f, ArrayList<Room> rooms){
+    	
+    	//new scanner
+    	Scanner input = null;
+    	
+		try{
+			//create file input stream
+			input = new Scanner(new FileInputStream(f));
+		}
+		catch(FileNotFoundException e){
+			//if issue creating stream
+			System.out.println("Error reading.");
+			System.exit(0);
+		}
+		
+		int roomCount = 0;
+		int doorID = 1;
+		int windowID = 1;
+		//create room array
+		while(input.hasNext()){
+			
+			if(input.next().equals("Room:")){
+				input.next();
+				//room name
+				String name = input.next() + " ";
+				int temp = -1;
+				//takes into consideration rooms with names more than one word
+				while(temp < 0){
+					String s = input.next();
+					if(s.equals("Temperature:")){
+						//room temperature
+						temp = input.nextInt();
+						break;
+					}
+					else{
+						name = name + s + " ";
+					}
+				}
+				
+				//create new room object
+				rooms.add(new Room(name, temp));
+				input.next();
+				
+				//add doors to array in room object
+				int nbDoors = input.nextInt();
+				for(int d=0;d<nbDoors;d++){
+					rooms.get(roomCount).addDoor(new Door(doorID++, false));
+				}
+				input.next();
+				
+				//add windows to array in room object
+				int nbWindows = input.nextInt();
+				for(int w=0;w<nbWindows;w++){
+					rooms.get(roomCount).addWindow(new Window(windowID++, false, false));
+				}
+				roomCount++;
+			}
+		}
+		input.close();
+    }
+    //End of readFile
 
 }
