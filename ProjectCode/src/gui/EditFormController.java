@@ -6,14 +6,18 @@
 package gui;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import javafx.event.Event;
 import javafx.fxml.*;
-import javafx.scene.control.Alert;
 import javafx.scene.input.*;
 import javafx.scene.layout.Pane;
 
-import gui.AssetManager;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.stage.WindowEvent;
 
 /**
  * FXML Controller class
@@ -25,12 +29,26 @@ public class EditFormController implements Initializable {
     @FXML
     Pane parentPane;
 
+    @FXML
+    Label values;
+    @FXML
+    Label title;
+    @FXML
+    TextField usernameInput;
+    @FXML
+    TextField passwordInput;
+    @FXML
+    ComboBox accessibility;
+    @FXML
+    Button saveButton;
+    @FXML
+    Label output;
+
     private double mouseX;
     private double mouseY;
 
     private boolean isShiftKeyDown;
     private boolean isCtrlKeyDown;
-
 
     /**
      * Initializes the controller class.
@@ -42,6 +60,41 @@ public class EditFormController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         mouseX = 0.0;
         mouseY = 0.0;
+
+        accessibility.getItems().addAll(Arrays.asList(new String[]{"Adult (Family)", "Child (Family)", "Guest", "Stranger"}));
+
+        String[] input = Driver.simulationController.editedUser.split(",");
+        if (input.length == 1) {
+            title.setText("Create New User");
+        } else {
+            usernameInput.setText(input[0]);
+            usernameInput.setDisable(true);
+            passwordInput.setText(input[1]);
+            for (int i = 0; i < accessibility.getItems().size(); i++) {
+                String item = (String) accessibility.getItems().get(i);
+                if (input[2].equals(item)) {
+                    accessibility.getSelectionModel().select(i);
+                }
+            }
+        }
+
+    }
+
+    @FXML
+    private void handleSave(Event e) {
+        if (usernameInput.getText().trim().equals("")) {
+            output.setText("Cannot have an empty username");
+        }
+        if (accessibility.getValue().equals("")) {
+            output.setText("Must select an accessibility");
+        }
+        Driver.simulationController.accounts.put(usernameInput.getText().trim(), new String[]{passwordInput.getText(), (String) accessibility.getSelectionModel().getSelectedItem()});
+        if (!usernameInput.isDisabled()) {
+            Driver.simulationController.usersList.getItems().add(Driver.simulationController.usersList.getItems().size() - 1, usernameInput.getText().trim());
+            Driver.simulationController.usersList.getSelectionModel().selectLast();
+            Driver.simulationController.usersList.getSelectionModel().selectPrevious();
+        }
+        SimulationWindowController.editStage.fireEvent(new WindowEvent(SimulationWindowController.editStage, WindowEvent.WINDOW_CLOSE_REQUEST));
         
     }
 
@@ -70,26 +123,5 @@ public class EditFormController implements Initializable {
             isCtrlKeyDown = false;
         }
     }
-
-    @FXML
-    private void handleAbout(Event e) {
-        Alert aboutWindow = new Alert(Alert.AlertType.INFORMATION);
-        aboutWindow.setTitle("About");
-        aboutWindow.setContentText("This is the custom level designer.\n\n"
-                + "To place a cell on the grid, simply drag the desired image from the side panel and drop it in the cell grid.\n"
-                + "If misplaced an image, click and drag the image to the new location, or to remove the image release over the side panel.\n"
-                + "The grid will automatically expand when an image is dragged and dropped above an empty space.\n"
-                + "To quick place a single image in multiple cells, hold down the shift button while dragging a desired image, "
-                + "and every cell that is hovered over will turn into the chosen image.\n\n"
-                + "The scroll wheel will scroll the grid up and down.\n"
-                + "If holding down the control button and using the scroll wheel, then the grid will zoom in and out.\n"
-                + "If holding down the control button, clicking and dragging while the mouse is on the visual panel, "
-                + "will move the grid in the direction dragged.");
-
-        aboutWindow.setWidth(200.0);
-        aboutWindow.showAndWait();
-    }
-
-
 
 }

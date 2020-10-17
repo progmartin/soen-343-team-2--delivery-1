@@ -13,6 +13,11 @@ and open the template in the editor.
     -fx-border-radius:10;
 }
 
+.simulationSubItem{
+    -fx-border-color:grey;
+    -fx-border-radius:10;
+}
+
 .simulationLabel{
     -fx-background-radius:5;
     -fx-background-color:#0099ff;
