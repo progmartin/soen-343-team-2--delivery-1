@@ -139,13 +139,13 @@ public class Driver extends Application {
 				input.next();
 				//room name
 				String name = input.next() + " ";
-				int temp = -1;
+				double temp = -1;
 				//takes into consideration rooms with names more than one word
 				while(temp < 0){
 					String s = input.next();
 					if(s.equals("Temperature:")){
 						//room temperature
-						temp = input.nextInt();
+						temp = input.nextDouble();
 						break;
 					}
 					else{
