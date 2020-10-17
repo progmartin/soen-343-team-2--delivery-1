@@ -21,9 +21,9 @@
 
 <AnchorPane fx:id="parentPane" prefHeight="769.0" prefWidth="819.0" stylesheets="@GUIStyle.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.SimulationWindowController">
    <children>
-      <AnchorPane layoutX="23.0" layoutY="22.0" prefHeight="730.0" prefWidth="200.0" styleClass="simulationAnchor">
+      <AnchorPane fx:id="dashboardPane" layoutX="23.0" layoutY="22.0" prefHeight="730.0" prefWidth="200.0" styleClass="simulationAnchor">
          <children>
-            <Label alignment="CENTER" layoutX="9.0" layoutY="-12.0" prefHeight="25.0" prefWidth="91.0" styleClass="simulationLabel" text="Label" textFill="WHITE" />
+            <Label alignment="CENTER" layoutX="9.0" layoutY="-12.0" prefHeight="25.0" prefWidth="91.0" styleClass="simulationLabel" text="Simulation" textFill="WHITE" />
             <ToggleButton layoutX="53.0" layoutY="35.0" mnemonicParsing="false" onAction="#handleToggleSimulation" prefHeight="25.0" prefWidth="95.0" text="OFF" />
             <ImageView fitHeight="20.0" fitWidth="20.0" layoutX="91.0" layoutY="86.0" onMouseClicked="#handleEditProfilePic" pickOnBounds="true" preserveRatio="true" styleClass="clickable">
                <image>
@@ -35,9 +35,7 @@
                   <Image url="@../assets/defaultUserProfile.png" />
                </image>
             </ImageView>
-            <Label alignment="CENTER" layoutX="61.0" layoutY="227.0" prefHeight="17.0" prefWidth="78.0" text="Location:" />
-            <Hyperlink alignment="CENTER" layoutX="26.0" layoutY="244.0" prefHeight="23.0" prefWidth="149.0" text="location" underline="true" />
-            <Label fx:id="outsideTempDisplay" alignment="TOP_CENTER" layoutX="31.0" layoutY="332.0" prefHeight="31.0" prefWidth="141.0" text="Outside Temp." textAlignment="CENTER" wrapText="true">
+            <Label fx:id="outsideTempDisplay" alignment="TOP_CENTER" layoutX="31.0" layoutY="332.0" prefHeight="31.0" prefWidth="141.0" text="Outside Temp." wrapText="true">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
@@ -47,12 +45,13 @@
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
-            <Label fx:id="insideTempDisplay" alignment="TOP_CENTER" layoutX="31.0" layoutY="363.0" prefHeight="31.0" prefWidth="141.0" text="Inside Temp." textAlignment="CENTER" wrapText="true">
-               <font>
-                  <Font name="System Bold" size="12.0" />
-               </font>
-            </Label>
             <Label fx:id="usernameDisplay" alignment="TOP_CENTER" layoutX="14.0" layoutY="191.0" prefHeight="31.0" prefWidth="171.0" text="Not Logged In" wrapText="true" />
+            <AnchorPane fx:id="locationPane" layoutX="22.0" layoutY="222.0" prefHeight="97.0" prefWidth="153.0">
+               <children>
+                  <Hyperlink fx:id="locationLink" alignment="CENTER" layoutX="4.0" layoutY="23.0" onAction="#handleChangeLocation" prefHeight="23.0" prefWidth="149.0" text="location" underline="true" />
+                  <Label alignment="CENTER" layoutX="39.0" layoutY="6.0" prefHeight="17.0" prefWidth="78.0" text="Location:" />
+               </children>
+            </AnchorPane>
          </children>
       </AnchorPane>
       <TabPane fx:id="moduleContainer" layoutX="237.0" layoutY="22.0" prefHeight="576.0" prefWidth="234.0" styleClass="simulationAnchor" tabClosingPolicy="UNAVAILABLE">
@@ -61,11 +60,11 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="283.0" prefWidth="232.0">
                      <children>
-                        <AnchorPane layoutX="16.0" layoutY="14.0" prefHeight="140.0" prefWidth="200.0" styleClass="simulationSubItem">
+                        <AnchorPane layoutX="15.0" layoutY="14.0" prefHeight="140.0" prefWidth="200.0" styleClass="simulationSubItem">
                            <children>
-                              <Label layoutX="56.0" layoutY="10.0" text="Change Date">
+                              <Label layoutX="59.0" layoutY="14.0" styleClass="moduleItemTitle" text="Change Date">
                                  <font>
-                                    <Font name="System Bold" size="12.0" />
+                                    <Font size="17.0" />
                                  </font>
                               </Label>
                               <DatePicker layoutX="13.0" layoutY="37.0" onAction="#handleChooseDate" />
@@ -75,22 +74,20 @@
                               <Button layoutX="70.0" layoutY="110.0" mnemonicParsing="false" onAction="#handleChooseTime" text="Update" />
                            </children>
                         </AnchorPane>
-                        <AnchorPane layoutX="16.0" layoutY="159.0" prefHeight="79.0" prefWidth="200.0" styleClass="simulationSubItem">
+                        <AnchorPane layoutX="15.0" layoutY="165.0" prefHeight="79.0" prefWidth="200.0" styleClass="simulationSubItem">
                            <children>
-                              <Label layoutX="41.0" layoutY="14.0" text="Change Temperature">
+                              <Label layoutX="41.0" layoutY="14.0" styleClass="moduleItemTitle" text="Change Temperature">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Label>
-                              <Label layoutX="6.0" layoutY="44.0" text="Outside:" />
-                              <Label layoutX="102.0" layoutY="44.0" text="Inside:" />
-                              <TextField fx:id="outsideTempInput" layoutX="53.0" layoutY="40.0" onAction="#handleChangeTemp" prefHeight="25.0" prefWidth="41.0" />
-                              <TextField fx:id="insideTempInput" layoutX="140.0" layoutY="40.0" onAction="#handleChangeTemp" prefHeight="25.0" prefWidth="41.0" />
+                              <Label layoutX="48.0" layoutY="44.0" text="Outside:" />
+                              <TextField fx:id="outsideTempInput" layoutX="95.0" layoutY="40.0" onKeyReleased="#handleChangeTemp" prefHeight="25.0" prefWidth="57.0" />
                            </children>
                         </AnchorPane>
-                        <AnchorPane layoutX="16.0" layoutY="382.0" prefHeight="133.0" prefWidth="200.0" styleClass="simulationSubItem">
+                        <AnchorPane layoutX="16.0" layoutY="363.0" prefHeight="133.0" prefWidth="200.0" styleClass="simulationSubItem">
                            <children>
-                              <Label layoutX="84.0" layoutY="6.0" text="Login">
+                              <Label layoutX="84.0" layoutY="6.0" styleClass="moduleItemTitle" text="Login">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
@@ -103,9 +100,9 @@
                               <Button fx:id="logoutButton" focusTraversable="false" layoutX="73.0" layoutY="33.0" mnemonicParsing="false" onAction="#handleLogout" text="Logout" visible="false" />
                            </children>
                         </AnchorPane>
-                        <AnchorPane layoutX="16.0" layoutY="255.0" prefHeight="114.0" prefWidth="200.0" styleClass="simulationSubItem">
+                        <AnchorPane layoutX="16.0" layoutY="255.0" prefHeight="94.0" prefWidth="200.0" styleClass="simulationSubItem">
                            <children>
-                              <Label layoutX="75.0" layoutY="14.0" text="Edit User">
+                              <Label layoutX="75.0" layoutY="14.0" styleClass="moduleItemTitle" text="Edit User">
                                  <font>
                                     <Font name="System Bold" size="12.0" />
                                  </font>
@@ -120,26 +117,26 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <VBox alignment="TOP_CENTER" layoutX="49.0" layoutY="114.0" prefHeight="545.0" prefWidth="232.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <VBox alignment="TOP_CENTER" prefHeight="545.0" prefWidth="232.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
                               <Button fx:id="shcModuleCreator" focusTraversable="false" mnemonicParsing="false" onAction="#handleNewModule" prefHeight="30.0" prefWidth="150.0" text="Smart Home Core">
                                  <VBox.margin>
-                                    <Insets bottom="10.0" top="10.0" />
+                                    <Insets />
                                  </VBox.margin>
                               </Button>
                               <Button fx:id="shpModuleCreator" focusTraversable="false" mnemonicParsing="false" onAction="#handleNewModule" prefHeight="30.0" prefWidth="150.0" text="Smart Home Security">
                                  <VBox.margin>
-                                    <Insets bottom="10.0" top="10.0" />
+                                    <Insets />
                                  </VBox.margin>
                               </Button>
                               <Button fx:id="shhModuleCreator" focusTraversable="false" mnemonicParsing="false" onAction="#handleNewModule" prefHeight="30.0" prefWidth="153.0" text="Smart Home Heating">
                                  <VBox.margin>
-                                    <Insets bottom="10.0" top="10.0" />
+                                    <Insets />
                                  </VBox.margin>
                               </Button>
                            </children>
                            <padding>
-                              <Insets top="20.0" />
+                              <Insets top="30.0" />
                            </padding>
                         </VBox>
                      </children></AnchorPane>
@@ -148,7 +145,7 @@
         </tabs>
       </TabPane>
       <AnchorPane layoutX="488.0" layoutY="74.0" prefHeight="230.0" prefWidth="306.0" styleClass="simulationAnchor" />
-      <Label alignment="CENTER" layoutX="488.0" layoutY="493.0" prefHeight="23.0" prefWidth="110.0" text="Output Console">
+      <Label alignment="CENTER" layoutX="488.0" layoutY="575.0" prefHeight="23.0" prefWidth="110.0" text="Output Console">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
@@ -158,7 +155,7 @@
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <ScrollPane layoutX="245.0" layoutY="612.0" prefHeight="140.0" prefWidth="517.0" styleClass="simulationAnchor">
+      <ScrollPane fx:id="outputPane" layoutX="245.0" layoutY="612.0" prefHeight="140.0" prefWidth="517.0" styleClass="simulationAnchor">
          <content>
             <Text fx:id="outputConsole" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="499.00000692903996" />
          </content>

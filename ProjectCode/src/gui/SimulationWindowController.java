@@ -6,6 +6,10 @@
  */
 package gui;
 
+import HouseObjects.Door;
+import HouseObjects.Room;
+import HouseObjects.Window;
+import com.sun.javafx.scene.control.skin.ScrollPaneSkin;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -21,22 +25,21 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.scene.text.Text;
 
-import gui.AssetManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import simulation.Simulation;
 
 /**
@@ -51,6 +54,11 @@ public class SimulationWindowController implements Initializable {
     Pane parentPane;
 
     @FXML
+    Pane dashboardPane;
+
+    @FXML
+    ScrollPane outputPane;
+    @FXML
     Text outputConsole;
 
     @FXML
@@ -58,12 +66,17 @@ public class SimulationWindowController implements Initializable {
     @FXML
     Label usernameDisplay;
     @FXML
+    Pane locationPane;
+    @FXML
+    Hyperlink locationLink;
+    ComboBox locationOptions = null;
+    @FXML
     Label outsideTempDisplay;
     @FXML
     Label insideTempDisplay;
     @FXML
     Label dateTimeDisplay;
-    
+
     @FXML
     TabPane moduleContainer;
 
@@ -91,7 +104,7 @@ public class SimulationWindowController implements Initializable {
     Button loginButton;
     @FXML
     Button logoutButton;
-    
+
     @FXML
     Button shcModuleCreator;
     @FXML
@@ -99,12 +112,18 @@ public class SimulationWindowController implements Initializable {
     @FXML
     Button shhModuleCreator;
 
+    VBox shcOpenClosePane;
+    ListView shcItems;
+    ArrayList<Window> shcWindows;
+    ArrayList<Door> shcDoors;
+    //ArrayList<Light> shcLights;
 
     static Stage editStage;
     private Simulation simulation;
 
     protected static HashMap<String, String[]> accounts = new HashMap<>();
     protected String editedUser = "";
+    private String loggedInUser;
 
     /**
      * Initializes the controller class.
@@ -120,21 +139,37 @@ public class SimulationWindowController implements Initializable {
         // New Simulation or load it
         simulation = loadSimulation();
         accounts.put("Default User", new String[]{"", "Adult (Family)"});
+        loggedInUser = null;
 
         updateOutsideTemp(15);
-        updateInsideTemp(21);
+        //updateInsideTemp(21);
 
         LocalDateTime today = LocalDateTime.now();
         updateTime(today.getHour(), today.getMinute(), today.getSecond());
         updateDate(today.toLocalDate());
 
         initializeSHS();
+        initializeSHC();
 
     }
 
     @FXML
     private void handleLoadSimulation(Event e) {
         this.simulation = loadSimulation();
+    }
+
+    @FXML
+    private void handleToggleSimulation(Event e) {
+        ToggleButton simulation = (ToggleButton) e.getSource();
+        if (simulation.isSelected()) {
+            // Simulation is ON
+            simulation.setText("ON");
+            writeToConsole("[Simulation] Turned ON");
+        } else {
+            // Simulation is OFF
+            simulation.setText("OFF");
+            writeToConsole("[Simulation] Turned OFF");
+        }
     }
 
     @FXML
@@ -152,17 +187,37 @@ public class SimulationWindowController implements Initializable {
     }
 
     @FXML
-    private void handleToggleSimulation(Event e) {
-        ToggleButton simulation = (ToggleButton) e.getSource();
-        if (simulation.isSelected()) {
-            // Simulation is ON
-            simulation.setText("ON");
-            writeToConsole("[Simulation] Turned ON");
-        } else {
-            // Simulation is OFF
-            simulation.setText("OFF");
-            writeToConsole("[Simulation] Turned OFF");
+    private void handleChangeLocation(Event e) {
+
+        writeToConsole("Change Location does nothing until simulation contains rooms");
+        ArrayList<String> locations = new ArrayList<>();
+        for (Room r : simulation.getRooms()) {
+            locations.add(r.getName());
         }
+        locations.add("TEMP");
+        locations.add("Not Real");
+        locations.add("location");
+        locations.add("[CANCEL]");
+        locations.remove(locationLink.getText());
+
+        locationOptions = new ComboBox(FXCollections.observableArrayList(locations));
+        locationOptions.setVisibleRowCount(4);
+        locationOptions.setPromptText("Select Location");
+        locationOptions.setLayoutX(locationLink.getLayoutX());
+        locationOptions.setLayoutY(locationLink.getLayoutY());
+        locationOptions.setPrefSize(locationLink.getWidth(), locationLink.getHeight());
+        locationOptions.setOnAction((event) -> {
+            String loc = (String) locationOptions.getSelectionModel().getSelectedItem();
+            if (!loc.equals("[CANCEL]")) {
+                simulation.setUserLocation(loggedInUser, loc);
+                locationLink.setText(loc);
+            }
+            locationPane.getChildren().remove(locationOptions);
+            locationOptions = null;
+        });
+        locationPane.getChildren().add(locationOptions);
+        locationPane.applyCss();
+        locationPane.layout();
     }
 
     @FXML
@@ -190,10 +245,8 @@ public class SimulationWindowController implements Initializable {
     private void handleChangeTemp(Event e) {
         TextField input = (TextField) e.getSource();
         try {
-            if (input.getId().equals(insideTempInput.getId())) {
-                updateInsideTemp(Integer.parseInt(input.getText()));
-            } else if (input.getId().equals(outsideTempInput.getId())) {
-                updateOutsideTemp(Integer.parseInt(input.getText()));
+            if (input.getId().equals(outsideTempInput.getId())) {
+                updateOutsideTemp(Double.parseDouble(input.getText()));
             }
         } catch (NumberFormatException ex) {
         }
@@ -205,15 +258,17 @@ public class SimulationWindowController implements Initializable {
 
         // If edit stage is already exists
         if (editStage != null) {
-            // Do nothing with this event
+            e.consume();
+            return;
+        }
+        if (users.getSelectionModel().isEmpty()) {
             e.consume();
             return;
         }
 
         // Create a new stage/window
         editStage = new Stage();
-        System.out.println(users.getSelectionModel().getSelectedItem());
-        if (((String) users.getSelectionModel().getSelectedItem()).equals("New User")) {
+        if (((String) users.getSelectionModel().getSelectedItem()).equals("[New User]")) {
             editedUser = ((String) users.getValue());
         } else {
             editedUser = ((String) users.getValue() + "," + this.accounts.get((String) users.getValue())[0] + "," + this.accounts.get((String) users.getValue())[1]);
@@ -249,17 +304,29 @@ public class SimulationWindowController implements Initializable {
 
     @FXML
     private void handleLogin(Event e) {
-        
-        if (!accounts.containsKey(usernameInput.getText().trim())){
+        if (usernameInput.getText().trim().equals("")) {
+            e.consume();
+            return;
+        }
+        if (!accounts.containsKey(usernameInput.getText().trim())) {
             writeToConsole("[SHS] Username or password is incorrect");
             e.consume();
+            return;
         }
-        if (!accounts.get(usernameInput.getText().trim())[0].equals(passwordInput.getText())){
+        if (!accounts.get(usernameInput.getText().trim())[0].equals(passwordInput.getText())) {
             writeToConsole("[SHS] Username or password is incorrect");
             e.consume();
+            return;
         }
-        
-        usernameDisplay.setText(usernameInput.getText().trim());
+
+        usersList.getSelectionModel().clearSelection();
+        loggedInUser = usernameInput.getText().trim();
+        usernameDisplay.setText(loggedInUser);
+        usersList.getItems().remove(loggedInUser);
+
+        locationPane.setVisible(true);
+        String location = simulation.getUserLocation(loggedInUser);
+        locationLink.setText(location);
 
         usernameInput.setText("");
         passwordInput.setText("");
@@ -274,21 +341,30 @@ public class SimulationWindowController implements Initializable {
 
     @FXML
     private void handleLogout(Event e) {
+        if (loggedInUser == null) {
+            e.consume();
+            return;
+        }
+
         usernameDisplay.setText("Not Logged In");
-        
+        usersList.getItems().add(usersList.getItems().size() - 1, loggedInUser);
+        loggedInUser = null;
+        locationPane.getChildren().remove(locationOptions);
+
         usernameTag.setVisible(true);
         usernameInput.setVisible(true);
         passwordTag.setVisible(true);
         passwordInput.setVisible(true);
         loginButton.setVisible(true);
         logoutButton.setVisible(false);
+        locationPane.setVisible(false);
     }
-    
+
     @FXML
-    private void handleNewModule(Event e){
+    private void handleNewModule(Event e) {
         Button module = (Button) e.getSource();
         String moduleStr = null;
-        switch (module.getText()){
+        switch (module.getText()) {
             case "Smart Home Core":
                 moduleStr = "SHC";
                 break;
@@ -300,13 +376,47 @@ public class SimulationWindowController implements Initializable {
                 break;
             default:
                 e.consume();
+                return;
         }
         Tab moduleTab = new Tab(moduleStr);
-        moduleContainer.getTabs().add(moduleContainer.getTabs().size()-1,moduleTab);
+        moduleContainer.getTabs().add(moduleContainer.getTabs().size() - 1, moduleTab);
         createModule(moduleTab);
-        
+
         module.setVisible(false);
         module.setManaged(false);
+    }
+
+    @FXML
+    private void handleSelectSHCItem(Event e) {
+        String item = (String) shcItems.getSelectionModel().getSelectedItem();
+        shcOpenClosePane.getChildren().removeAll(shcOpenClosePane.getChildren());
+
+        if (item.equals("Windows")) {
+            for (Window window : shcWindows) {
+                CheckBox windowCheck = new CheckBox(window.name);
+                windowCheck.setSelected(window.getOpen());
+                windowCheck.setLayoutX(15);
+                windowCheck.setOnAction((event) -> {
+                    window.setOpen(windowCheck.isSelected());
+                });
+                shcOpenClosePane.getChildren().add(windowCheck);
+            }
+        } else if (item.equals("Doors")) {
+            for (Door door : shcDoors) {
+                CheckBox doorCheck = new CheckBox(door.name);
+                doorCheck.setSelected(door.getOpen());
+                doorCheck.setLayoutX(15);
+                doorCheck.setOnAction((event) -> {
+                    door.setOpen(doorCheck.isSelected());
+                });
+                shcOpenClosePane.getChildren().add(doorCheck);
+            }
+
+        } else if (item.equals("Lights")) {
+
+        }
+        shcOpenClosePane.applyCss();
+        shcOpenClosePane.layout();
     }
 
     // --- HELPER METHODS --- //
@@ -321,21 +431,56 @@ public class SimulationWindowController implements Initializable {
         minute.getItems().addAll(FXCollections.observableArrayList(times));
         second.getItems().addAll(FXCollections.observableArrayList(times));
 
-        usersList.getItems().addAll(Arrays.asList(new String[]{"Default User", "New User"}));
+        usersList.getItems().addAll(Arrays.asList(new String[]{"Default User", "[New User]"}));
+        locationPane.setVisible(false);
+    }
+
+    private void initializeSHC() {
+
+        shcWindows = new ArrayList<>();
+        shcDoors = simulation.getDoors();
+        //shcLights = new ArrayList<>();
+
+        // EXAMPLE
+        Window win = new Window();
+        win.name = "kitchen";
+        shcWindows.add(win);
+        win.name = "Bedroom 1";
+        shcWindows.add(win);
+        win = new Window(1, true, true);
+        win.name = "Living Room";
+        shcWindows.add(win);
+        win.name = "Bathroom";
+        shcWindows.add(win);
+
+        Door temp = new Door(0, true);
+        temp.name = "Main";
+        shcDoors.add(temp);
+        temp = new Door();
+        temp.name = "Garage";
+        shcDoors.add(temp);
+        temp = new Door(0, true);
+        temp.name = "Backyard";
+        shcDoors.add(temp);
+
+        // For each room in simulation
+        //      if room has window
+        //          shcWindows.add(Window)
     }
 
     private void writeToConsole(String text) {
         String[] times = getTime().split(":");
         String time = "[" + times[0] + ":" + times[1] + "] ";
         outputConsole.setText(outputConsole.getText() + "\n" + time + text);
+        outputPane.setVvalue(1);
     }
 
-    private void updateOutsideTemp(int temp) {
-        outsideTempDisplay.setText("Outside Temp. " + temp + "\u00B0" + "C");
+    private void updateOutsideTemp(double temp) {
+        outsideTempDisplay.setText(String.format("Outside Temp. %.2f" + "\u00B0" + "C", temp));
     }
 
-    private void updateInsideTemp(int temp) {
-        insideTempDisplay.setText("Inside Temp. " + temp + "\u00B0" + "C");
+    private void updateInsideTemp(double temp) {
+        insideTempDisplay.setText(String.format("Inside Temp. %.2f" + "\u00B0" + "C", temp));
     }
 
     private void updateDate(LocalDate date) {
@@ -357,15 +502,65 @@ public class SimulationWindowController implements Initializable {
         String text = dateTimeDisplay.getText();
         return text.split("\n")[0];
     }
-    
-    private void createModule(Tab module){
-        if (module.getText().equals("SHC")){
-            Button close = new Button("Close Module");
+
+    private void createModule(Tab module) {
+        AnchorPane topPane = new AnchorPane();
+        module.setContent(topPane);
+        moduleContainer.applyCss();
+        moduleContainer.layout();
+        //topPane.resize(moduleContainer.getWidth(), moduleContainer.getHeight());
+
+        if (module.getText().equals("SHC")) {
+            AnchorPane itemsPane = new AnchorPane();
+            itemsPane.getStyleClass().add("simulationSubItem");
+            itemsPane.setPrefSize(topPane.getWidth() - 30, 120);
+            topPane.getChildren().add(itemsPane);
+            topPane.applyCss();
+            topPane.layout();
+
+            Label itemLabel = new Label("Item");
+            itemLabel.setPrefSize(itemsPane.getWidth(), 20);
+            itemLabel.getStyleClass().add("moduleItemTitle");
+            itemsPane.getChildren().add(itemLabel);
+
+            shcItems = new ListView();
+            shcItems.getItems().addAll(Arrays.asList(new String[]{"Windows", "Lights", "Doors"}));
+            shcItems.setPrefSize(itemsPane.getWidth() - 5, itemsPane.getHeight() - 25);
+            shcItems.setOnMouseClicked((event) -> {
+                handleSelectSHCItem(event);
+            });
+            itemsPane.getChildren().add(shcItems);
+
+            Label openCloseLabel = new Label("Open/Close");
+            openCloseLabel.setPrefSize(topPane.getWidth(), 20);
+            openCloseLabel.getStyleClass().add("moduleItemTitle");
+            topPane.getChildren().add(openCloseLabel);
+
+            shcOpenClosePane = new VBox();
+            shcOpenClosePane.getStyleClass().add("simulationSubItem");
+            shcOpenClosePane.setPrefSize(itemsPane.getWidth(), 200);
+            shcOpenClosePane.setSpacing(10);
+            shcOpenClosePane.setPadding(new Insets(10, 0, 0, 10));
+            topPane.getChildren().add(shcOpenClosePane);
+
+            moduleContainer.applyCss();
+            moduleContainer.layout();
+            itemsPane.setLayoutX(15);
+            itemsPane.setLayoutY(30);
+            itemLabel.setLayoutX(0);
+            itemLabel.setLayoutY(0);
+            shcItems.setLayoutX(2.5);
+            shcItems.setLayoutY(20);
+            openCloseLabel.setLayoutX(0);
+            openCloseLabel.setLayoutY(itemsPane.getLayoutY() + itemsPane.getHeight() + 20);
+            shcOpenClosePane.setLayoutX(15);
+            shcOpenClosePane.setLayoutY(openCloseLabel.getLayoutY() + openCloseLabel.getHeight() + 10);
         }
+
         Button close = new Button("Close Module");
         close.setOnAction((event) -> {
             Button moduleButton = null;
-            switch (module.getText()){
+            switch (module.getText()) {
                 case "SHC":
                     moduleButton = shcModuleCreator;
                     break;
@@ -377,13 +572,19 @@ public class SimulationWindowController implements Initializable {
                     break;
                 default:
                     event.consume();
+                    return;
             }
             moduleButton.setManaged(true);
             moduleButton.setVisible(true);
             moduleContainer.getTabs().remove(module);
         });
-        AnchorPane topPane = new AnchorPane(close);
-        module.setContent(topPane);
+        topPane.getChildren().add(close);
+
+        moduleContainer.applyCss();
+        moduleContainer.layout();
+        close.setLayoutY(topPane.getHeight() - close.getHeight() - 20);
+        close.setLayoutX(topPane.getWidth() / 2 - close.getWidth() / 2);
+
     }
 
 }

@@ -7,7 +7,6 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-
 <AnchorPane fx:id="parentPane" prefHeight="279.0" prefWidth="402.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.EditFormController">
    <children>
       <Label fx:id="title" layoutX="169.0" layoutY="36.0" text="Edit User">
@@ -21,7 +20,8 @@
       <TextField fx:id="usernameInput" layoutX="160.0" layoutY="78.0" />
       <TextField fx:id="passwordInput" layoutX="160.0" layoutY="110.0" />
       <ComboBox fx:id="accessibility" layoutX="160.0" layoutY="143.0" prefWidth="150.0" />
-      <Button fx:id="saveButton" layoutX="181.0" layoutY="185.0" mnemonicParsing="false" onAction="#handleSave" text="Save" />
+      <Button fx:id="saveButton" layoutX="130.0" layoutY="185.0" mnemonicParsing="false" onAction="#handleSave" text="Save" />
+      <Button fx:id="deleteButton" layoutX="235.0" layoutY="185.0" mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
       <Label fx:id="output" alignment="TOP_CENTER" layoutX="43.0" layoutY="219.0" prefHeight="41.0" prefWidth="317.0" wrapText="true" />
    </children>
 </AnchorPane>

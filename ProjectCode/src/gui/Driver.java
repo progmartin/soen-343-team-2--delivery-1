@@ -52,6 +52,7 @@ public class Driver extends Application {
             
             FileChooser fileChooserWindow = new FileChooser();
             fileChooserWindow.setTitle("Open House Layout File");
+            fileChooserWindow.setInitialDirectory(new File(System.getProperty("user.dir")));
             fileChooserWindow.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text", "*.txt"), new FileChooser.ExtensionFilter("All Files", "*"));
             File chosenFile = fileChooserWindow.showOpenDialog(Driver.mainStage);
             // Informs the user that no file was selected.
