@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import gui.AssetManager;
 import java.io.File;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 
 /**
@@ -42,7 +43,7 @@ public class Driver extends Application {
             Driver.mainStage = primaryStage;
             
             // Set the simulation scene to swap between scenes if needed.
-            Parent root = FXMLLoader.load(getClass().getResource("SimulationWindow.fxml"));
+            Pane root = FXMLLoader.load(getClass().getResource("SimulationWindow.fxml"));
             Scene scene = new Scene(root);
             scene.getRoot().requestFocus();
             Driver.simulationScene = scene;
@@ -63,7 +64,10 @@ public class Driver extends Application {
 
             String f = "HouseLayout.txt";
             readFile(chosenFile.getPath(), roomArray);
-           
+
+            //martins part -> room arraylist to gui display            
+            RoomObjtoDisplay.createRectangle( root,roomArray);
+
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");
             while (!primaryStage.getIcons().isEmpty()) {
@@ -137,13 +141,13 @@ public class Driver extends Application {
 				input.next();
 				//room name
 				String name = input.next() + " ";
-				int temp = -1;
+				double temp = -1;
 				//takes into consideration rooms with names more than one word
 				while(temp < 0){
 					String s = input.next();
 					if(s.equals("Temperature:")){
 						//room temperature
-						temp = input.nextInt();
+						temp = input.nextDouble();
 						break;
 					}
 					else{
