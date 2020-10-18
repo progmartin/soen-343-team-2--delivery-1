@@ -35,7 +35,7 @@
                   <Image url="@../assets/defaultUserProfile.png" />
                </image>
             </ImageView>
-            <Label fx:id="outsideTempDisplay" alignment="TOP_CENTER" layoutX="31.0" layoutY="332.0" prefHeight="31.0" prefWidth="141.0" text="Outside Temp." wrapText="true">
+            <Label fx:id="outsideTempDisplay" alignment="TOP_CENTER" layoutX="16.0" layoutY="332.0" prefHeight="42.0" prefWidth="171.0" text="Outside Temp." textAlignment="CENTER" wrapText="true">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
@@ -107,7 +107,7 @@
                                     <Font name="System Bold" size="12.0" />
                                  </font>
                               </Label>
-                              <ComboBox fx:id="usersList" focusTraversable="false" layoutX="26.0" layoutY="45.0" onAction="#handleSelectUser" prefWidth="150.0" />
+                              <ComboBox fx:id="usersList" focusTraversable="false" layoutX="26.0" layoutY="45.0" onAction="#handleEditUser" prefWidth="150.0" />
                            </children>
                         </AnchorPane>
                      </children></AnchorPane>
@@ -144,7 +144,7 @@
           </Tab>
         </tabs>
       </TabPane>
-      <AnchorPane layoutX="488.0" layoutY="74.0" prefHeight="230.0" prefWidth="306.0" styleClass="simulationAnchor" />
+      <AnchorPane fx:id="houseViewPane" layoutX="488.0" layoutY="74.0" prefHeight="230.0" prefWidth="306.0" styleClass="simulationAnchor" />
       <Label alignment="CENTER" layoutX="488.0" layoutY="575.0" prefHeight="23.0" prefWidth="110.0" text="Output Console">
          <font>
             <Font name="System Bold" size="12.0" />

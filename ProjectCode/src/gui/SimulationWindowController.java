@@ -6,10 +6,7 @@
  */
 package gui;
 
-import HouseObjects.Door;
-import HouseObjects.Room;
-import HouseObjects.Window;
-import com.sun.javafx.scene.control.skin.ScrollPaneSkin;
+import HouseObjects.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -60,6 +57,9 @@ public class SimulationWindowController implements Initializable {
     ScrollPane outputPane;
     @FXML
     Text outputConsole;
+    
+    @FXML
+    Pane houseViewPane;
 
     @FXML
     ImageView userProfilePic;
@@ -114,15 +114,11 @@ public class SimulationWindowController implements Initializable {
 
     VBox shcOpenClosePane;
     ListView shcItems;
-    ArrayList<Window> shcWindows;
-    ArrayList<Door> shcDoors;
-    //ArrayList<Light> shcLights;
 
     static Stage editStage;
-    private Simulation simulation;
-
-    protected static HashMap<String, String[]> accounts = new HashMap<>();
-    protected String editedUser = "";
+    
+    protected static HashMap<String,  Object[]> accounts = new HashMap<>();
+    protected Person editedUser = null;
     private String loggedInUser;
 
     /**
@@ -137,10 +133,6 @@ public class SimulationWindowController implements Initializable {
         editStage = null;
 
         // New Simulation or load it
-        simulation = loadSimulation();
-        accounts.put("Default User", new String[]{"", "Adult (Family)"});
-        loggedInUser = null;
-
         updateOutsideTemp(15);
         //updateInsideTemp(21);
 
@@ -149,13 +141,7 @@ public class SimulationWindowController implements Initializable {
         updateDate(today.toLocalDate());
 
         initializeSHS();
-        initializeSHC();
 
-    }
-
-    @FXML
-    private void handleLoadSimulation(Event e) {
-        this.simulation = loadSimulation();
     }
 
     @FXML
@@ -190,7 +176,7 @@ public class SimulationWindowController implements Initializable {
     private void handleChangeLocation(Event e) {
 
         writeToConsole("Change Location does nothing until simulation contains rooms");
-        ArrayList<String> locations = new ArrayList<>();
+        /*ArrayList<String> locations = new ArrayList<>();
         for (Room r : simulation.getRooms()) {
             locations.add(r.getName());
         }
@@ -198,9 +184,10 @@ public class SimulationWindowController implements Initializable {
         locations.add("Not Real");
         locations.add("location");
         locations.add("[CANCEL]");
-        locations.remove(locationLink.getText());
+        locations.remove(locationLink.getText());*/
 
-        locationOptions = new ComboBox(FXCollections.observableArrayList(locations));
+        locationOptions = new ComboBox(FXCollections.observableArrayList(Driver.simulation.getRoomNames()));
+        locationOptions.getItems().remove((String) locationLink.getText());
         locationOptions.setVisibleRowCount(4);
         locationOptions.setPromptText("Select Location");
         locationOptions.setLayoutX(locationLink.getLayoutX());
@@ -209,7 +196,7 @@ public class SimulationWindowController implements Initializable {
         locationOptions.setOnAction((event) -> {
             String loc = (String) locationOptions.getSelectionModel().getSelectedItem();
             if (!loc.equals("[CANCEL]")) {
-                simulation.setUserLocation(loggedInUser, loc);
+                Driver.simulation.changeUserLocation(loggedInUser, loc);
                 locationLink.setText(loc);
             }
             locationPane.getChildren().remove(locationOptions);
@@ -253,7 +240,7 @@ public class SimulationWindowController implements Initializable {
     }
 
     @FXML
-    private void handleSelectUser(Event e) {
+    private void handleEditUser(Event e) {
         ComboBox users = (ComboBox) e.getSource();
 
         // If edit stage is already exists
@@ -269,9 +256,9 @@ public class SimulationWindowController implements Initializable {
         // Create a new stage/window
         editStage = new Stage();
         if (((String) users.getSelectionModel().getSelectedItem()).equals("[New User]")) {
-            editedUser = ((String) users.getValue());
+            editedUser = null;
         } else {
-            editedUser = ((String) users.getValue() + "," + this.accounts.get((String) users.getValue())[0] + "," + this.accounts.get((String) users.getValue())[1]);
+            editedUser = Driver.simulation.getUser((String) users.getValue());
         }
 
         try {
@@ -325,7 +312,7 @@ public class SimulationWindowController implements Initializable {
         usersList.getItems().remove(loggedInUser);
 
         locationPane.setVisible(true);
-        String location = simulation.getUserLocation(loggedInUser);
+        String location = Driver.simulation.getUserLocation(loggedInUser);
         locationLink.setText(location);
 
         usernameInput.setText("");
@@ -392,7 +379,7 @@ public class SimulationWindowController implements Initializable {
         shcOpenClosePane.getChildren().removeAll(shcOpenClosePane.getChildren());
 
         if (item.equals("Windows")) {
-            for (Window window : shcWindows) {
+            for (Window window : Driver.simulation.getWindows(locationLink.getText().trim())) {
                 CheckBox windowCheck = new CheckBox(window.name);
                 windowCheck.setSelected(window.getOpen());
                 windowCheck.setLayoutX(15);
@@ -402,7 +389,7 @@ public class SimulationWindowController implements Initializable {
                 shcOpenClosePane.getChildren().add(windowCheck);
             }
         } else if (item.equals("Doors")) {
-            for (Door door : shcDoors) {
+            for (Door door : Driver.simulation.getDoors(locationLink.getText().trim())) {
                 CheckBox doorCheck = new CheckBox(door.name);
                 doorCheck.setSelected(door.getOpen());
                 doorCheck.setLayoutX(15);
@@ -420,52 +407,23 @@ public class SimulationWindowController implements Initializable {
     }
 
     // --- HELPER METHODS --- //
-    private Simulation loadSimulation() {
-        return new Simulation();
-    }
-
     private void initializeSHS() {
+        //martins part -> room arraylist to gui display            
+        RoomObjtoDisplay.createRectangle(houseViewPane, Driver.simulation.getRooms());
+
         List<Integer> times = IntStream.of(IntStream.range(0, 24).toArray()).boxed().collect(Collectors.toList());
         hour.getItems().addAll(times);
         times = IntStream.of(IntStream.range(0, 60).toArray()).boxed().collect(Collectors.toList());
         minute.getItems().addAll(FXCollections.observableArrayList(times));
         second.getItems().addAll(FXCollections.observableArrayList(times));
-
-        usersList.getItems().addAll(Arrays.asList(new String[]{"Default User", "[New User]"}));
+        
+        Driver.simulation.addNewUser("Default User", true, Person.UserTypes.ADULT, Driver.simulation.getRoomNames().get(0));
+        accounts.put("Default User", new Object[]{Driver.simulation.getUser("Default User"), ""});
+        loggedInUser = null;
+        
+        usersList.getItems().addAll(FXCollections.observableArrayList(Driver.simulation.getAllUserNames()));
+        usersList.getItems().add("[New User]");
         locationPane.setVisible(false);
-    }
-
-    private void initializeSHC() {
-
-        shcWindows = new ArrayList<>();
-        shcDoors = simulation.getDoors();
-        //shcLights = new ArrayList<>();
-
-        // EXAMPLE
-        Window win = new Window();
-        win.name = "kitchen";
-        shcWindows.add(win);
-        win.name = "Bedroom 1";
-        shcWindows.add(win);
-        win = new Window(1, true, true);
-        win.name = "Living Room";
-        shcWindows.add(win);
-        win.name = "Bathroom";
-        shcWindows.add(win);
-
-        Door temp = new Door(0, true);
-        temp.name = "Main";
-        shcDoors.add(temp);
-        temp = new Door();
-        temp.name = "Garage";
-        shcDoors.add(temp);
-        temp = new Door(0, true);
-        temp.name = "Backyard";
-        shcDoors.add(temp);
-
-        // For each room in simulation
-        //      if room has window
-        //          shcWindows.add(Window)
     }
 
     private void writeToConsole(String text) {
