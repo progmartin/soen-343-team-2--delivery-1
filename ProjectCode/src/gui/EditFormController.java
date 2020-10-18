@@ -39,6 +39,8 @@ public class EditFormController implements Initializable {
     @FXML
     Label title;
     @FXML
+    Button b;
+    @FXML
     TextField usernameInput;
     @FXML
     TextField passwordInput;

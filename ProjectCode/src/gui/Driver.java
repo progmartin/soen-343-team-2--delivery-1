@@ -39,14 +39,7 @@ public class Driver extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
         try {
-            // Set the stage/window to later reference if needed.
-            Driver.mainStage = primaryStage;
-
-            // Set the simulation scene to swap between scenes if needed.
-            Pane root = FXMLLoader.load(getClass().getResource("SimulationWindow.fxml"));
-            Scene scene = new Scene(root);
-            scene.getRoot().requestFocus();
-            Driver.simulationScene = scene;
+            
 
             FileChooser fileChooserWindow = new FileChooser();
             fileChooserWindow.setTitle("Open House Layout File");
@@ -61,9 +54,16 @@ public class Driver extends Application {
             
             //ArrayList of rooms
             ArrayList<Room> roomArray = readFile(chosenFile.getPath());
-            
             Driver.simulation = new Simulation(roomArray);
+            
+            // Set the stage/window to later reference if needed.
+            Driver.mainStage = primaryStage;
 
+            // Set the simulation scene to swap between scenes if needed.
+            Pane root = FXMLLoader.load(getClass().getResource("SimulationWindow.fxml"));
+            Scene scene = new Scene(root);
+            scene.getRoot().requestFocus();
+            Driver.simulationScene = scene;
 
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");

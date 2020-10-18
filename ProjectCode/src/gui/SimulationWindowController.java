@@ -409,7 +409,7 @@ public class SimulationWindowController implements Initializable {
     // --- HELPER METHODS --- //
     private void initializeSHS() {
         //martins part -> room arraylist to gui display            
-        RoomObjtoDisplay.createRectangle(houseViewPane, Driver.simulation.getRooms());
+        RoomObjtoDisplay.createRectangle(parentPane, Driver.simulation.getRooms());
 
         List<Integer> times = IntStream.of(IntStream.range(0, 24).toArray()).boxed().collect(Collectors.toList());
         hour.getItems().addAll(times);
