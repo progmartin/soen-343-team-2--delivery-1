@@ -11,6 +11,7 @@ public class Door {
 	int id;
 	//whether or not door is open
 	boolean open;
+        public String name;
 	
 	//Default constructor for Door
 	/**

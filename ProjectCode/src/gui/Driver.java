@@ -31,6 +31,7 @@ public class Driver extends Application {
 
     static Stage mainStage;
     static Scene simulationScene = null;
+    static SimulationWindowController simulationController = null;
     static Rectangle2D screen = Screen.getPrimary().getVisualBounds();
     public static double screenHeight = Driver.screen.getHeight() - 30.0;
     public static double screenWidth = Driver.screen.getWidth();
@@ -49,23 +50,24 @@ public class Driver extends Application {
             
             //ArrayList of rooms
             ArrayList<Room> roomArray = new ArrayList<Room>();
+            
             FileChooser fileChooserWindow = new FileChooser();
             fileChooserWindow.setTitle("Open House Layout File");
+            fileChooserWindow.setInitialDirectory(new File(System.getProperty("user.dir")));
             fileChooserWindow.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("text", "*.txt"), new FileChooser.ExtensionFilter("All Files", "*"));
             File chosenFile = fileChooserWindow.showOpenDialog(Driver.mainStage);
             // Informs the user that no file was selected.
             if (chosenFile == null || !chosenFile.isFile()) {
                 System.out.println("No House Layout File was selected try again");
                 System.exit(1);
-                // Informs the user that an incorrect file type was selected.
             }
 
             String f = "HouseLayout.txt";
             readFile(chosenFile.getPath(), roomArray);
-            
+
             //martins part -> room arraylist to gui display            
             RoomObjtoDisplay.createRectangle( root,roomArray);
-            
+
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");
             while (!primaryStage.getIcons().isEmpty()) {

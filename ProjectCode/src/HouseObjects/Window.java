@@ -13,7 +13,7 @@ public class Window {
 	boolean open;
 	//is window blocked?
 	boolean blocked;
-	
+	public String name;
 	//default constructor for Window
 	/**
 	 * constructor -- default
