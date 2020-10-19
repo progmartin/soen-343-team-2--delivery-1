@@ -1,70 +1,101 @@
 package HouseObjects;
 
 /**
-*
-* @author a_richard
-*/
-//A class for keeping track of Doors attached to rooms
+ * A class for keeping track of Doors attached to rooms.
+ *
+ * @author a_richard, d_ruiz-cigana
+ */
 public class Door {
-	
-	//unique identifier for door
-	int id;
-	//whether or not door is open
-	boolean open;
-        public String name;
-	
-	//Default constructor for Door
-	/**
-	 * Constructor -- Default
-	 */
-	public Door(){
-		id = 0;
-		open = false;
-	}
-	
-	//Parametrized constructor for Door
-	/**
-	 * Constructor -- Parametrized
-	 * @param i
-	 * @param o
-	 */
-	public Door(int i, boolean o){
-		id = i;
-		open = o;
-	}
-	
-	//Get methods
-	/**
-	 * Get method for ID
-	 * @return id
-	 */
-	public int getID(){
-		return id;
-	}
-	
-	/**
-	 * Get method for open status
-	 * @return open
-	 */
-	public boolean getOpen(){
-		return open;
-	}
-	
-	//Set methods
-	/**
-	 * Set method for ID
-	 * @param i
-	 */
-	public void setID(int i){
-		id = i;
-	}
-	
-	/**
-	 * Set method for open status
-	 * @param o
-	 */
-	public void setOpen(boolean o){
-		open = o;
-	}
+
+    /**
+     * Unique identifier for door.
+     */
+    int id;
+
+    /**
+     * Whether or not door is open.
+     */
+    boolean open;
+
+    /**
+     * Name of the door.
+     */
+    public String name;
+
+    /**
+     * Default constructor.
+     */
+    public Door() {
+        id = 0;
+        open = false;
+        name = "";
+    }
+
+    /**
+     * Parameterized constructor.
+     *
+     * @param id new id of the door
+     * @param open if the door is open
+     * @param name name of the door
+     */
+    public Door(int id, boolean open, String name) {
+        this.id = id;
+        this.open = open;
+        this.name = name;
+    }
+
+    /**
+     * Get method for ID.
+     *
+     * @return the door's unique id
+     */
+    public int getID() {
+        return id;
+    }
+
+    /**
+     * Get method for open status.
+     *
+     * @return if the door is open
+     */
+    public boolean getOpen() {
+        return open;
+    }
+
+    /**
+     * Get method for the name.
+     *
+     * @return
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Set method for ID.
+     *
+     * @param id new unique id
+     */
+    public void setID(int id) {
+        this.id = id;
+    }
+
+    /**
+     * Set method for open status.
+     *
+     * @param open if the door is open
+     */
+    public void setOpen(boolean open) {
+        this.open = open;
+    }
+
+    /**
+     * Set method for the name.
+     *
+     * @param name the name of the door
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
 
 }

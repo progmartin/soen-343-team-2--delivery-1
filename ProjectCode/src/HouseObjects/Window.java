@@ -1,90 +1,124 @@
 package HouseObjects;
 
 /**
-*
-* @author a_richard
-*/
-//A class for keeping track of windows inside a room
+ * A class for keeping track of Windows inside a room.
+ *
+ * @author a_richard, d_ruiz-cigana
+ */
 public class Window {
-	
-	//unique identifier for window
-	int id;
-	//is window open?
-	boolean open;
-	//is window blocked?
-	boolean blocked;
-	public String name;
-	//default constructor for Window
-	/**
-	 * constructor -- default
-	 */
-	public Window(){
-		id = 0;
-		open = false;
-		blocked = false;
-	}
-	
-	//parametrized constructor for Window
-	/**
-	 * constructor -- parametrized
-	 * @param i
-	 * @param o
-	 * @param b
-	 */
-	public Window(int i, boolean o, boolean b){
-		id = i;
-		open = o;
-		blocked = b;
-	}
-	
-	//get methods
-	/**
-	 * Get Window ID
-	 * @return id
-	 */
-	public int getID(){
-		return id;
-	}
-	
-	/**
-	 * Get Window Open Status
-	 * @return open
-	 */
-	public boolean getOpen(){
-		return open;
-	}
-	
-	/**
-	 * Get Window Blocked Status
-	 * @return blocked
-	 */
-	public boolean getBlocked(){
-		return blocked;
-	}
-	
-	//set methods
-	/**
-	 * Set ID
-	 * @param i
-	 */
-	public void setID(int i){
-		id = i;
-	}
-	
-	/**
-	 * Set Open Status
-	 * @param o
-	 */
-	public void setOpen(boolean o){
-		open = o;
-	}
-	
-	/**
-	 * Set Blocked Status
-	 * @param b
-	 */
-	public void setBlocked(boolean b){
-		blocked = b;
-	}
+
+    /**
+     * Unique identifier for window.
+     */
+    int id;
+
+    /**
+     * Whether or not the window is open.
+     */
+    boolean open;
+
+    /**
+     * Whether or not the window blocked by some object.
+     */
+    boolean blocked;
+
+    /**
+     * The name of the window.
+     */
+    public String name;
+
+    /**
+     * Default constructor.
+     */
+    public Window() {
+        id = 0;
+        open = false;
+        blocked = false;
+    }
+
+    /**
+     * Parameterized constructor.
+     *
+     * @param id new id of the window
+     * @param open if the window is open
+     * @param blocked if the window is blocked
+     */
+    public Window(int id, boolean open, boolean blocked) {
+        this.id = id;
+        this.open = open;
+        this.blocked = blocked;
+    }
+
+    /**
+     * Get Window ID.
+     *
+     * @return the window's unique id
+     */
+    public int getID() {
+        return id;
+    }
+
+    /**
+     * Get Window open status.
+     *
+     * @return if the window is open
+     */
+    public boolean getOpen() {
+        return open;
+    }
+
+    /**
+     * Get Window blocked status.
+     *
+     * @return if the window is blocked
+     */
+    public boolean getBlocked() {
+        return blocked;
+    }
+
+    /**
+     * Get Window name.
+     *
+     * @return the name of the window
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Set ID.
+     *
+     * @param id new id of the window
+     */
+    public void setID(int id) {
+        this.id = id;
+    }
+
+    /**
+     * Set open status.
+     *
+     * @param open if the window is open
+     */
+    public void setOpen(boolean open) {
+        this.open = open;
+    }
+
+    /**
+     * Set blocked status.
+     *
+     * @param blocked if the window is blocked
+     */
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
+    /**
+     * Set the window name.
+     *
+     * @param name the name of the window
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
 
 }
