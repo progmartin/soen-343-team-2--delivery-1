@@ -16,7 +16,6 @@ import java.util.stream.IntStream;
 
 import javafx.fxml.*;
 import javafx.stage.Stage;
-import simulation.Simulation;
 import javafx.stage.FileChooser;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -30,6 +29,11 @@ import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 
 import HouseObjects.*;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import javafx.animation.AnimationTimer;
+import javafx.scene.Node;
 
 /**
  * FXML Controller class
@@ -54,6 +58,8 @@ public class SimulationWindowController implements Initializable {
     Pane houseViewPane;
 
     @FXML
+    ImageView editUserProfilePic;
+    @FXML
     ImageView userProfilePic;
     @FXML
     Label usernameDisplay;
@@ -67,17 +73,25 @@ public class SimulationWindowController implements Initializable {
     @FXML
     Label insideTempDisplay;
     @FXML
-    Label dateTimeDisplay;
+    Label dateDisplay;
+    @FXML
+    Label timeDisplay;
 
     @FXML
     TabPane moduleContainer;
-
+    
+    @FXML
+    Tab shsTab;
+    @FXML
+    DatePicker selectDate;
     @FXML
     ComboBox hour;
     @FXML
     ComboBox minute;
     @FXML
     ComboBox second;
+    @FXML
+    Button updateTime;
     @FXML
     TextField outsideTempInput;
     @FXML
@@ -98,6 +112,8 @@ public class SimulationWindowController implements Initializable {
     Button logoutButton;
 
     @FXML
+    Tab addTab;
+    @FXML
     Button shcModuleCreator;
     @FXML
     Button shpModuleCreator;
@@ -115,7 +131,10 @@ public class SimulationWindowController implements Initializable {
     protected HashMap<String, String> accounts = new HashMap<>();
     protected Person editedUser = null;
     private String loggedInUser;
-
+    private AnimationTimer simulationClock;
+    private ArrayList<Node> shsControls;
+    private ArrayList<Tab> moduleTabs;
+    
     /**
      * Initializes the controller class.
      *
@@ -132,7 +151,9 @@ public class SimulationWindowController implements Initializable {
         LocalDateTime today = LocalDateTime.now();
         updateTime(today.getHour(), today.getMinute(), today.getSecond());
         updateDate(today.toLocalDate());
-
+        initializeClock();
+        initializeControls();
+        
         //martins part -> room arraylist to gui display            
         RoomObjtoDisplay.createRectangle(parentPane, Driver.simulation.getRooms());
         Driver.simulation.getRooms().add(new Room("Outside"));
@@ -140,8 +161,7 @@ public class SimulationWindowController implements Initializable {
         // Temporary DEFAULT USER for testing users //
         Driver.simulation.addNewUser("Default User", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
         accounts.put("Default User", "");
-        loggedInUser = null;
-
+        
         initializeSHS();
 
     }
@@ -156,10 +176,28 @@ public class SimulationWindowController implements Initializable {
         ToggleButton simulation = (ToggleButton) event.getSource();
         if (simulation.isSelected()) {
             // Simulation is ON
+            for (Node node : shsControls){
+                node.setDisable(false);
+            }
+            for (Tab tab : moduleTabs){
+                tab.setDisable(false);
+            }
+            simulationClock.start();
+            
             simulation.setText("ON");
             writeToConsole("[Simulation] Turned ON");
+
         } else {
             // Simulation is OFF
+            simulationClock.stop();
+            moduleContainer.getSelectionModel().select(shsTab);
+            for (Node node : shsControls){
+                node.setDisable(true);
+            }
+            for (Tab tab : moduleTabs){
+                tab.setDisable(true);
+            }
+            
             simulation.setText("OFF");
             writeToConsole("[Simulation] Turned OFF");
         }
@@ -464,7 +502,6 @@ public class SimulationWindowController implements Initializable {
                 return;
         }
         Tab moduleTab = new Tab(moduleStr);
-        moduleContainer.getTabs().add(moduleContainer.getTabs().size() - 1, moduleTab);
         createModule(moduleTab);
 
         module.setVisible(false);
@@ -516,6 +553,35 @@ public class SimulationWindowController implements Initializable {
 
     // --- HELPER METHODS --- //
     /**
+     * Initializes the simulation clock to update the time every second.
+     */
+    private void initializeClock() {
+        simulationClock = new AnimationTimer() {
+            long prev = 0;
+
+            @Override
+            public void handle(long now) {
+                if ((long) (prev / Math.pow(10, 9)) != (long) (now / Math.pow(10, 9))) {
+                    LocalTime currentTime = LocalTime.parse(getTime()).plusSeconds(1);
+                    updateTime(currentTime.getHour(), currentTime.getMinute(), currentTime.getSecond());
+                }
+                prev = now;
+            }
+        };
+        simulationClock.start();
+    }
+    
+    /**
+     * Initializes list of controls to be disabled when simulation is stopped.
+     */
+    private void initializeControls(){
+        shsControls = new ArrayList<>();
+        moduleTabs = new ArrayList<>();
+        Collections.addAll(shsControls, locationLink, editHome, selectDate, hour, minute, second, updateTime, outsideTempInput, usersList);
+        Collections.addAll(moduleTabs, addTab);
+    }
+
+    /**
      * Initializes the SHS tab. Fills all the ComboBoxes with their respective
      * values.
      */
@@ -527,6 +593,7 @@ public class SimulationWindowController implements Initializable {
         minute.getItems().addAll(FXCollections.observableArrayList(times));
         second.getItems().addAll(FXCollections.observableArrayList(times));
 
+        loggedInUser = null;
         usersList.getItems().addAll(FXCollections.observableArrayList(Driver.simulation.getAllUserNames()));
         usersList.getItems().add("[New User]");
         locationPane.setVisible(false);
@@ -566,7 +633,7 @@ public class SimulationWindowController implements Initializable {
      */
     private void updateDate(LocalDate date) {
         String day = date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.CANADA) + " " + date.getMonth().getDisplayName(TextStyle.SHORT, Locale.CANADA) + " " + date.getDayOfMonth() + " " + date.getYear();
-        dateTimeDisplay.setText(day + "\n" + getTime());
+        dateDisplay.setText(day);
     }
 
     /**
@@ -578,27 +645,29 @@ public class SimulationWindowController implements Initializable {
      */
     private void updateTime(int hour, int min, int sec) {
         String time = String.format("%02d:%02d:%02d", hour, min, sec);
-        dateTimeDisplay.setText(getDate() + "\n" + time);
+        timeDisplay.setText(time);
     }
 
     /**
-     * Gets the simulation time from the dashboard.
+     * Gets the simulation time from the dashboard in JDBC time escape format
+     * "hr:min:sec". Where hr, min, and sec are integers.
      *
      * @return the time as a String
      */
     private String getTime() {
-        String text = dateTimeDisplay.getText();
-        return text.split("\n")[1];
+        return timeDisplay.getText().trim();
     }
 
     /**
-     * Gets the simulation date from the dashboard.
+     * Gets the simulation date from the dashboard in the form "DAY MONTH DATE
+     * YEAR". Where DAY is the day of the week in short text style, MONTH is the
+     * month name in short text style, DATE is the numerical day of the month,
+     * and YEAR is the numerical year.
      *
      * @return the date as a String
      */
     private String getDate() {
-        String text = dateTimeDisplay.getText();
-        return text.split("\n")[0];
+        return dateDisplay.getText().trim();
     }
 
     /**
@@ -609,6 +678,9 @@ public class SimulationWindowController implements Initializable {
      * @param module the module name to be created
      */
     private void createModule(Tab module) {
+        moduleContainer.getTabs().add(moduleContainer.getTabs().size() - 1, module);
+        moduleTabs.add(module);
+        
         AnchorPane topPane = new AnchorPane();
         module.setContent(topPane);
         moduleContainer.applyCss();
@@ -684,6 +756,7 @@ public class SimulationWindowController implements Initializable {
             }
             moduleButton.setManaged(true);
             moduleButton.setVisible(true);
+            moduleTabs.remove(module);
             moduleContainer.getTabs().remove(module);
         });
         topPane.getChildren().add(close);

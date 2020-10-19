@@ -47,7 +47,6 @@ public class Driver extends Application {
             ArrayList<Room> roomArray = readFile(chosenFile.getPath());
             
             Driver.simulation = new Simulation(roomArray);
-            System.out.println( roomArray.size());
             // Set the stage/window to later reference if needed.
             Driver.mainStage = primaryStage;
             
