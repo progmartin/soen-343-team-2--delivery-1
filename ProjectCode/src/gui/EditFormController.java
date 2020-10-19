@@ -79,37 +79,45 @@ public class EditFormController implements Initializable {
         }
     }
 
+    /**
+     * Handles events that trigger to save a user. Performs checks to verify
+     * that all inputs have been filled. If creating a new user, adds the user
+     * to the simulation in that location, otherwise updates the user profile
+     * with the desired traits. If completed, it closes the window.
+     *
+     * @param event the event that triggers this method
+     */
     @FXML
-    private void handleSave(Event e) {
+    private void handleSave(Event event) {
         if (usernameInput.getText().trim().equals("")) {
             output.setText("Cannot have an empty username");
-            e.consume();
+            event.consume();
             return;
         }
         if (usernameInput.getText().trim().equals("[New User]")) {
             output.setText("Cannot have username be \"[New User]\" since it is a keyword");
-            e.consume();
+            event.consume();
             return;
         }
         if (accessibility.getSelectionModel().isEmpty()) {
             output.setText("Must select an accessibility");
-            e.consume();
+            event.consume();
             return;
         }
         if (newUser && Driver.simulationController.accounts.containsKey(usernameInput.getText().trim())) {
             output.setText("Username is already taken");
-            e.consume();
+            event.consume();
             return;
         }
         if (newUser && location.getSelectionModel().isEmpty()) {
             output.setText("Must set location for new user");
-            e.consume();
+            event.consume();
             return;
         }
 
         if (newUser && Driver.simulation.getRoom((String) location.getSelectionModel().getSelectedItem()) == null) {
             output.setText("ERROR: This location does not exists");
-            e.consume();
+            event.consume();
             return;
         }
 
@@ -123,11 +131,19 @@ public class EditFormController implements Initializable {
         SimulationWindowController.editStage.fireEvent(new WindowEvent(SimulationWindowController.editStage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 
+    /**
+     * Handles events that trigger to delete a user. Verifies that not creating
+     * a new user. Removes the user from the simulation and its availability
+     * from the GUI. Asks the user if they are sure to delete this user from a
+     * confirmation window. If completed, it closes the window.
+     *
+     * @param event the event that triggers this method
+     */
     @FXML
-    private void handleDelete(Event e) {
+    private void handleDelete(Event event) {
         if (newUser) {
             output.setText("Cannot delete a user not create yet");
-            e.consume();
+            event.consume();
             return;
         }
 
@@ -139,9 +155,8 @@ public class EditFormController implements Initializable {
         continueWindow.getButtonTypes().removeAll(continueWindow.getButtonTypes());
         continueWindow.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
         continueWindow.showAndWait();
-        // If the use selects to not delete;
         if (continueWindow.getResult().equals(ButtonType.NO)) {
-            e.consume();
+            event.consume();
             return;
         }
         Driver.simulation.removeUser(usernameInput.getText().trim());

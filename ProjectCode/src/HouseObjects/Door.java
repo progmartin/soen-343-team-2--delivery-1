@@ -1,10 +1,10 @@
 package HouseObjects;
 
 /**
+ * A class for keeping track of Doors attached to rooms.
  *
  * @author a_richard, d_ruiz-cigana
  */
-//A class for keeping track of Doors attached to rooms
 public class Door {
 
     /**
