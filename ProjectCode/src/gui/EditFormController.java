@@ -64,7 +64,7 @@ public class EditFormController implements Initializable {
         } else {
             usernameInput.setText(person.getName());
             usernameInput.setDisable(true);
-            passwordInput.setText((String) Driver.simulationController.accounts.get(person.getName())[1]);
+            passwordInput.setText(Driver.simulationController.accounts.get(person.getName()));
             for (int i = 0; i < accessibility.getItems().size(); i++) {
                 String item = (String) accessibility.getItems().get(i);
                 if (person.getUserType().equals(item)) {
@@ -127,7 +127,7 @@ public class EditFormController implements Initializable {
             Driver.simulationController.usersList.getSelectionModel().selectPrevious();
         }
         Driver.simulation.updateUser(usernameInput.getText().trim(), isAdmin.isSelected(), Person.getUserType((String) accessibility.getSelectionModel().getSelectedItem()), (String) location.getSelectionModel().getSelectedItem());
-        Driver.simulationController.accounts.put(usernameInput.getText().trim(), new Object[]{Driver.simulation.getUser(usernameInput.getText().trim()), passwordInput.getText()});
+        Driver.simulationController.accounts.put(usernameInput.getText().trim(), passwordInput.getText());
         SimulationWindowController.editStage.fireEvent(new WindowEvent(SimulationWindowController.editStage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 

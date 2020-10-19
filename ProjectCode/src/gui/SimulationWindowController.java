@@ -112,7 +112,7 @@ public class SimulationWindowController implements Initializable {
     static Stage editStage;
     static Stage editHomeStage;
 
-    protected static HashMap<String, Object[]> accounts = new HashMap<>();
+    protected HashMap<String, String> accounts = new HashMap<>();
     protected Person editedUser = null;
     private String loggedInUser;
 
@@ -139,7 +139,7 @@ public class SimulationWindowController implements Initializable {
 
         // Temporary DEFAULT USER for testing users //
         Driver.simulation.addNewUser("Default User", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
-        accounts.put("Default User", new Object[]{Driver.simulation.getUser("Default User"), ""});
+        accounts.put("Default User", "");
         loggedInUser = null;
 
         initializeSHS();
@@ -350,7 +350,6 @@ public class SimulationWindowController implements Initializable {
             });
             editHomeStage.show();
         } catch (IOException ex) {
-            ex.printStackTrace();
             editHomeStage = null;
             event.consume();
         }
@@ -376,7 +375,7 @@ public class SimulationWindowController implements Initializable {
             event.consume();
             return;
         }
-        if (!accounts.get(usernameInput.getText().trim())[1].equals(passwordInput.getText())) {
+        if (!accounts.get(usernameInput.getText().trim()).equals(passwordInput.getText())) {
             writeToConsole("[SHS] Username or password is incorrect");
             event.consume();
             return;

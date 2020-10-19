@@ -88,11 +88,6 @@ public class Driver extends Application {
                 }
             });
             
-            simulation= new Simulation(roomArray);
-           
-            
-           
-
             // Display the UI to the user
             primaryStage.show();
         } catch (IOException ex) {
