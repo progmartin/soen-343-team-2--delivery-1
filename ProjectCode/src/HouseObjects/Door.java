@@ -2,20 +2,28 @@ package HouseObjects;
 
 /**
  *
- * @author a_richard
+ * @author a_richard, d_ruiz-cigana
  */
 //A class for keeping track of Doors attached to rooms
 public class Door {
 
-    //unique identifier for door
+    /**
+     * Unique identifier for door.
+     */
     int id;
-    //whether or not door is open
+
+    /**
+     * Whether or not door is open.
+     */
     boolean open;
+
+    /**
+     * Name of the door.
+     */
     public String name;
 
-    //Default constructor for Door
     /**
-     * Constructor -- Default
+     * Default constructor.
      */
     public Door() {
         id = 0;
@@ -23,60 +31,69 @@ public class Door {
         name = "";
     }
 
-    //Parametrized constructor for Door
     /**
-     * Constructor -- Parametrized
+     * Parameterized constructor.
      *
-     * @param i
-     * @param o
+     * @param id new id of the door
+     * @param open if the door is open
+     * @param name name of the door
      */
-    public Door(int i, boolean o) {
-        id = i;
-        open = o;
+    public Door(int id, boolean open, String name) {
+        this.id = id;
+        this.open = open;
+        this.name = name;
     }
 
-    //Get methods
     /**
-     * Get method for ID
+     * Get method for ID.
      *
-     * @return id
+     * @return the door's unique id
      */
     public int getID() {
         return id;
     }
 
     /**
-     * Get method for open status
+     * Get method for open status.
      *
-     * @return open
+     * @return if the door is open
      */
     public boolean getOpen() {
         return open;
     }
 
+    /**
+     * Get method for the name.
+     *
+     * @return
+     */
     public String getName() {
         return name;
     }
 
-    //Set methods
     /**
-     * Set method for ID
+     * Set method for ID.
      *
-     * @param i
+     * @param id new unique id
      */
-    public void setID(int i) {
-        id = i;
+    public void setID(int id) {
+        this.id = id;
     }
 
     /**
-     * Set method for open status
+     * Set method for open status.
      *
-     * @param o
+     * @param open if the door is open
      */
-    public void setOpen(boolean o) {
-        open = o;
+    public void setOpen(boolean open) {
+        this.open = open;
     }
 
+    /**
+     * Set method for the name.
+     *
+     * @param name the name of the door
+     */
     public void setName(String name) {
         this.name = name;
     }

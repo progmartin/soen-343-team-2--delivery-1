@@ -1,43 +1,53 @@
 package HouseObjects;
 
 /**
+ * A class for keeping track of Person objects inside the house.
  *
- * @author a_richard
+ * @author a_richard, d_ruiz-cigana
  */
-//A class for keeping track of Person objects inside the house
 public class Person {
 
-    //individual's name
+    /**
+     * Individual's name.
+     */
     String name;
-    //true if person is admin
+
+    /**
+     * If person is an administrator.
+     */
     boolean isAdmin;
+
+    /**
+     * Type of person in relation to the house. Can be only be of a certain
+     * type.
+     */
     private UserTypes userType;
 
+    /**
+     * Enumeration of the different types of user relations.
+     */
     public enum UserTypes {
 
         ADULT, CHILD, GUEST, STRANGER;
     }
 
-    //default constructor
     /**
-     * constructor -- default
+     * Default constructor.
      */
     public Person() {
         this("Default", false, UserTypes.ADULT);
     }
 
-    //parametrized constructor
     /**
-     * constructor -- parametrized
+     * Parameterized constructor.
      *
-     * @param name
-     * @param isAdmin
-     * @param userType
+     * @param name the name of the person
+     * @param isAdmin if the person is an administrator
+     * @param userType the type 
      */
     public Person(String name, boolean isAdmin, UserTypes userType) {
         this.name = name;
         this.isAdmin = isAdmin;
-
         this.userType = userType;
     }
 
@@ -63,7 +73,7 @@ public class Person {
     public String getUserType() {
         switch (this.userType) {
             case ADULT:
-                return "Adult (family)";
+                return "Adult (Family)";
             case CHILD:
                 return "Child (Family)";
             case GUEST:
@@ -96,6 +106,24 @@ public class Person {
 
     public void setUserType(UserTypes userType) {
         this.userType = userType;
+    }
+
+    public static UserTypes getUserType(String userType) {
+        if (userType.toUpperCase().contains("ADULT")) {
+            return UserTypes.ADULT;
+        } else if (userType.toUpperCase().contains("CHILD")) {
+            return UserTypes.CHILD;
+        } else if (userType.toUpperCase().contains("GUEST")) {
+            return UserTypes.GUEST;
+        } else if (userType.toUpperCase().contains("STRANGER")) {
+            return UserTypes.STRANGER;
+        }
+        return null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.getName().equals(((Person) obj).getName());
     }
 
 }

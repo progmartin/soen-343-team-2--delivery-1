@@ -1,48 +1,39 @@
-/**
- * <pre>
- * TODO:
- * - Fix for JAR files:
- * </pre>
- */
 package gui;
 
-import HouseObjects.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ResourceBundle;
-import javafx.event.Event;
-import javafx.fxml.*;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.Pane;
-import javafx.stage.FileChooser;
-import javafx.scene.image.ImageView;
-import javafx.stage.Stage;
-import javafx.scene.text.Text;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.TextStyle;
-import java.util.ArrayList;
+import java.util.ResourceBundle;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import javafx.fxml.*;
+import javafx.stage.Stage;
+import javafx.stage.FileChooser;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.text.Text;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.event.Event;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
-import javafx.scene.image.Image;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.VBox;
-import simulation.Simulation;
+
+import HouseObjects.*;
 
 /**
  * FXML Controller class
  *
- * @author d_ruizci
+ * @author d_ruiz-cigana
  */
 public class SimulationWindowController implements Initializable {
 
@@ -57,7 +48,7 @@ public class SimulationWindowController implements Initializable {
     ScrollPane outputPane;
     @FXML
     Text outputConsole;
-    
+
     @FXML
     Pane houseViewPane;
 
@@ -116,8 +107,8 @@ public class SimulationWindowController implements Initializable {
     ListView shcItems;
 
     static Stage editStage;
-    
-    protected static HashMap<String,  Object[]> accounts = new HashMap<>();
+
+    protected static HashMap<String, Object[]> accounts = new HashMap<>();
     protected Person editedUser = null;
     private String loggedInUser;
 
@@ -132,9 +123,7 @@ public class SimulationWindowController implements Initializable {
         Driver.simulationController = this;
         editStage = null;
 
-        // New Simulation or load it
         updateOutsideTemp(15);
-        //updateInsideTemp(21);
 
         LocalDateTime today = LocalDateTime.now();
         updateTime(today.getHour(), today.getMinute(), today.getSecond());
@@ -176,17 +165,9 @@ public class SimulationWindowController implements Initializable {
     private void handleChangeLocation(Event e) {
 
         writeToConsole("Change Location does nothing until simulation contains rooms");
-        /*ArrayList<String> locations = new ArrayList<>();
-        for (Room r : simulation.getRooms()) {
-            locations.add(r.getName());
-        }
-        locations.add("TEMP");
-        locations.add("Not Real");
-        locations.add("location");
-        locations.add("[CANCEL]");
-        locations.remove(locationLink.getText());*/
 
         locationOptions = new ComboBox(FXCollections.observableArrayList(Driver.simulation.getRoomNames()));
+        locationOptions.getItems().add("[CANCEL]");
         locationOptions.getItems().remove((String) locationLink.getText());
         locationOptions.setVisibleRowCount(4);
         locationOptions.setPromptText("Select Location");
@@ -196,7 +177,7 @@ public class SimulationWindowController implements Initializable {
         locationOptions.setOnAction((event) -> {
             String loc = (String) locationOptions.getSelectionModel().getSelectedItem();
             if (!loc.equals("[CANCEL]")) {
-                Driver.simulation.changeUserLocation(loggedInUser, loc);
+                Driver.simulation.updateUserLocation(loggedInUser, loc);
                 locationLink.setText(loc);
             }
             locationPane.getChildren().remove(locationOptions);
@@ -245,6 +226,7 @@ public class SimulationWindowController implements Initializable {
 
         // If edit stage is already exists
         if (editStage != null) {
+            editStage.requestFocus();
             e.consume();
             return;
         }
@@ -277,6 +259,7 @@ public class SimulationWindowController implements Initializable {
             // Set event if user closes the window (clicks on X)
             editStage.setOnCloseRequest((event) -> {
                 // Set the edit stage as removed
+                usersList.getSelectionModel().clearSelection();
                 editStage = null;
             });
 
@@ -300,7 +283,7 @@ public class SimulationWindowController implements Initializable {
             e.consume();
             return;
         }
-        if (!accounts.get(usernameInput.getText().trim())[0].equals(passwordInput.getText())) {
+        if (!accounts.get(usernameInput.getText().trim())[1].equals(passwordInput.getText())) {
             writeToConsole("[SHS] Username or password is incorrect");
             e.consume();
             return;
@@ -320,10 +303,14 @@ public class SimulationWindowController implements Initializable {
 
         usernameTag.setVisible(false);
         usernameInput.setVisible(false);
+        usernameInput.setFocusTraversable(false);
         passwordTag.setVisible(false);
         passwordInput.setVisible(false);
+        passwordInput.setFocusTraversable(false);
         loginButton.setVisible(false);
+        loginButton.setFocusTraversable(false);
         logoutButton.setVisible(true);
+        logoutButton.setFocusTraversable(true);
     }
 
     @FXML
@@ -340,17 +327,21 @@ public class SimulationWindowController implements Initializable {
 
         usernameTag.setVisible(true);
         usernameInput.setVisible(true);
+        usernameInput.setFocusTraversable(true);
         passwordTag.setVisible(true);
         passwordInput.setVisible(true);
+        passwordInput.setFocusTraversable(true);
         loginButton.setVisible(true);
+        loginButton.setFocusTraversable(true);
         logoutButton.setVisible(false);
+        logoutButton.setFocusTraversable(false);
         locationPane.setVisible(false);
     }
 
     @FXML
     private void handleNewModule(Event e) {
         Button module = (Button) e.getSource();
-        String moduleStr = null;
+        String moduleStr;
         switch (module.getText()) {
             case "Smart Home Core":
                 moduleStr = "SHC";
@@ -383,6 +374,7 @@ public class SimulationWindowController implements Initializable {
                 CheckBox windowCheck = new CheckBox(window.name);
                 windowCheck.setSelected(window.getOpen());
                 windowCheck.setLayoutX(15);
+                windowCheck.setFocusTraversable(false);
                 windowCheck.setOnAction((event) -> {
                     window.setOpen(windowCheck.isSelected());
                 });
@@ -393,6 +385,7 @@ public class SimulationWindowController implements Initializable {
                 CheckBox doorCheck = new CheckBox(door.name);
                 doorCheck.setSelected(door.getOpen());
                 doorCheck.setLayoutX(15);
+                doorCheck.setFocusTraversable(false);
                 doorCheck.setOnAction((event) -> {
                     door.setOpen(doorCheck.isSelected());
                 });
@@ -410,17 +403,18 @@ public class SimulationWindowController implements Initializable {
     private void initializeSHS() {
         //martins part -> room arraylist to gui display            
         RoomObjtoDisplay.createRectangle(parentPane, Driver.simulation.getRooms());
+        Driver.simulation.getRooms().add(new Room("Outside"));
 
         List<Integer> times = IntStream.of(IntStream.range(0, 24).toArray()).boxed().collect(Collectors.toList());
         hour.getItems().addAll(times);
         times = IntStream.of(IntStream.range(0, 60).toArray()).boxed().collect(Collectors.toList());
         minute.getItems().addAll(FXCollections.observableArrayList(times));
         second.getItems().addAll(FXCollections.observableArrayList(times));
-        
-        Driver.simulation.addNewUser("Default User", true, Person.UserTypes.ADULT, Driver.simulation.getRoomNames().get(0));
+
+        Driver.simulation.addNewUser("Default User", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
         accounts.put("Default User", new Object[]{Driver.simulation.getUser("Default User"), ""});
         loggedInUser = null;
-        
+
         usersList.getItems().addAll(FXCollections.observableArrayList(Driver.simulation.getAllUserNames()));
         usersList.getItems().add("[New User]");
         locationPane.setVisible(false);
@@ -479,11 +473,13 @@ public class SimulationWindowController implements Initializable {
             Label itemLabel = new Label("Item");
             itemLabel.setPrefSize(itemsPane.getWidth(), 20);
             itemLabel.getStyleClass().add("moduleItemTitle");
+            itemLabel.setFocusTraversable(false);
             itemsPane.getChildren().add(itemLabel);
 
             shcItems = new ListView();
             shcItems.getItems().addAll(Arrays.asList(new String[]{"Windows", "Lights", "Doors"}));
             shcItems.setPrefSize(itemsPane.getWidth() - 5, itemsPane.getHeight() - 25);
+            shcItems.setFocusTraversable(false);
             shcItems.setOnMouseClicked((event) -> {
                 handleSelectSHCItem(event);
             });
@@ -492,6 +488,7 @@ public class SimulationWindowController implements Initializable {
             Label openCloseLabel = new Label("Open/Close");
             openCloseLabel.setPrefSize(topPane.getWidth(), 20);
             openCloseLabel.getStyleClass().add("moduleItemTitle");
+            openCloseLabel.setFocusTraversable(false);
             topPane.getChildren().add(openCloseLabel);
 
             shcOpenClosePane = new VBox();
@@ -516,8 +513,9 @@ public class SimulationWindowController implements Initializable {
         }
 
         Button close = new Button("Close Module");
+        close.setFocusTraversable(false);
         close.setOnAction((event) -> {
-            Button moduleButton = null;
+            Button moduleButton;
             switch (module.getText()) {
                 case "SHC":
                     moduleButton = shcModuleCreator;

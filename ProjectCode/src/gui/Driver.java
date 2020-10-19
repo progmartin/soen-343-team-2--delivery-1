@@ -1,45 +1,38 @@
 package gui;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 import java.util.ArrayList;
-import HouseObjects.*;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.stage.Screen;
+import javafx.fxml.*;
 import javafx.stage.Stage;
-
-import java.io.File;
-import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
-import simulation.Simulation;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+
+import simulation.*;
+import HouseObjects.*;
 
 /**
  *
- * @author d_ruizci
+ * @author d_ruiz-cigana
  */
 public class Driver extends Application {
 
     static Stage mainStage;
     static Scene simulationScene = null;
     static SimulationWindowController simulationController = null;
-    static Rectangle2D screen = Screen.getPrimary().getVisualBounds();
-    public static double screenHeight = Driver.screen.getHeight() - 30.0;
-    public static double screenWidth = Driver.screen.getWidth();
-    
+
     public static Simulation simulation = null;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
         try {
-            
 
             FileChooser fileChooserWindow = new FileChooser();
             fileChooserWindow.setTitle("Open House Layout File");
@@ -51,11 +44,11 @@ public class Driver extends Application {
                 System.out.println("No House Layout File was selected try again");
                 System.exit(1);
             }
-            
+
             //ArrayList of rooms
             ArrayList<Room> roomArray = readFile(chosenFile.getPath());
             Driver.simulation = new Simulation(roomArray);
-            
+
             // Set the stage/window to later reference if needed.
             Driver.mainStage = primaryStage;
 
@@ -107,12 +100,12 @@ public class Driver extends Application {
     }
 
     //READ HOUSE LAYOUT FILE
-    //Passes file name and room array as parameters
+    //Passes file name as parameters
     /**
      * Read House Layout file
      *
      * @param f
-     * @param rooms
+     * @return
      */
     public static ArrayList<Room> readFile(String f) {
 
@@ -153,13 +146,13 @@ public class Driver extends Application {
                 }
 
                 //create new room object
-                rooms.add(new Room(name, temp));
+                rooms.add(new Room(name.trim(), temp));
                 input.next();
 
                 //add doors to array in room object
                 int nbDoors = input.nextInt();
                 for (int d = 0; d < nbDoors; d++) {
-                    rooms.get(roomCount).addDoor(new Door(doorID++, false));
+                    rooms.get(roomCount).addDoor(new Door(doorID++, false, name.trim() + "-" + doorID));
                 }
                 input.next();
 

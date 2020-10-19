@@ -1,35 +1,22 @@
-/**
- * <pre>
- * TODO:
- * </pre>
- */
 package gui;
 
-import HouseObjects.Person;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javafx.collections.FXCollections;
-import javafx.event.Event;
-import javafx.fxml.*;
-import javafx.scene.control.Alert;
-import javafx.scene.input.*;
-import javafx.scene.layout.Pane;
 
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.fxml.*;
 import javafx.stage.WindowEvent;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.event.Event;
+import javafx.collections.FXCollections;
+
+import HouseObjects.*;
 
 /**
  * FXML Controller class
  *
- * @author DRC
+ * @author d_ruiz-cigana
  */
 public class EditFormController implements Initializable {
 
@@ -39,8 +26,6 @@ public class EditFormController implements Initializable {
     @FXML
     Label title;
     @FXML
-    Button b;
-    @FXML
     TextField usernameInput;
     @FXML
     TextField passwordInput;
@@ -48,6 +33,8 @@ public class EditFormController implements Initializable {
     CheckBox isAdmin;
     @FXML
     ComboBox accessibility;
+    @FXML
+    AnchorPane locationPane;
     @FXML
     ComboBox location;
     @FXML
@@ -84,7 +71,11 @@ public class EditFormController implements Initializable {
                     accessibility.getSelectionModel().select(i);
                 }
             }
-            location.setVisible(false);
+            isAdmin.setSelected(person.getIsAdmin());
+            location.getItems().add(Driver.simulation.getUserLocation(person.getName()));
+            location.getSelectionModel().select(0);
+            location.setDisable(true);
+            locationPane.setVisible(false);
         }
     }
 
@@ -116,7 +107,7 @@ public class EditFormController implements Initializable {
             return;
         }
 
-        if (newUser && Driver.simulation.findRoom((String) location.getSelectionModel().getSelectedItem()) == null) {
+        if (newUser && Driver.simulation.getRoom((String) location.getSelectionModel().getSelectedItem()) == null) {
             output.setText("ERROR: This location does not exists");
             e.consume();
             return;
@@ -127,9 +118,9 @@ public class EditFormController implements Initializable {
             Driver.simulationController.usersList.getSelectionModel().selectLast();
             Driver.simulationController.usersList.getSelectionModel().selectPrevious();
         }
-        Driver.simulation.updateUser(usernameInput.getText().trim(), isAdmin.isSelected(), Person.UserTypes.ADULT, (String) location.getSelectionModel().getSelectedItem());
+        Driver.simulation.updateUser(usernameInput.getText().trim(), isAdmin.isSelected(), Person.getUserType((String) accessibility.getSelectionModel().getSelectedItem()), (String) location.getSelectionModel().getSelectedItem());
+        Driver.simulationController.accounts.put(usernameInput.getText().trim(), new Object[]{Driver.simulation.getUser(usernameInput.getText().trim()), passwordInput.getText()});
         SimulationWindowController.editStage.fireEvent(new WindowEvent(SimulationWindowController.editStage, WindowEvent.WINDOW_CLOSE_REQUEST));
-        Driver.simulationController.accounts.put(usernameInput.getText().trim(), new String[]{passwordInput.getText(), (String) accessibility.getSelectionModel().getSelectedItem()});
     }
 
     @FXML
@@ -153,7 +144,7 @@ public class EditFormController implements Initializable {
             e.consume();
             return;
         }
-
+        Driver.simulation.removeUser(usernameInput.getText().trim());
         Driver.simulationController.accounts.remove(usernameInput.getText().trim());
         Driver.simulationController.usersList.getItems().remove(usernameInput.getText().trim());
         SimulationWindowController.editStage.fireEvent(new WindowEvent(SimulationWindowController.editStage, WindowEvent.WINDOW_CLOSE_REQUEST));

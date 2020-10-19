@@ -24,8 +24,12 @@
       <Button fx:id="saveButton" layoutX="183.0" layoutY="200.0" mnemonicParsing="false" onAction="#handleSave" text="Save" />
       <Button fx:id="deleteButton" layoutX="288.0" layoutY="200.0" mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
       <Label fx:id="output" alignment="TOP_CENTER" layoutX="103.0" layoutY="240.0" prefHeight="41.0" prefWidth="317.0" wrapText="true" />
-      <ComboBox fx:id="location" layoutX="217.0" layoutY="156.0" prefWidth="150.0" />
-      <Label layoutX="156.0" layoutY="160.0" text="Location:" />
       <CheckBox fx:id="isAdmin" layoutX="261.0" layoutY="91.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="106.0" text="Is An Admin" />
+      <AnchorPane fx:id="locationPane" layoutX="95.0" layoutY="149.0" prefHeight="51.0" prefWidth="333.0">
+         <children>
+            <Label layoutX="75.0" layoutY="18.0" text="Location:" />
+            <ComboBox fx:id="location" layoutX="132.0" layoutY="14.0" prefWidth="150.0" />
+         </children>
+      </AnchorPane>
    </children>
 </AnchorPane>
