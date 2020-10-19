@@ -10,6 +10,11 @@ import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.fxml.*;
 import javafx.stage.Stage;
+import simulation.Simulation;
+import gui.AssetManager;
+import java.io.File;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -27,8 +32,10 @@ public class Driver extends Application {
     static Stage mainStage;
     static Scene simulationScene = null;
     static SimulationWindowController simulationController = null;
-
-    public static Simulation simulation = null;
+    static Rectangle2D screen = Screen.getPrimary().getVisualBounds();
+    public static double screenHeight = Driver.screen.getHeight() - 30.0;
+    public static double screenWidth = Driver.screen.getWidth();
+    public static Simulation simulation = new Simulation();
 
     @Override
     public void start(Stage primaryStage) throws IOException {
@@ -83,6 +90,9 @@ public class Driver extends Application {
                     event.consume();
                 }
             });
+            
+            simulation.setRooms(roomArray);
+            
 
             // Display the UI to the user
             primaryStage.show();

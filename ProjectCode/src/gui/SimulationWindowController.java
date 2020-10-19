@@ -102,11 +102,15 @@ public class SimulationWindowController implements Initializable {
     Button shpModuleCreator;
     @FXML
     Button shhModuleCreator;
+    @FXML
+    Button editHome;
 
     VBox shcOpenClosePane;
     ListView shcItems;
 
     static Stage editStage;
+    static Stage editHomeStage;
+    private Simulation simulation;
 
     protected static HashMap<String, Object[]> accounts = new HashMap<>();
     protected Person editedUser = null;
@@ -271,6 +275,42 @@ public class SimulationWindowController implements Initializable {
         }
 
     }
+ @FXML   
+private void handleEditHome(Event e) {
+	 if (editHomeStage != null) {
+         e.consume();
+         return;
+     }
+	 
+	 editHomeStage=new Stage();
+	 
+	 try {
+         // Load the scene from the fxml file
+         Parent root = FXMLLoader.load(getClass().getResource("EditHomeForm.fxml"));
+         Scene scene = new Scene(root);
+         scene.getRoot().requestFocus();
+
+         // Change the attributes if the window
+         editHomeStage.setTitle("Edit Home Status");
+         editHomeStage.setMaxHeight(525.0);
+         editHomeStage.setScene(scene);
+         editHomeStage.centerOnScreen();
+         editHomeStage.setResizable(false);
+
+         // Set event if user closes the window (clicks on X)
+         editHomeStage.setOnCloseRequest((event) -> {
+             // Set the edit stage as removed
+             editHomeStage = null;
+         });
+
+         // Display the stage/window to the user
+         editHomeStage.show();
+     } catch (IOException ex) {
+    	 ex.printStackTrace();
+         editHomeStage = null;
+         e.consume();
+     }
+    }
 
     @FXML
     private void handleLogin(Event e) {
@@ -398,6 +438,8 @@ public class SimulationWindowController implements Initializable {
         shcOpenClosePane.applyCss();
         shcOpenClosePane.layout();
     }
+    
+    
 
     // --- HELPER METHODS --- //
     private void initializeSHS() {
@@ -542,5 +584,13 @@ public class SimulationWindowController implements Initializable {
         close.setLayoutX(topPane.getWidth() / 2 - close.getWidth() / 2);
 
     }
+
+	public Simulation getSimulation() {
+		return simulation;
+	}
+
+	public void setSimulation(Simulation simulation) {
+		this.simulation = simulation;
+	}
 
 }

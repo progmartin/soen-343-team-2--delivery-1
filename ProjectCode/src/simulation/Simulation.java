@@ -18,7 +18,7 @@ public class Simulation {
      * Default constructor. Creates a simulation with no rooms.
      */
     public Simulation() {
-        rooms = new ArrayList<>();
+        setRooms(new ArrayList<>());
     }
 
     /**
@@ -243,4 +243,9 @@ public class Simulation {
         return new ArrayList<>();
     }
 
+
+
+	public void setRooms(ArrayList<Room> rooms) {
+		this.rooms = rooms;
+	}
 }
