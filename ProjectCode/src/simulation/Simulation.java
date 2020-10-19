@@ -14,10 +14,10 @@ import java.util.ArrayList;
  */
 public class Simulation {
     
-    ArrayList<Room> rooms;
+    private ArrayList<Room> rooms;
 
     public Simulation() {
-        rooms = new ArrayList<>();
+        setRooms(new ArrayList<>());
     }
     
     
@@ -31,7 +31,7 @@ public class Simulation {
     }
     
     public ArrayList getDoors(){
-        for (Room r : rooms){
+        for (Room r : getRooms()){
             //r.getDoors();
         }
         return new ArrayList<>();
@@ -41,4 +41,10 @@ public class Simulation {
     public ArrayList<Room> getRooms(){
         return rooms;
     }
+
+
+
+	public void setRooms(ArrayList<Room> rooms) {
+		this.rooms = rooms;
+	}
 }

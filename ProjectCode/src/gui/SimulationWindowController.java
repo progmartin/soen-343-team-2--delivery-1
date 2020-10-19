@@ -111,6 +111,8 @@ public class SimulationWindowController implements Initializable {
     Button shpModuleCreator;
     @FXML
     Button shhModuleCreator;
+    @FXML
+    Button editHome;
 
     VBox shcOpenClosePane;
     ListView shcItems;
@@ -119,6 +121,7 @@ public class SimulationWindowController implements Initializable {
     //ArrayList<Light> shcLights;
 
     static Stage editStage;
+    static Stage editHomeStage;
     private Simulation simulation;
 
     protected static HashMap<String, String[]> accounts = new HashMap<>();
@@ -135,9 +138,9 @@ public class SimulationWindowController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         Driver.simulationController = this;
         editStage = null;
-
+        
         // New Simulation or load it
-        simulation = loadSimulation();
+        setSimulation(loadSimulation());
         accounts.put("Default User", new String[]{"", "Adult (Family)"});
         loggedInUser = null;
 
@@ -150,12 +153,13 @@ public class SimulationWindowController implements Initializable {
 
         initializeSHS();
         initializeSHC();
+       
 
     }
 
     @FXML
     private void handleLoadSimulation(Event e) {
-        this.simulation = loadSimulation();
+        this.setSimulation(loadSimulation());
     }
 
     @FXML
@@ -191,7 +195,7 @@ public class SimulationWindowController implements Initializable {
 
         writeToConsole("Change Location does nothing until simulation contains rooms");
         ArrayList<String> locations = new ArrayList<>();
-        for (Room r : simulation.getRooms()) {
+        for (Room r : getSimulation().getRooms()) {
             locations.add(r.getName());
         }
         locations.add("TEMP");
@@ -209,7 +213,7 @@ public class SimulationWindowController implements Initializable {
         locationOptions.setOnAction((event) -> {
             String loc = (String) locationOptions.getSelectionModel().getSelectedItem();
             if (!loc.equals("[CANCEL]")) {
-                simulation.setUserLocation(loggedInUser, loc);
+                getSimulation().setUserLocation(loggedInUser, loc);
                 locationLink.setText(loc);
             }
             locationPane.getChildren().remove(locationOptions);
@@ -301,6 +305,42 @@ public class SimulationWindowController implements Initializable {
         }
 
     }
+ @FXML   
+private void handleEditHome(Event e) {
+	 if (editHomeStage != null) {
+         e.consume();
+         return;
+     }
+	 
+	 editHomeStage=new Stage();
+	 
+	 try {
+         // Load the scene from the fxml file
+         Parent root = FXMLLoader.load(getClass().getResource("EditHomeForm.fxml"));
+         Scene scene = new Scene(root);
+         scene.getRoot().requestFocus();
+
+         // Change the attributes if the window
+         editHomeStage.setTitle("Edit Home Status");
+         editHomeStage.setMaxHeight(525.0);
+         editHomeStage.setScene(scene);
+         editHomeStage.centerOnScreen();
+         editHomeStage.setResizable(false);
+
+         // Set event if user closes the window (clicks on X)
+         editHomeStage.setOnCloseRequest((event) -> {
+             // Set the edit stage as removed
+             editHomeStage = null;
+         });
+
+         // Display the stage/window to the user
+         editHomeStage.show();
+     } catch (IOException ex) {
+    	 ex.printStackTrace();
+         editHomeStage = null;
+         e.consume();
+     }
+    }
 
     @FXML
     private void handleLogin(Event e) {
@@ -325,7 +365,7 @@ public class SimulationWindowController implements Initializable {
         usersList.getItems().remove(loggedInUser);
 
         locationPane.setVisible(true);
-        String location = simulation.getUserLocation(loggedInUser);
+        String location = getSimulation().getUserLocation(loggedInUser);
         locationLink.setText(location);
 
         usernameInput.setText("");
@@ -418,6 +458,8 @@ public class SimulationWindowController implements Initializable {
         shcOpenClosePane.applyCss();
         shcOpenClosePane.layout();
     }
+    
+    
 
     // --- HELPER METHODS --- //
     private Simulation loadSimulation() {
@@ -438,7 +480,7 @@ public class SimulationWindowController implements Initializable {
     private void initializeSHC() {
 
         shcWindows = new ArrayList<>();
-        shcDoors = simulation.getDoors();
+        shcDoors = getSimulation().getDoors();
         //shcLights = new ArrayList<>();
 
         // EXAMPLE
@@ -586,5 +628,13 @@ public class SimulationWindowController implements Initializable {
         close.setLayoutX(topPane.getWidth() / 2 - close.getWidth() / 2);
 
     }
+
+	public Simulation getSimulation() {
+		return simulation;
+	}
+
+	public void setSimulation(Simulation simulation) {
+		this.simulation = simulation;
+	}
 
 }
