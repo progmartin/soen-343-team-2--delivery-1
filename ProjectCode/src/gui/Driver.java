@@ -32,9 +32,7 @@ public class Driver extends Application {
     static Stage mainStage;
     static Scene simulationScene = null;
     static SimulationWindowController simulationController = null;
-    static Rectangle2D screen = Screen.getPrimary().getVisualBounds();
-    public static double screenHeight = Driver.screen.getHeight() - 30.0;
-    public static double screenWidth = Driver.screen.getWidth();
+    
     public static Simulation simulation = new Simulation();
 
     @Override

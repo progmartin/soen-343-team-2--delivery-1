@@ -16,6 +16,7 @@ import java.util.stream.IntStream;
 
 import javafx.fxml.*;
 import javafx.stage.Stage;
+import simulation.Simulation;
 import javafx.stage.FileChooser;
 import javafx.scene.Parent;
 import javafx.scene.Scene;

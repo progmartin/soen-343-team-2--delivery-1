@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import HouseObjects.Window;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -28,9 +29,21 @@ public class EditHomeFormController implements Initializable {
 	@FXML 
 	Label titleSelectedRoom;
 	@FXML 
-	ListView accounts;
+	ComboBox people;
 	@FXML
-	ListView windows;
+	ComboBox windows;
+	@FXML
+	Label peopleTitle;
+	@FXML 
+	Label windowTitle;
+	@FXML 
+	ListView peopleInRoom;
+	@FXML
+	ListView blockedWindows;
+	@FXML 
+	Label peopleInRoomLabel;
+	@FXML
+	Label blockedWindowsLabel;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -41,16 +54,23 @@ public class EditHomeFormController implements Initializable {
 		}
 		 
 		rooms.getItems().addAll(Arrays.asList(roomss));
+		
 		selectedRoom.setOpacity(0);
 		titleSelectedRoom.setOpacity(0);
-		ArrayList<String[]> peopleKeys= new ArrayList<String[]>(Driver.simulationController.accounts.values());
-		ArrayList<String> people= new ArrayList<String>();
-		for(int i=0;i<people.size();i++)
-		{
-			people.set(i,peopleKeys.get(i)[0]);
-		}
-		accounts.setItems(FXCollections.observableArrayList(people));
-		System.out.println(people.get(0));
+		people.setOpacity(0);
+		windows.setOpacity(0);
+		selectedRoom.setOpacity(0);
+		titleSelectedRoom.setOpacity(0);
+		peopleInRoom.setOpacity(0);
+		blockedWindows.setOpacity(0);
+		peopleTitle.setOpacity(0);
+		windowTitle.setOpacity(0);
+		blockedWindowsLabel.setOpacity(0);
+		peopleInRoomLabel.setOpacity(0);
+		
+		
+		
+		
 		
 		
 		
@@ -60,14 +80,110 @@ public class EditHomeFormController implements Initializable {
 	
 	public void handleSelectRoom(Event e)
 	{
+		peopleInRoom.getItems().clear();
+		people.getItems().clear();
+		windows.getItems().clear();
+		
+		blockedWindows.getItems().clear();
 		selectedRoom.setText((String) rooms.getSelectionModel().getSelectedItem());
+		
+		people.getItems().addAll(Driver.simulation.getAllUserNames());
+		int[] windowss= new int[Driver.simulation.getWindows(selectedRoom.getText()).size()];
+		
+		ArrayList<String> peoplee = new ArrayList<String>();
+		
+		for (String x : Driver.simulation.getAllUserNames())
+		{
+			if(Driver.simulation.getUserLocation(x)==selectedRoom.getText())
+				peoplee.add(x);
+				
+		}
+		peopleInRoom.getItems().addAll(peoplee);
+		
+ArrayList<Integer> windowsss = new ArrayList<Integer>();
+		
+		for (Window  x : Driver.simulation.getWindows(selectedRoom.getText()))
+		{
+			if(x.getBlocked())
+				windowsss.add(x.getID());
+				
+		}
+		ArrayList<Integer> windowssss = new ArrayList<Integer>();
+		for(Window x :Driver.simulation.getWindows(selectedRoom.getText()) )
+		{
+			windowssss.add(x.getID());
+		}
+		windows.getItems().addAll(windowssss);
+		blockedWindows.getItems().addAll(windowsss);
 		selectedRoom.setOpacity(1);
 		titleSelectedRoom.setOpacity(1);
-		
+		people.setOpacity(1);
+		windows.setOpacity(1);
+		selectedRoom.setOpacity(1);
+		titleSelectedRoom.setOpacity(1);
+		peopleInRoom.setOpacity(1);
+		blockedWindows.setOpacity(1);
+		peopleTitle.setOpacity(1);
+		windowTitle.setOpacity(1);
 		
 	}
 	
+	public void handleMovePerson(Event e)
+	{
+		
+		if(!Driver.simulation.getUserLocation((String)people.getSelectionModel().getSelectedItem()).equals(selectedRoom.getText()))
+		Driver.simulation.updateUserLocation((String)people.getSelectionModel().getSelectedItem(), selectedRoom.getText());
+		updatePeopleInRoom();
+		
+	}
+	public void handleBlockWindow(Event e)
+	{   
+		if(Driver.simulation.getWindow((Integer) windows.getSelectionModel().getSelectedItem()).getBlocked()) {
+			
+			Driver.simulation.getWindow((Integer) windows.getSelectionModel().getSelectedItem()).setBlocked(false);
+			
+		}
+		else
+			{
+			Driver.simulation.getWindow((Integer) windows.getSelectionModel().getSelectedItem()).setBlocked(true);
+			}
+		
+			updateBlockedWindows();
+			
+			
+	}
 	
+	public void updatePeopleInRoom() {
+		peopleInRoom.getItems().clear();
+ArrayList<String> peoplee = new ArrayList<String>();
+		
+		for (String x : Driver.simulation.getAllUserNames())
+		{
+			if(Driver.simulation.getUserLocation(x)==selectedRoom.getText())
+				peoplee.add(x);
+				
+		}
+		peopleInRoom.getItems().addAll(peoplee);
+	}
+	
+	public void updateBlockedWindows() {
+		
+		blockedWindows.getItems().clear();
+		
+ArrayList<Integer> windowsss = new ArrayList<Integer>();
+		
+		for (Window  x : Driver.simulation.getWindows(selectedRoom.getText()))
+		{
+			if(x.getBlocked())
+				windowsss.add(x.getID());
+				
+		}
+		
+		
+		blockedWindows.getItems().addAll(windowsss);
+		
+		
+	}
 		
 	}
 

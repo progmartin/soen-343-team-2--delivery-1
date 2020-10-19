@@ -66,6 +66,17 @@ public class Simulation {
         }
         return null;
     }
+    
+    public Window getWindow(int id) {
+    	for (Room r : this.rooms) {
+            for (Window w : r.getWindows()) {
+                if (w.getID()==id) {
+                    return w;
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Gets the Room object that holds the Person object with this name.
