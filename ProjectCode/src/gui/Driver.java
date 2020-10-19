@@ -26,7 +26,7 @@ public class Driver extends Application {
     static Stage mainStage;
     static Scene simulationScene = null;
     static SimulationWindowController simulationController = null;
-    public static Simulation simulation = new Simulation();
+    public static Simulation simulation;
 
     @Override
     public void start(Stage primaryStage) throws IOException {
@@ -45,22 +45,28 @@ public class Driver extends Application {
 
             //ArrayList of rooms
             ArrayList<Room> roomArray = readFile(chosenFile.getPath());
+            
             Driver.simulation = new Simulation(roomArray);
-
+            System.out.println( roomArray.size());
             // Set the stage/window to later reference if needed.
             Driver.mainStage = primaryStage;
-
+            
             // Set the simulation scene to swap between scenes if needed.
             Pane root = FXMLLoader.load(getClass().getResource("SimulationWindow.fxml"));
+           
             Scene scene = new Scene(root);
+            
             scene.getRoot().requestFocus();
+            
             Driver.simulationScene = scene;
-
+            
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");
+            
             while (!primaryStage.getIcons().isEmpty()) {
                 primaryStage.getIcons().remove(0);
             }
+            
             //primaryStage.getIcons().add(AssetManager.DEFAULT_USER_IMAGE);
             primaryStage.setScene(scene);
             primaryStage.centerOnScreen();
@@ -82,8 +88,10 @@ public class Driver extends Application {
                 }
             });
             
-            simulation.addRooms(roomArray);
+            simulation= new Simulation(roomArray);
+           
             
+           
 
             // Display the UI to the user
             primaryStage.show();
