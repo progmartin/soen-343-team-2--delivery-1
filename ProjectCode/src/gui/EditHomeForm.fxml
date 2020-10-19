@@ -28,7 +28,7 @@
       <ComboBox fx:id="people" layoutX="26.0" layoutY="194.0" onAction="#handleMovePerson" prefWidth="150.0" promptText="People" />
       <ComboBox fx:id="windows" layoutX="423.0" layoutY="194.0" onAction="#handleBlockWindow" prefWidth="150.0" promptText="Windows" />
       <Label fx:id="peopleTitle" layoutX="44.0" layoutY="173.0" text="Add People To Room" />
-      <Label fx:id="windowTitle" layoutX="434.0" layoutY="173.0" text="Block/Unblock Windows" />
+      <Label fx:id="windowTitle" layoutX="404.0" layoutY="173.0" text="Block/Unblock Windows With Rock" />
       <ListView fx:id="peopleInRoom" layoutX="43.0" layoutY="241.0" prefHeight="151.0" prefWidth="116.0" />
       <ListView fx:id="blockedWindows" layoutX="447.0" layoutY="241.0" prefHeight="151.0" prefWidth="116.0" />
       <Label fx:id="peopleInRoomLabel" layoutX="58.0" layoutY="224.0" text="People In Room" />
