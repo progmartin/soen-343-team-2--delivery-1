@@ -18,7 +18,7 @@ public class Simulation {
      * Default constructor. Creates a simulation with no rooms.
      */
     public Simulation() {
-        setRooms(new ArrayList<>());
+        this.rooms = new ArrayList<>();
     }
 
     /**
@@ -28,6 +28,35 @@ public class Simulation {
      */
     public Simulation(ArrayList<Room> rooms) {
         this.rooms = rooms;
+    }
+
+    /**
+     * Adds a room to the simulation.
+     *
+     * @param room the room to be added
+     */
+    public void addRoom(Room room) {
+        this.rooms.add(room);
+    }
+
+    /**
+     * Adds a list of rooms to the simulation.
+     *
+     * @param rooms the list of rooms to add
+     */
+    public void addRooms(ArrayList<Room> rooms) {
+        this.rooms.addAll(rooms);
+    }
+
+    /**
+     * Adds one or more rooms to the simulation.
+     *
+     * @param rooms the rooms that will be added to the simulation
+     */
+    public void addRooms(Room... rooms) {
+        for (Room r : rooms) {
+            this.rooms.add(r);
+        }
     }
 
     /**
@@ -243,9 +272,4 @@ public class Simulation {
         return new ArrayList<>();
     }
 
-
-
-	public void setRooms(ArrayList<Room> rooms) {
-		this.rooms = rooms;
-	}
 }

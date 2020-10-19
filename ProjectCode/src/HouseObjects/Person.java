@@ -43,7 +43,7 @@ public class Person {
      *
      * @param name the name of the person
      * @param isAdmin if the person is an administrator
-     * @param userType the type 
+     * @param userType the type of Person in relation to the house
      */
     public Person(String name, boolean isAdmin, UserTypes userType) {
         this.name = name;
@@ -51,25 +51,29 @@ public class Person {
         this.userType = userType;
     }
 
-    //get methods
     /**
-     * Get Name
+     * Get name of the person.
      *
-     * @return name
+     * @return the name of the person
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Get Admin Status
+     * Get administration status.
      *
-     * @return isAdmin
+     * @return if person is an administrator
      */
     public boolean getIsAdmin() {
         return isAdmin;
     }
 
+    /**
+     * Get type of person in a String format.
+     *
+     * @return String format of a type of person
+     */
     public String getUserType() {
         switch (this.userType) {
             case ADULT:
@@ -85,29 +89,39 @@ public class Person {
         return null;
     }
 
-    //set methods
     /**
-     * Set Name
+     * Set the name of the person.
      *
-     * @param name
+     * @param name the name of the person
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * Set Admin Status
+     * Set administrator status.
      *
-     * @param isAdmin
+     * @param isAdmin if the user is an administrator
      */
     public void setAdmin(boolean isAdmin) {
         this.isAdmin = isAdmin;
     }
 
+    /**
+     * Set the type of person in relation of the house.
+     *
+     * @param userType type of person
+     */
     public void setUserType(UserTypes userType) {
         this.userType = userType;
     }
 
+    /**
+     * Returns a userType a String representation.
+     *
+     * @param userType String approximation of a type of person
+     * @return the type of person
+     */
     public static UserTypes getUserType(String userType) {
         if (userType.toUpperCase().contains("ADULT")) {
             return UserTypes.ADULT;
@@ -121,8 +135,19 @@ public class Person {
         return null;
     }
 
+    /**
+     * Determines if two Persons objects are equivalent. Two Persons are
+     * equivalent if and only if their names are equivalent. If the other object
+     * is not an instance of Person it returns false.
+     *
+     * @param obj other Person to compare this Person to
+     * @return true if their names are equivalent; false otherwise
+     */
     @Override
     public boolean equals(Object obj) {
+        if (!(obj instanceof Person)) {
+            return false;
+        }
         return this.getName().equals(((Person) obj).getName());
     }
 

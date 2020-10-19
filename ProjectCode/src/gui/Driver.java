@@ -1,6 +1,5 @@
 package gui;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,16 +10,11 @@ import javafx.application.Application;
 import javafx.fxml.*;
 import javafx.stage.Stage;
 import simulation.Simulation;
-import gui.AssetManager;
 import java.io.File;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
-
-import simulation.*;
 import HouseObjects.*;
 
 /**
@@ -32,9 +26,6 @@ public class Driver extends Application {
     static Stage mainStage;
     static Scene simulationScene = null;
     static SimulationWindowController simulationController = null;
-    static Rectangle2D screen = Screen.getPrimary().getVisualBounds();
-    public static double screenHeight = Driver.screen.getHeight() - 30.0;
-    public static double screenWidth = Driver.screen.getWidth();
     public static Simulation simulation = new Simulation();
 
     @Override
@@ -91,7 +82,7 @@ public class Driver extends Application {
                 }
             });
             
-            simulation.setRooms(roomArray);
+            simulation.addRooms(roomArray);
             
 
             // Display the UI to the user
@@ -109,13 +100,12 @@ public class Driver extends Application {
         launch(args);
     }
 
-    //READ HOUSE LAYOUT FILE
     //Passes file name as parameters
     /**
      * Read House Layout file
      *
-     * @param f
-     * @return
+     * @param f the file name
+     * @return a list of Rooms
      */
     public static ArrayList<Room> readFile(String f) {
 

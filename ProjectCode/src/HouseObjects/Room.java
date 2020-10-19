@@ -1,6 +1,6 @@
 package HouseObjects;
 
-import java.util.ArrayList; // import ArrayList class
+import java.util.ArrayList;
 
 /**
  *
@@ -8,41 +8,50 @@ import java.util.ArrayList; // import ArrayList class
  */
 public class Room {
 
-    //name of room
+    /**
+     * Name of the room.
+     */
     String name;
-    //temperature of room
+    /**
+     * Temperature of the room.
+     */
     double heatingTemp;
 
-    //people currently in room
+    /**
+     * People currently in the room.
+     */
     ArrayList<Person> people = new ArrayList<>();
-    //doors on room
+
+    /**
+     * Doors in the room.
+     */
     ArrayList<Door> doors = new ArrayList<>();
-    //windows in room
+
+    /**
+     * Windows in the room.
+     */
     ArrayList<Window> windows = new ArrayList<>();
 
-    //Default constructor
     /**
-     * Constructor -- Default
+     * Default constructor.
      */
     public Room() {
         this.name = "Empty Room";
         this.heatingTemp = 21;
     }
 
-    //constructor with only name of room
     /**
-     * Constructor -- Room Name
+     * Constructor with room name.
      *
-     * @param name
+     * @param name the name of the room
      */
     public Room(String name) {
         this.name = name;
         this.heatingTemp = 21;
     }
 
-    //fully parametrized constructor
     /**
-     * Constructor -- parametrized
+     * Parameterized constructor.
      *
      * @param name
      * @param temp
@@ -52,86 +61,82 @@ public class Room {
         this.heatingTemp = temp;
     }
 
-    //Get methods (name and temp)
     /**
-     * Get method for name
+     * Get method for name.
      *
-     * @return name
+     * @return the name of the room
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Get method for temperature
+     * Get method for temperature.
      *
-     * @return heatingTemp
+     * @return the temperature of the room
      */
     public double getTemp() {
         return heatingTemp;
     }
 
-    //Set methods (name and temp)
     /**
-     * Set method for name
+     * Set method for name.
      *
-     * @param name
+     * @param name the name of the room
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * Set method for temperature
+     * Set method for temperature.
      *
-     * @param temp
+     * @param temp the temperature of the room
      */
     public void setTemp(double temp) {
         this.heatingTemp = temp;
     }
 
-    //people ArrayList methods
     /**
-     * Add person to room
+     * Add a Person to the room.
      *
-     * @param person
+     * @param person the person to be added
      */
     public void addPerson(Person person) {
         people.add(person);
     }
 
     /**
-     * Remove person from room
+     * Remove a Person from the room if they exist.
      *
-     * @param person
+     * @param person the person to be removed.
      */
     public void removePerson(Person person) {
         people.remove(person);
     }
 
     /**
-     * Get number of people in room
+     * Get the number of people in the room.
      *
-     * @return people.size()
+     * @return the number of people in the room
      */
     public int numberOfPeople() {
         return people.size();
     }
 
-    //doors ArrayList methods
     /**
-     * Add door to room
+     * Add a Door to the room.
      *
-     * @param door
+     * @param door the door to be added
      */
     public void addDoor(Door door) {
         doors.add(door);
     }
 
     /**
-     * Remove door from room
+     * Remove a Door from the room if it exists.
      *
-     * @param door
+     * @param door the door to be removed
      */
     public void removeDoor(Door door) {
         for (int i = 0; i < doors.size(); i++) {
@@ -142,28 +147,27 @@ public class Room {
     }
 
     /**
-     * Get number of doors on room
+     * Get the number of doors in the room.
      *
-     * @return doors.size()
+     * @return the number of doors in the room
      */
     public int numberOfDoors() {
         return doors.size();
     }
 
-    //windows ArrayList methods
     /**
-     * Add window to room
+     * Add a Window to the room.
      *
-     * @param window
+     * @param window the window to be added
      */
     public void addWindow(Window window) {
         windows.add(window);
     }
 
     /**
-     * Remove window from room
+     * Remove a Window from the room if it exists.
      *
-     * @param window
+     * @param window the window to be removed
      */
     public void removeWindow(Window window) {
         for (int i = 0; i < windows.size(); i++) {
@@ -174,9 +178,9 @@ public class Room {
     }
 
     /**
-     * Get number of windows in room
+     * Get the number of Windows in the room.
      *
-     * @return windows.size()
+     * @return the number of windows in the room
      */
     public int numberOfWindows() {
         return windows.size();

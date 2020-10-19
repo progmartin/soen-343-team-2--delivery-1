@@ -43,14 +43,7 @@ public class EditHomeFormController implements Initializable {
 		rooms.getItems().addAll(Arrays.asList(roomss));
 		selectedRoom.setOpacity(0);
 		titleSelectedRoom.setOpacity(0);
-		ArrayList<String[]> peopleKeys= new ArrayList<String[]>(Driver.simulationController.accounts.values());
-		ArrayList<String> people= new ArrayList<String>();
-		for(int i=0;i<people.size();i++)
-		{
-			people.set(i,peopleKeys.get(i)[0]);
-		}
-		accounts.setItems(FXCollections.observableArrayList(people));
-		System.out.println(people.get(0));
+		
 		
 		
 		
