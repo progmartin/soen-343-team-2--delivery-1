@@ -1,0 +1,4 @@
+Room: name: Kitchen Temperature: 67 Doors: 2 Windows: 1
+Room: name: Bedroom Temperature: -45 Doors: 3 Windows: 2
+Room: name: Bathroom Temperature: 26 Doors: 1 Windows: 1
+Room: name: Dining Room Temperature: 18 Doors: 3 Windows: 0
