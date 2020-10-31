@@ -2,6 +2,7 @@ package simulation;
 
 import java.util.ArrayList;
 import HouseObjects.*;
+import java.util.Arrays;
 
 /**
  *
@@ -13,12 +14,15 @@ public class Simulation {
      * List of rooms in the simulation.
      */
     private ArrayList<Room> rooms;
+    private ArrayList<Module> simModules;
+    private SHC_Module shcModule;
+    private SHP_Module shpModule;
 
     /**
      * Default constructor. Creates a simulation with no rooms.
      */
     public Simulation() {
-        this.rooms = new ArrayList<>();
+        this(new ArrayList<>());
     }
 
     /**
@@ -28,6 +32,26 @@ public class Simulation {
      */
     public Simulation(ArrayList<Room> rooms) {
         this.rooms = rooms;
+        this.simModules = new ArrayList<>();
+        this.simModules.add(new SHC_Module());
+        this.simModules.add(new SHP_Module());
+    }
+    
+    public ArrayList<String> getModuleNames(){
+        ArrayList<String> names = new ArrayList<>();
+        for (Module m : this.simModules){
+            names.add(m.getName());
+        }
+        return names;
+    }
+    
+    public ArrayList<String> getModuleCommands(String moduleName){
+        for (Module m : this.simModules){
+            if (m.getName().equals(moduleName)){
+                return m.getCommands();
+            }
+        }
+        return new ArrayList<>();
     }
 
     /**

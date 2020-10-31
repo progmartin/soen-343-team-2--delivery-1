@@ -12,6 +12,8 @@ import javafx.event.Event;
 import javafx.collections.FXCollections;
 
 import HouseObjects.*;
+import java.util.ArrayList;
+import javafx.scene.Node;
 
 /**
  * FXML Controller class
@@ -44,6 +46,11 @@ public class EditFormController implements Initializable {
     @FXML
     Label output;
 
+    @FXML
+    ComboBox moduleSelector;
+    @FXML
+    VBox modulePermissions;
+
     private boolean newUser = false;
 
     /**
@@ -55,6 +62,7 @@ public class EditFormController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         accessibility.getItems().addAll(Arrays.asList(new String[]{"Adult (Family)", "Child (Family)", "Guest", "Stranger"}));
+        moduleSelector.getItems().addAll(Driver.simulation.getModuleNames());
         Person person = Driver.simulationController.editedUser;
 
         if (person == null) {
@@ -75,7 +83,6 @@ public class EditFormController implements Initializable {
             location.getItems().add(Driver.simulation.getUserLocation(person.getName()));
             location.getSelectionModel().select(0);
             location.setDisable(true);
-            locationPane.setVisible(false);
         }
     }
 
@@ -163,6 +170,95 @@ public class EditFormController implements Initializable {
         Driver.simulationController.accounts.remove(usernameInput.getText().trim());
         Driver.simulationController.usersList.getItems().remove(usernameInput.getText().trim());
         SimulationWindowController.editStage.fireEvent(new WindowEvent(SimulationWindowController.editStage, WindowEvent.WINDOW_CLOSE_REQUEST));
+    }
+
+    @FXML
+    private void handleSelectModule(Event event) {
+        String moduleName = (String) moduleSelector.getSelectionModel().getSelectedItem();
+        ArrayList<String> commands = Driver.simulation.getModuleCommands(moduleName);
+        
+        modulePermissions.getChildren().remove(0, modulePermissions.getChildren().size());
+        Label descr = new Label();
+        descr.setPrefHeight(40);
+        descr.setWrapText(true);
+        modulePermissions.getChildren().add(descr);
+        for (String command : commands) {
+            CheckBox cb = new CheckBox(command);
+            cb.setDisable(true);
+            modulePermissions.getChildren().add(cb);
+        }
+        updateModulePermission();
+    }
+    
+    @FXML
+    private void handleUpdatePermission(Event event){
+        updateModulePermission();
+    }
+
+    private void updateModulePermission() {
+        String module = (String) moduleSelector.getSelectionModel().getSelectedItem();
+        String access = (String) accessibility.getSelectionModel().getSelectedItem();
+        String loc = (String) location.getSelectionModel().getSelectedItem();
+        if (access == null || loc == null || module == null) {
+            return;
+        }
+
+        if (module.contains("SHC")) {
+            if (access.equals("Adult (Family)")) {
+                for (Node node : modulePermissions.getChildren()) {
+                    if (node instanceof CheckBox) {
+                        ((CheckBox) node).setSelected(true);
+                    } else {
+                        ((Label) node).setText("Permission does not depend on location");
+                    }
+                }
+            } else if (access.equals("Child (Family)") || access.equals("Guest")) {
+                for (Node node : modulePermissions.getChildren()) {
+                    if (node instanceof CheckBox) {
+                        if (loc.equalsIgnoreCase("Outside")) {
+                            ((CheckBox) node).setSelected(false);
+                        } else {
+                            if (((CheckBox) node).getText().contains("Light") || ((CheckBox) node).getText().contains("Window")) {
+                                ((CheckBox) node).setSelected(true);
+                            } else {
+                                ((CheckBox) node).setSelected(true);
+                            }
+                        }
+                    } else {
+                        ((Label) node).setText("Permission only applies to current location");
+                    }
+                }
+            }else if (access.equals("Stranger")) {
+                for (Node node : modulePermissions.getChildren()) {
+                    if (node instanceof CheckBox) {
+                        ((CheckBox) node).setSelected(false);
+                    } else {
+                        ((Label) node).setText("Permission does not depend on location");
+                    }
+                }
+            }
+        } else if (module.contains("SHP")) {
+            if (access.equals("Adult (Family)") || access.equals("Child (Family)")) {
+                for (Node node : modulePermissions.getChildren()) {
+                    if (node instanceof CheckBox) {
+                        ((CheckBox) node).setSelected(true);
+                    } else {
+                        ((Label) node).setText("");
+                    }
+                }
+            } else if (access.equals("Guest") || access.equals("Stranger")) {
+                for (Node node : modulePermissions.getChildren()) {
+                    if (node instanceof CheckBox) {
+                        ((CheckBox) node).setSelected(false);
+                    } else {
+                        ((Label) node).setText("");
+                    }
+                }
+            }
+        }
+
+        modulePermissions.applyCss();
+        modulePermissions.layout();
     }
 
 }

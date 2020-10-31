@@ -716,10 +716,8 @@ public class SimulationWindowController implements Initializable {
             topPane.getChildren().add(openCloseLabel);
 
             shcOpenClosePane = new VBox();
-            shcOpenClosePane.getStyleClass().add("simulationSubItem");
+            shcOpenClosePane.getStyleClass().addAll("simulationSubItem", "moduleVBox");
             shcOpenClosePane.setPrefSize(itemsPane.getWidth(), 200);
-            shcOpenClosePane.setSpacing(10);
-            shcOpenClosePane.setPadding(new Insets(10, 0, 0, 10));
             topPane.getChildren().add(shcOpenClosePane);
 
             moduleContainer.applyCss();

@@ -33,3 +33,8 @@ and open the template in the editor.
     -fx-text-fill: #0099ff;
     -fx-alignment: CENTER;
 }
+
+.moduleVBox{
+    -fx-spacing: 10px;
+    -fx-padding: 10px 0px 0px 10px;
+}
