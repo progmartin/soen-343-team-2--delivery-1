@@ -76,6 +76,10 @@ public class SimulationWindowController implements Initializable {
     Label dateDisplay;
     @FXML
     Label timeDisplay;
+    @FXML
+    Slider timeRateSlider;
+    @FXML
+    Button editHome;
 
     @FXML
     TabPane moduleContainer;
@@ -119,8 +123,6 @@ public class SimulationWindowController implements Initializable {
     Button shpModuleCreator;
     @FXML
     Button shhModuleCreator;
-    @FXML
-    Button editHome;
 
     VBox shcOpenClosePane;
     ListView shcItems;
@@ -132,6 +134,7 @@ public class SimulationWindowController implements Initializable {
     protected Person editedUser = null;
     private String loggedInUser;
     private AnimationTimer simulationClock;
+    private double timeSpeed;
     private ArrayList<Node> shsControls;
 
     /**
@@ -257,6 +260,17 @@ public class SimulationWindowController implements Initializable {
         locationPane.getChildren().add(locationOptions);
         locationPane.applyCss();
         locationPane.layout();
+    }
+
+    /**
+     * Handles event that trigger to change the rate at which the simulation
+     * time increments. Gets the rate from the time speed slider.
+     *
+     * @param event the event that triggers this method
+     */
+    @FXML
+    private void handleChangeTimeRate(Event event) {
+        timeSpeed = Math.pow(10, 9 - timeRateSlider.getValue());
     }
 
     /**
@@ -387,6 +401,8 @@ public class SimulationWindowController implements Initializable {
             editHomeStage.setResizable(false);
             editHomeStage.setOnCloseRequest((e) -> {
                 // Set the edit stage as removed
+                String location = Driver.simulation.getUserLocation(loggedInUser);
+                locationLink.setText(location);
                 editHomeStage = null;
             });
             editHomeStage.show();
@@ -559,12 +575,13 @@ public class SimulationWindowController implements Initializable {
      * Initializes the simulation clock to update the time every second.
      */
     private void initializeClock() {
+        this.timeSpeed = Math.pow(10, 9);
         simulationClock = new AnimationTimer() {
             long prev = 0;
 
             @Override
             public void handle(long now) {
-                if ((long) (prev / Math.pow(10, 9)) != (long) (now / Math.pow(10, 9))) {
+                if ((long) (prev / timeSpeed) != (long) (now / timeSpeed)) {
                     LocalTime currentTime = LocalTime.parse(getTime()).plusSeconds(1);
                     updateTime(currentTime.getHour(), currentTime.getMinute(), currentTime.getSecond());
                 }
