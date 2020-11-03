@@ -79,7 +79,7 @@ public class SimulationWindowController implements Initializable {
 
     @FXML
     TabPane moduleContainer;
-    
+
     @FXML
     Tab shsTab;
     @FXML
@@ -133,8 +133,7 @@ public class SimulationWindowController implements Initializable {
     private String loggedInUser;
     private AnimationTimer simulationClock;
     private ArrayList<Node> shsControls;
-    private ArrayList<Tab> moduleTabs;
-    
+
     /**
      * Initializes the controller class.
      *
@@ -153,15 +152,15 @@ public class SimulationWindowController implements Initializable {
         updateDate(today.toLocalDate());
         initializeClock();
         initializeControls();
-        
+
         //martins part -> room arraylist to gui display            
         RoomObjtoDisplay.createRectangle(parentPane, Driver.simulation.getRooms());
         Driver.simulation.getRooms().add(new Room("Outside"));
 
         // Temporary DEFAULT USER for testing users //
-        Driver.simulation.addNewUser("Default User", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
-        accounts.put("Default User", "");
-        
+        Driver.simulation.addNewUser("Default", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
+        accounts.put("Default", "");
+
         initializeSHS();
 
     }
@@ -176,14 +175,16 @@ public class SimulationWindowController implements Initializable {
         ToggleButton simulation = (ToggleButton) event.getSource();
         if (simulation.isSelected()) {
             // Simulation is ON
-            for (Node node : shsControls){
+            for (Node node : shsControls) {
                 node.setDisable(false);
             }
-            for (Tab tab : moduleTabs){
-                tab.setDisable(false);
+            for (Tab tab : moduleContainer.getTabs()) {
+                if (!tab.getText().equals("SHS")) {
+                    tab.setDisable(false);
+                }
             }
             simulationClock.start();
-            
+
             simulation.setText("ON");
             writeToConsole("[Simulation] Turned ON");
 
@@ -191,13 +192,15 @@ public class SimulationWindowController implements Initializable {
             // Simulation is OFF
             simulationClock.stop();
             moduleContainer.getSelectionModel().select(shsTab);
-            for (Node node : shsControls){
+            for (Node node : shsControls) {
                 node.setDisable(true);
             }
-            for (Tab tab : moduleTabs){
-                tab.setDisable(true);
+            for (Tab tab : moduleContainer.getTabs()) {
+                if (!tab.getText().equals("SHS")) {
+                    tab.setDisable(true);
+                }
             }
-            
+
             simulation.setText("OFF");
             writeToConsole("[Simulation] Turned OFF");
         }
@@ -570,15 +573,13 @@ public class SimulationWindowController implements Initializable {
         };
         simulationClock.start();
     }
-    
+
     /**
      * Initializes list of controls to be disabled when simulation is stopped.
      */
-    private void initializeControls(){
+    private void initializeControls() {
         shsControls = new ArrayList<>();
-        moduleTabs = new ArrayList<>();
         Collections.addAll(shsControls, locationLink, editHome, selectDate, hour, minute, second, updateTime, outsideTempInput, usersList);
-        Collections.addAll(moduleTabs, addTab);
     }
 
     /**
@@ -679,8 +680,7 @@ public class SimulationWindowController implements Initializable {
      */
     private void createModule(Tab module) {
         moduleContainer.getTabs().add(moduleContainer.getTabs().size() - 1, module);
-        moduleTabs.add(module);
-        
+
         AnchorPane topPane = new AnchorPane();
         module.setContent(topPane);
         moduleContainer.applyCss();
@@ -754,7 +754,6 @@ public class SimulationWindowController implements Initializable {
             }
             moduleButton.setManaged(true);
             moduleButton.setVisible(true);
-            moduleTabs.remove(module);
             moduleContainer.getTabs().remove(module);
         });
         topPane.getChildren().add(close);

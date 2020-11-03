@@ -175,7 +175,7 @@ public class EditFormController implements Initializable {
     @FXML
     private void handleSelectModule(Event event) {
         String moduleName = (String) moduleSelector.getSelectionModel().getSelectedItem();
-        ArrayList<String> commands = Driver.simulation.getModuleCommands(moduleName);
+        ArrayList<String> commands = Driver.simulation.getModuleCommands(Driver.simulation.getModuleFromName(moduleName).getClass());
         
         modulePermissions.getChildren().remove(0, modulePermissions.getChildren().size());
         Label descr = new Label();

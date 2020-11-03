@@ -2,7 +2,6 @@ package simulation;
 
 import java.util.ArrayList;
 import HouseObjects.*;
-import java.util.Arrays;
 
 /**
  *
@@ -15,8 +14,6 @@ public class Simulation {
      */
     private ArrayList<Room> rooms;
     private ArrayList<Module> simModules;
-    private SHC_Module shcModule;
-    private SHP_Module shpModule;
 
     /**
      * Default constructor. Creates a simulation with no rooms.
@@ -36,22 +33,63 @@ public class Simulation {
         this.simModules.add(new SHC_Module());
         this.simModules.add(new SHP_Module());
     }
-    
-    public ArrayList<String> getModuleNames(){
+
+    /**
+     * Returns the names of all the modules loaded in the simulation.
+     * @return the simulation's module's names
+     */
+    public ArrayList<String> getModuleNames() {
         ArrayList<String> names = new ArrayList<>();
-        for (Module m : this.simModules){
+        for (Module m : this.simModules) {
             names.add(m.getName());
         }
         return names;
     }
-    
-    public ArrayList<String> getModuleCommands(String moduleName){
-        for (Module m : this.simModules){
-            if (m.getName().equals(moduleName)){
+
+    /**
+     * Get the commands that a module in the simulation can make.
+     * @param moduleName the module class to search for
+     * @return an array of commands
+     */
+    public ArrayList<String> getModuleCommands(Class moduleName) {
+        for (Module m : this.simModules) {
+            if (m.getClass() == moduleName) {
                 return m.getCommands();
             }
         }
         return new ArrayList<>();
+    }
+    
+    /**
+     * Returns the module of this simulation from the class type. If this simulation
+     * does not contain a module of the given type, then null is returned. <br/>
+     * An example of how to get the SHC module is as follows:<br/>
+     * SHC_Module module = (SHC_Module) getModuleOfType(SHC_Module.class);
+     *
+     * @param moduleName the module class to search for
+     * @return one of the simulation's module, null if cannot be found
+     */
+    private Module getModuleOfType(Class moduleName) {
+        for (Module m : this.simModules) {
+            if (m.getClass() == moduleName) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the module with the given name.
+     * @param moduleName the name of the module
+     * @return a module from this simulation
+     */
+    public Module getModuleFromName(String moduleName){
+        for (Module m : this.simModules) {
+            if (m.getName().equals(moduleName)) {
+                return m;
+            }
+        }
+        return null;
     }
 
     /**
@@ -119,16 +157,47 @@ public class Simulation {
         }
         return null;
     }
-    
+
     public Window getWindow(int id) {
-    	for (Room r : this.rooms) {
+        for (Room r : this.rooms) {
             for (Window w : r.getWindows()) {
-                if (w.getID()==id) {
+                if (w.getID() == id) {
                     return w;
                 }
             }
         }
         return null;
+    }
+    
+    
+    /**
+     * Returns an array list of doors in the room.
+     *
+     * @param roomName the name of the room to search
+     * @return a list of door names
+     */
+    public ArrayList<Door> getDoors(String roomName) {
+        for (Room r : rooms) {
+            if (r.getName().equals(roomName)) {
+                return r.getDoors();
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Returns Returns an array list of windows in the room.
+     *
+     * @param roomName the name of the room to search
+     * @return a list of room names
+     */
+    public ArrayList<Window> getWindows(String roomName) {
+        for (Room r : rooms) {
+            if (r.getName().equals(roomName)) {
+                return r.getWindows();
+            }
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -277,34 +346,5 @@ public class Simulation {
         destination.addPerson(p);
     }
 
-    /**
-     * Returns an array list of doors in the room.
-     *
-     * @param roomName the name of the room to search
-     * @return a list of door names
-     */
-    public ArrayList<Door> getDoors(String roomName) {
-        for (Room r : rooms) {
-            if (r.getName().equals(roomName)) {
-                return r.getDoors();
-            }
-        }
-        return new ArrayList<>();
-    }
-
-    /**
-     * Returns Returns an array list of windows in the room.
-     *
-     * @param roomName the name of the room to search
-     * @return a list of room names
-     */
-    public ArrayList<Window> getWindows(String roomName) {
-        for (Room r : rooms) {
-            if (r.getName().equals(roomName)) {
-                return r.getWindows();
-            }
-        }
-        return new ArrayList<>();
-    }
 
 }
