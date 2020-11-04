@@ -2,3 +2,4 @@
 /ProjectCode/dist/
 /ProjectCode/build/
 /.metadata/
+*.class
