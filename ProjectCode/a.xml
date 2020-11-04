@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Users>
+<User>
+<username>Default</username>
+<usertype>Child (Family)</usertype>
+<admin>true</admin>
+<room>Kitchen</room>
+<password/>
+<image>file:/C:/Users/epicb/Documents/GitHub/soen-343/ProjectCode/dist/run1427997643/ProjectCode.jar!/assets/defaultUserProfile.png</image>
+</User>
+<User>
+<username>me</username>
+<usertype>Adult (Family)</usertype>
+<admin>true</admin>
+<room>Bathroom</room>
+<password>ea</password>
+<image>../assets/defaultUserProfile.png</image>
+</User>
+</Users>

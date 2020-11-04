@@ -26,7 +26,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.event.Event;
 import javafx.collections.FXCollections;
-import javafx.geometry.Insets;
 
 import HouseObjects.*;
 import java.time.LocalTime;
@@ -34,6 +33,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import javafx.animation.AnimationTimer;
 import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
+import javafx.stage.Modality;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * FXML Controller class
@@ -57,8 +68,6 @@ public class SimulationWindowController implements Initializable {
     @FXML
     Pane houseViewPane;
 
-    @FXML
-    ImageView editUserProfilePic;
     @FXML
     ImageView userProfilePic;
     @FXML
@@ -130,8 +139,9 @@ public class SimulationWindowController implements Initializable {
     static Stage editStage;
     static Stage editHomeStage;
 
-    protected HashMap<String, String> accounts = new HashMap<>();
+    protected HashMap<String, Account> accounts = new HashMap<>();
     protected Person editedUser = null;
+    protected final String defaultImage = "jar:" + this.getClass().getResource("/assets/defaultUserProfile.png").getFile();
     private String loggedInUser;
     private AnimationTimer simulationClock;
     private double timeSpeed;
@@ -162,7 +172,8 @@ public class SimulationWindowController implements Initializable {
 
         // Temporary DEFAULT USER for testing users //
         Driver.simulation.addNewUser("Default", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
-        accounts.put("Default", "");
+        accounts.put("Default", new Account("Default", "", defaultImage));
+        // ************* //
 
         initializeSHS();
 
@@ -177,7 +188,7 @@ public class SimulationWindowController implements Initializable {
     private void handleToggleSimulation(Event event) {
         ToggleButton simulation = (ToggleButton) event.getSource();
         if (simulation.isSelected()) {
-            // Simulation is ON
+            // Simulation was OFF, turning ON
             for (Node node : shsControls) {
                 node.setDisable(false);
             }
@@ -192,7 +203,7 @@ public class SimulationWindowController implements Initializable {
             writeToConsole("[Simulation] Turned ON");
 
         } else {
-            // Simulation is OFF
+            // Simulation was ON, turning OFF
             simulationClock.stop();
             moduleContainer.getSelectionModel().select(shsTab);
             for (Node node : shsControls) {
@@ -217,15 +228,21 @@ public class SimulationWindowController implements Initializable {
      */
     @FXML
     private void handleEditProfilePic(Event event) {
-        FileChooser fileChooserWindow = new FileChooser();
-        fileChooserWindow.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("image", "*.jpg", "*.png", "*.gif", "*.bmp"), new FileChooser.ExtensionFilter("All Files", "*"));
-        File chosenFile = fileChooserWindow.showOpenDialog(Driver.mainStage);
-        // Informs the user that no file was selected.
-        if (chosenFile == null || !chosenFile.isFile()) {
-            writeToConsole("Profile Pic: No file was selected");
-            // Informs the user that an incorrect file type was selected.
-        } else {
-            userProfilePic.setImage(new Image("file:///" + chosenFile.getPath()));
+        MouseEvent e = (MouseEvent) event;
+        if (e.getClickCount() == 2) {
+            FileChooser fileChooserWindow = new FileChooser();
+            fileChooserWindow.setTitle("Select User Image");
+            fileChooserWindow.setInitialDirectory(new File(System.getProperty("user.dir")));
+            fileChooserWindow.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("image", "*.jpg", "*.png", "*.gif", "*.bmp"), new FileChooser.ExtensionFilter("All Files", "*"));
+            File chosenFile = fileChooserWindow.showOpenDialog(Driver.mainStage);
+            // Informs the user that no file was selected.
+            if (chosenFile == null || !chosenFile.isFile()) {
+                writeToConsole("[Profile Pic] No file was selected");
+                // Informs the user that an incorrect file type was selected.
+            } else {
+                userProfilePic.setImage(new Image("file:///" + chosenFile.getPath()));
+                accounts.get(loggedInUser).changeUserImage("file:///" + chosenFile.getPath());
+            }
         }
     }
 
@@ -271,6 +288,45 @@ public class SimulationWindowController implements Initializable {
     @FXML
     private void handleChangeTimeRate(Event event) {
         timeSpeed = Math.pow(10, 9 - timeRateSlider.getValue());
+    }
+
+    /**
+     * Handles events that trigger to edit the simulation. Creates a new window
+     * to edit the users location, and block windows.
+     *
+     * @param event the event that triggers this method
+     */
+    @FXML
+    private void handleEditHome(Event event) {
+        if (editHomeStage != null) {
+            editHomeStage.requestFocus();
+            event.consume();
+            return;
+        }
+
+        editHomeStage = new Stage();
+        editHomeStage.initOwner(Driver.mainStage);
+        editHomeStage.initModality(Modality.APPLICATION_MODAL);
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("EditHomeForm.fxml"));
+            Scene scene = new Scene(root);
+            scene.getRoot().requestFocus();
+            editHomeStage.setTitle("Edit Home Status");
+            editHomeStage.setMaxHeight(525.0);
+            editHomeStage.setScene(scene);
+            editHomeStage.centerOnScreen();
+            editHomeStage.setResizable(false);
+            editHomeStage.setOnCloseRequest((e) -> {
+                // Set the edit stage as removed
+                String location = Driver.simulation.getUserLocation(loggedInUser);
+                locationLink.setText(location);
+                editHomeStage = null;
+            });
+            editHomeStage.show();
+        } catch (IOException ex) {
+            editHomeStage = null;
+            event.consume();
+        }
     }
 
     /**
@@ -347,6 +403,9 @@ public class SimulationWindowController implements Initializable {
         }
 
         editStage = new Stage();
+        editStage.initOwner(Driver.mainStage);
+        editStage.initModality(Modality.APPLICATION_MODAL);
+
         if (((String) users.getSelectionModel().getSelectedItem()).equals("[New User]")) {
             editedUser = null;
         } else {
@@ -376,39 +435,114 @@ public class SimulationWindowController implements Initializable {
     }
 
     /**
-     * Handles events that trigger to edit the simulation. Creates a new window
-     * to edit the users location, and block windows.
+     * Handles events that trigger to save all users to file. Gets all the users
+     * from the user selector and their attributes and saves them to a file in
+     * XML format. If the user does not select a file then the operation is
+     * canceled.
      *
      * @param event the event that triggers this method
      */
     @FXML
-    private void handleEditHome(Event event) {
-        if (editHomeStage != null) {
+    private void handleSaveUserToFile(Event event) {
+        FileChooser fileChooserWindow = new FileChooser();
+        fileChooserWindow.setTitle("Select User Profile File");
+        fileChooserWindow.setInitialDirectory(new File(System.getProperty("user.dir")));
+        fileChooserWindow.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("xml", "*.xml"), new FileChooser.ExtensionFilter("All Files", "*"));
+        File chosenFile = fileChooserWindow.showSaveDialog(Driver.mainStage);
+        // Informs the user that no file was selected.
+        if (chosenFile == null) {
+            writeToConsole("[Save Users] No file was selected");
             event.consume();
             return;
         }
 
-        editHomeStage = new Stage();
-
+        // Building XML file
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder;
         try {
-            Parent root = FXMLLoader.load(getClass().getResource("EditHomeForm.fxml"));
-            Scene scene = new Scene(root);
-            scene.getRoot().requestFocus();
-            editHomeStage.setTitle("Edit Home Status");
-            editHomeStage.setMaxHeight(525.0);
-            editHomeStage.setScene(scene);
-            editHomeStage.centerOnScreen();
-            editHomeStage.setResizable(false);
-            editHomeStage.setOnCloseRequest((e) -> {
-                // Set the edit stage as removed
-                String location = Driver.simulation.getUserLocation(loggedInUser);
-                locationLink.setText(location);
-                editHomeStage = null;
-            });
-            editHomeStage.show();
-        } catch (IOException ex) {
-            editHomeStage = null;
-            event.consume();
+            dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.newDocument();
+            //add elements to Document
+            Element rootElement = doc.createElement("Users");
+            for (Object item : usersList.getItems()) {
+                String username = (String) item;
+                Person user = Driver.simulation.getUser(username);
+                if (user == null) {
+                    continue;
+                }
+                Element newUser = doc.createElement("User");
+                newUser.appendChild(doc.createElement("username").appendChild(doc.createTextNode(user.getName())).getParentNode());
+                newUser.appendChild(doc.createElement("usertype").appendChild(doc.createTextNode(user.getUserTypeAsString())).getParentNode());
+                newUser.appendChild(doc.createElement("admin").appendChild(doc.createTextNode(Boolean.toString(user.getIsAdmin()))).getParentNode());
+                newUser.appendChild(doc.createElement("room").appendChild(doc.createTextNode(Driver.simulation.getUserLocation(username))).getParentNode());
+                newUser.appendChild(doc.createElement("password").appendChild(doc.createTextNode(accounts.get(username).getPassword())).getParentNode());
+                newUser.appendChild(doc.createElement("image").appendChild(doc.createTextNode(accounts.get(username).getImageURL())).getParentNode());
+                rootElement.appendChild(newUser);
+            }
+            doc.appendChild(rootElement);
+
+            //for output to file, console
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+            //write data
+            transformer.transform(new DOMSource(doc), new StreamResult(chosenFile));
+        } catch (Exception e) {
+            writeToConsole("[Save Users] Error saving document");
+        }
+    }
+
+    /**
+     * Handles events that trigger to load all users from file. Gets all the
+     * users in an XML formatted file and their attributes. If a user is already
+     * in the system then the original user will be kept and it will inform the
+     * user of such.
+     *
+     * @param event the event that triggers this method
+     */
+    @FXML
+    private void handleLoadUserFromFile(Event event) {
+        FileChooser fileChooserWindow = new FileChooser();
+        fileChooserWindow.setTitle("Select User Profile File");
+        fileChooserWindow.setInitialDirectory(new File(System.getProperty("user.dir")));
+        fileChooserWindow.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("xml", "*.xml"), new FileChooser.ExtensionFilter("All Files", "*"));
+        File chosenFile = fileChooserWindow.showOpenDialog(Driver.mainStage);
+        // Informs the user that no file was selected.
+        if (chosenFile == null || !chosenFile.isFile()) {
+            writeToConsole("[Load Users] No file was selected");
+            // Informs the user that an incorrect file type was selected.
+        } else {
+            try {
+                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                //an instance of builder to parse the specified xml file
+                DocumentBuilder db = dbf.newDocumentBuilder();
+                Document doc = db.parse(chosenFile);
+                doc.getDocumentElement().normalize();
+
+                NodeList xmlList = doc.getDocumentElement().getElementsByTagName("User");
+                for (int i = 0; i < xmlList.getLength(); ++i) {
+                    org.w3c.dom.Node node = xmlList.item(i);
+                    Element element = (Element) node;
+                    String name = element.getElementsByTagName("username").item(0).getTextContent();
+                    if (Driver.simulation.getAllUserNames().contains(name)) {
+                        writeToConsole("[Load Users] User \"" + name + "\" already exits, keeping original");
+                        continue;
+                    }
+
+                    Person.UserTypes usertype = Person.getUserType(element.getElementsByTagName("usertype").item(0).getTextContent());
+                    boolean isadmin = Boolean.valueOf(element.getElementsByTagName("admin").item(0).getTextContent());
+                    String room = element.getElementsByTagName("room").item(0).getTextContent();
+                    String password = element.getElementsByTagName("password").item(0).getTextContent();
+                    String imageURL = element.getElementsByTagName("image").item(0).getTextContent();
+
+                    Driver.simulation.addNewUser(name, isadmin, usertype, room);
+                    accounts.put(name, new Account(name, password, imageURL));
+                    usersList.getItems().add(usersList.getItems().size() - 1, name);
+                }
+            } catch (Exception e) {
+                writeToConsole("[Load Users] Error loading document");
+            }
+
         }
     }
 
@@ -432,7 +566,7 @@ public class SimulationWindowController implements Initializable {
             event.consume();
             return;
         }
-        if (!accounts.get(usernameInput.getText().trim()).equals(passwordInput.getText())) {
+        if (!accounts.get(usernameInput.getText().trim()).getPassword().equals(passwordInput.getText())) {
             writeToConsole("[SHS] Username or password is incorrect");
             event.consume();
             return;
@@ -440,6 +574,8 @@ public class SimulationWindowController implements Initializable {
 
         usersList.getSelectionModel().clearSelection();
         loggedInUser = usernameInput.getText().trim();
+        userProfilePic.setImage(new Image(accounts.get(loggedInUser).getImageURL()));
+        userProfilePic.setDisable(false);
         usernameDisplay.setText(loggedInUser);
         usersList.getItems().remove(loggedInUser);
 
@@ -479,6 +615,8 @@ public class SimulationWindowController implements Initializable {
 
         usernameDisplay.setText("Not Logged In");
         usersList.getItems().add(usersList.getItems().size() - 1, loggedInUser);
+        userProfilePic.setImage(new Image(defaultImage));
+        userProfilePic.setDisable(true);
         loggedInUser = null;
         locationPane.getChildren().remove(locationOptions);
 
@@ -779,6 +917,82 @@ public class SimulationWindowController implements Initializable {
         moduleContainer.layout();
         close.setLayoutY(topPane.getHeight() - close.getHeight() - 20);
         close.setLayoutX(topPane.getWidth() / 2 - close.getWidth() / 2);
+
+    }
+
+    /**
+     * A representation of a User's account.
+     */
+    public static class Account {
+
+        private String username;
+        private String password;
+        private String imageURL;
+
+        /**
+         * Parameterized constructor.
+         *
+         * @param username name of the user for this account
+         * @param password password for the account
+         * @param imageURL image of the account
+         */
+        public Account(String username, String password, String imageURL) {
+            this.username = username;
+            this.password = password;
+            this.imageURL = imageURL;
+        }
+
+        /**
+         * Sets the password of the account to a new password.
+         *
+         * @param password the new password
+         */
+        public void changePassword(String password) {
+            this.password = password;
+        }
+
+        /**
+         * Sets the image of the account to a new image.
+         *
+         * @param imageURL the new image
+         */
+        public void changeUserImage(String imageURL) {
+            this.imageURL = imageURL;
+        }
+
+        /**
+         * Gets the password for the account.
+         *
+         * @return the password for the account
+         */
+        public String getPassword() {
+            return this.password;
+        }
+
+        /**
+         * Gets the image for the account.
+         *
+         * @return the image for the account
+         */
+        public String getImageURL() {
+            return this.imageURL;
+        }
+
+        /**
+         * Returns if two Accounts are equivalent. If the other object is not an
+         * instance of type Account then it returns false. Two Accounts are
+         * equivalent if and only if their usernames are equivalent.
+         *
+         * @param obj the other Account to be compared
+         * @return true if the usernames are equivalent; false otherwise
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Account) {
+                return this.username.equals(((Account) obj).username);
+            }
+            return false;
+        }
 
     }
 

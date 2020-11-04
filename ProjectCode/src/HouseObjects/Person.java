@@ -74,7 +74,7 @@ public class Person {
      *
      * @return String format of a type of person
      */
-    public String getUserType() {
+    public String getUserTypeAsString() {
         switch (this.userType) {
             case ADULT:
                 return "Adult (Family)";

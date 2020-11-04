@@ -26,12 +26,7 @@
          <children>
             <Label alignment="CENTER" focusTraversable="false" layoutX="9.0" layoutY="-12.0" prefHeight="25.0" prefWidth="91.0" styleClass="simulationLabel" text="Simulation" textFill="WHITE" />
             <ToggleButton focusTraversable="false" layoutX="53.0" layoutY="35.0" mnemonicParsing="false" onAction="#handleToggleSimulation" prefHeight="25.0" prefWidth="95.0" selected="true" text="ON" />
-            <ImageView fx:id="editUserProfilePic" fitHeight="20.0" fitWidth="20.0" layoutX="91.0" layoutY="86.0" onMouseClicked="#handleEditProfilePic" pickOnBounds="true" preserveRatio="true" styleClass="clickable">
-               <image>
-                  <Image url="@../assets/editProfilePic.png" />
-               </image>
-            </ImageView>
-            <ImageView fx:id="userProfilePic" fitHeight="65.0" fitWidth="91.0" layoutX="55.0" layoutY="119.0" pickOnBounds="true">
+            <ImageView fx:id="userProfilePic" disable="true" fitHeight="65.0" fitWidth="91.0" layoutX="53.0" layoutY="102.0" onMouseClicked="#handleEditProfilePic" pickOnBounds="true">
                <image>
                   <Image url="@../assets/defaultUserProfile.png" />
                </image>
@@ -46,7 +41,7 @@
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
-            <Label fx:id="usernameDisplay" alignment="TOP_CENTER" focusTraversable="false" layoutX="14.0" layoutY="191.0" prefHeight="31.0" prefWidth="171.0" text="Not Logged In" wrapText="true" />
+            <Label fx:id="usernameDisplay" alignment="TOP_CENTER" focusTraversable="false" layoutX="13.0" layoutY="167.0" prefHeight="31.0" prefWidth="171.0" text="Not Logged In" wrapText="true" />
             <AnchorPane fx:id="locationPane" layoutX="22.0" layoutY="222.0" prefHeight="97.0" prefWidth="153.0">
                <children>
                   <Hyperlink fx:id="locationLink" alignment="CENTER" focusTraversable="false" layoutX="4.0" layoutY="23.0" onAction="#handleChangeLocation" prefHeight="23.0" prefWidth="149.0" text="location" underline="true" />
@@ -59,7 +54,7 @@
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
-            <Slider fx:id="timeRateSlider" blockIncrement="0.1" layoutX="30.0" layoutY="481.0" majorTickUnit="0.25" max="1.0" min="-1.0" onKeyPressed="#handleChangeTimeRate" showTickMarks="true" snapToTicks="true" />
+            <Slider fx:id="timeRateSlider" blockIncrement="0.1" layoutX="30.0" layoutY="481.0" majorTickUnit="0.25" max="1.0" min="-1.0" onKeyPressed="#handleChangeTimeRate" onMouseClicked="#handleChangeTimeRate" onMouseDragged="#handleChangeTimeRate" showTickMarks="true" snapToTicks="true" />
             <Label layoutX="67.0" layoutY="464.0" text="Time Speed">
                <font>
                   <Font name="System Bold" size="12.0" />
@@ -100,7 +95,7 @@
                               <TextField fx:id="outsideTempInput" layoutX="95.0" layoutY="40.0" onKeyReleased="#handleChangeTemp" prefHeight="25.0" prefWidth="57.0" />
                            </children>
                         </AnchorPane>
-                        <AnchorPane layoutX="16.0" layoutY="255.0" prefHeight="94.0" prefWidth="200.0" styleClass="simulationSubItem">
+                        <AnchorPane layoutX="16.0" layoutY="255.0" prefHeight="130.0" prefWidth="200.0" styleClass="simulationSubItem">
                            <children>
                               <Label focusTraversable="false" layoutX="75.0" layoutY="14.0" styleClass="moduleItemTitle" text="Edit User">
                                  <font>
@@ -108,9 +103,11 @@
                                  </font>
                               </Label>
                               <ComboBox fx:id="usersList" focusTraversable="false" layoutX="26.0" layoutY="45.0" onAction="#handleEditUser" prefWidth="150.0" />
+                              <Button layoutX="46.0" layoutY="85.0" mnemonicParsing="false" onAction="#handleSaveUserToFile" text="Save" />
+                              <Button layoutX="105.0" layoutY="85.0" mnemonicParsing="false" onAction="#handleLoadUserFromFile" text="Load" />
                            </children>
                         </AnchorPane>
-                        <AnchorPane layoutX="16.0" layoutY="363.0" prefHeight="133.0" prefWidth="200.0" styleClass="simulationSubItem">
+                        <AnchorPane layoutX="16.0" layoutY="398.0" prefHeight="133.0" prefWidth="200.0" styleClass="simulationSubItem">
                            <children>
                               <Label focusTraversable="false" layoutX="84.0" layoutY="6.0" styleClass="moduleItemTitle" text="Login">
                                  <font>
