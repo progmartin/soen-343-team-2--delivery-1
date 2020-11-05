@@ -31,6 +31,9 @@ public class Room {
      * Windows in the room.
      */
     ArrayList<Window> windows = new ArrayList<>();
+    
+    //Lights in room
+    ArrayList<Light> lights = new ArrayList<>();
 
     /**
      * Default constructor.
@@ -211,6 +214,27 @@ public class Room {
      */
     public ArrayList<Person> getPeople() {
         return people;
+    }
+    
+    //Methods for Light
+    public void addLight(Light light){
+    	lights.add(light);
+    }
+    
+    public void removeLight(Light light){
+    	for (int i = 0; i < lights.size(); i++) {
+            if (lights.get(i).id == light.id) {
+                windows.remove(i);
+            }
+        }
+    }
+    
+    public int numberOfLights(){
+    	return lights.size();
+    }
+    
+    public ArrayList<Light> getLights(){
+    	return lights;
     }
 
 }

@@ -1,6 +1,5 @@
 package HouseObjects;
 
-
 /**
  * A class for keeping track of light objects attached to rooms.
  * 
