@@ -133,6 +133,7 @@ public class Driver extends Application {
         int roomCount = 0;
         int doorID = 1;
         int windowID = 1;
+        int lightID = 1;
         //create room array
         while (input.hasNext()) {
 
@@ -160,16 +161,27 @@ public class Driver extends Application {
                 //add doors to array in room object
                 int nbDoors = input.nextInt();
                 for (int d = 0; d < nbDoors; d++) {
-                    rooms.get(roomCount).addDoor(new Door(doorID++, false, name.trim() + "-" + doorID));
+                    rooms.get(roomCount).addDoor(new Door(doorID, false, name.trim() + "Door-" + doorID++));
                 }
                 input.next();
 
                 //add windows to array in room object
                 int nbWindows = input.nextInt();
                 for (int w = 0; w < nbWindows; w++) {
-                    rooms.get(roomCount).addWindow(new Window(windowID++, false, false));
+                    rooms.get(roomCount).addWindow(new Window(windowID, false, false, name.trim() + " Window-" + windowID++));
                 }
+                input.next();
+
+                //add lights to array in room object
+                int nbLights = input.nextInt();
+                for (int w = 0; w < nbLights; w++) {
+                    rooms.get(roomCount).addLight(new Light(lightID++, false));
+                }
+                
                 roomCount++;
+                doorID = 1;
+                windowID = 1;
+                lightID = 1;
             }
         }
         input.close();

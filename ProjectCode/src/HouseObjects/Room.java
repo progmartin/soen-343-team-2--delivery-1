@@ -142,7 +142,7 @@ public class Room {
      * @param door the door to be removed
      */
     public void removeDoor(Door door) {
-        for (int i = 0; i < doors.size(); i++) {
+        for (int i = 1; i <= doors.size(); i++) {
             if (doors.get(i).getID() == door.getID()) {
                 doors.remove(i);
             }
@@ -173,7 +173,7 @@ public class Room {
      * @param window the window to be removed
      */
     public void removeWindow(Window window) {
-        for (int i = 0; i < windows.size(); i++) {
+        for (int i = 1; i <= windows.size(); i++) {
             if (windows.get(i).id == window.id) {
                 windows.remove(i);
             }
@@ -222,7 +222,7 @@ public class Room {
     }
     
     public void removeLight(Light light){
-    	for (int i = 0; i < lights.size(); i++) {
+    	for (int i = 1; i <= lights.size(); i++) {
             if (lights.get(i).id == light.id) {
                 windows.remove(i);
             }

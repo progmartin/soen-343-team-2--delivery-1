@@ -34,6 +34,7 @@ public class Window {
         id = 0;
         open = false;
         blocked = false;
+        name = "";
     }
 
     /**
@@ -43,10 +44,11 @@ public class Window {
      * @param open if the window is open
      * @param blocked if the window is blocked
      */
-    public Window(int id, boolean open, boolean blocked) {
+    public Window(int id, boolean open, boolean blocked, String name) {
         this.id = id;
         this.open = open;
         this.blocked = blocked;
+        this.name = name;
     }
 
     /**
