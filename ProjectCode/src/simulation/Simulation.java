@@ -69,7 +69,7 @@ public class Simulation {
      * @param moduleName the module class to search for
      * @return one of the simulation's module, null if cannot be found
      */
-    private Module getModuleOfType(Class moduleName) {
+    Module getModuleOfType(Class moduleName) {
         for (Module m : this.simModules) {
             if (m.getClass() == moduleName) {
                 return m;
