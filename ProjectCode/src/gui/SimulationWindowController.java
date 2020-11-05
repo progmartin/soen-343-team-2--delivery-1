@@ -31,6 +31,7 @@ import HouseObjects.*;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import javafx.animation.AnimationTimer;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
@@ -141,7 +142,6 @@ public class SimulationWindowController implements Initializable {
 
     protected HashMap<String, Account> accounts = new HashMap<>();
     protected Person editedUser = null;
-    protected final String defaultImage = "jar:" + this.getClass().getResource("/assets/defaultUserProfile.png").getFile();
     private String loggedInUser;
     private AnimationTimer simulationClock;
     private double timeSpeed;
@@ -166,15 +166,15 @@ public class SimulationWindowController implements Initializable {
         initializeClock();
         initializeControls();
 
-        //martins part -> room arraylist to gui display            
-        RoomObjtoDisplay.createRectangle(parentPane, Driver.simulation.getRooms());
-        Driver.simulation.getRooms().add(new Room("Outside"));
-
         // Temporary DEFAULT USER for testing users //
         Driver.simulation.addNewUser("Default", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
-        accounts.put("Default", new Account("Default", "", defaultImage));
+        accounts.put("Default", new Account("Default", "", AssetManager.DEFAULT_USER_IMAGE_URL));
         // ************* //
-
+        
+        if (!RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms())) {
+            writeToConsole("[Initializer] Missing rooms, cannot display house layout");
+        }
+        
         initializeSHS();
 
     }
@@ -273,6 +273,7 @@ public class SimulationWindowController implements Initializable {
             }
             locationPane.getChildren().remove(locationOptions);
             locationOptions = null;
+            RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
         });
         locationPane.getChildren().add(locationOptions);
         locationPane.applyCss();
@@ -321,6 +322,7 @@ public class SimulationWindowController implements Initializable {
                 String location = Driver.simulation.getUserLocation(loggedInUser);
                 locationLink.setText(location);
                 editHomeStage = null;
+                RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
             });
             editHomeStage.show();
         } catch (IOException ex) {
@@ -425,6 +427,7 @@ public class SimulationWindowController implements Initializable {
             editStage.setOnCloseRequest((e) -> {
                 usersList.getSelectionModel().clearSelection();
                 editStage = null;
+                RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
             });
             editStage.show();
         } catch (IOException ex) {
@@ -464,19 +467,17 @@ public class SimulationWindowController implements Initializable {
             Document doc = dBuilder.newDocument();
             //add elements to Document
             Element rootElement = doc.createElement("Users");
-            for (Object item : usersList.getItems()) {
-                String username = (String) item;
+            for (Map.Entry<String, Account> entry : accounts.entrySet()) {
+                String username = entry.getKey();
+                Account acc = entry.getValue();
                 Person user = Driver.simulation.getUser(username);
-                if (user == null) {
-                    continue;
-                }
                 Element newUser = doc.createElement("User");
                 newUser.appendChild(doc.createElement("username").appendChild(doc.createTextNode(user.getName())).getParentNode());
                 newUser.appendChild(doc.createElement("usertype").appendChild(doc.createTextNode(user.getUserTypeAsString())).getParentNode());
                 newUser.appendChild(doc.createElement("admin").appendChild(doc.createTextNode(Boolean.toString(user.getIsAdmin()))).getParentNode());
                 newUser.appendChild(doc.createElement("room").appendChild(doc.createTextNode(Driver.simulation.getUserLocation(username))).getParentNode());
-                newUser.appendChild(doc.createElement("password").appendChild(doc.createTextNode(accounts.get(username).getPassword())).getParentNode());
-                newUser.appendChild(doc.createElement("image").appendChild(doc.createTextNode(accounts.get(username).getImageURL())).getParentNode());
+                newUser.appendChild(doc.createElement("password").appendChild(doc.createTextNode(acc.getPassword())).getParentNode());
+                newUser.appendChild(doc.createElement("image").appendChild(doc.createTextNode(acc.getImageURL())).getParentNode());
                 rootElement.appendChild(newUser);
             }
             doc.appendChild(rootElement);
@@ -615,7 +616,7 @@ public class SimulationWindowController implements Initializable {
 
         usernameDisplay.setText("Not Logged In");
         usersList.getItems().add(usersList.getItems().size() - 1, loggedInUser);
-        userProfilePic.setImage(new Image(defaultImage));
+        userProfilePic.setImage(new Image(AssetManager.DEFAULT_USER_IMAGE_URL));
         userProfilePic.setDisable(true);
         loggedInUser = null;
         locationPane.getChildren().remove(locationOptions);

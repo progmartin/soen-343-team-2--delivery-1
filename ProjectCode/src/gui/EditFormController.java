@@ -77,7 +77,7 @@ public class EditFormController implements Initializable {
             title.setText("Create New User");
             newUser = true;
             location.setItems(FXCollections.observableArrayList(Driver.simulation.getRoomNames()));
-            profilePic = Driver.simulationController.defaultImage;
+            profilePic = AssetManager.DEFAULT_USER_IMAGE_URL;
             userProfile.setImage(new Image(profilePic));
         } else {
             usernameInput.setText(person.getName());

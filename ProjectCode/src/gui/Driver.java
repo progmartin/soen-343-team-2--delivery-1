@@ -45,6 +45,12 @@ public class Driver extends Application {
 
             //ArrayList of rooms
             ArrayList<Room> roomArray = readFile(chosenFile.getPath());
+            Room backyard = new Room("Backyard");
+            backyard.addDoor(new Door(1, true, "Backdoor"));
+            backyard.addDoor(new Door(2, false, "Backdoor"));
+            roomArray.add(0, backyard);
+            roomArray.add(new Room("Entrance"));
+            roomArray.add(new Room("Outside"));
             
             Driver.simulation = new Simulation(roomArray);
             // Set the stage/window to later reference if needed.

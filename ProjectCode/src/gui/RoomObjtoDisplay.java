@@ -2,145 +2,246 @@ package gui;
 
 import java.util.ArrayList;
 
-import HouseObjects.Room;
-import javafx.application.Application;
-import javafx.scene.Cursor;
+import HouseObjects.*;
+import javafx.scene.control.Label;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Arc;
-import javafx.scene.shape.ArcType;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.*;
 
 public class RoomObjtoDisplay {
 
-    static double orgSceneX;
-    static double orgSceneY;
+    private static double orgSceneX;
+    private static double orgSceneY;
+    private static final double initOffsetX = 10.0;
+    private static final double initOffsetY = 10.0;
+    private static final double lengthOfRoom = 100.0;
+    private static final double lenghtOfDoor = 20.0;
+    private static final double angleOfDoorClosed = 20.0;
+    private static final double angleOfDoorOpened = 90.0;
+    private static final double lengthOfWindow = 20.0;
+    private static final double thickOfWindow = 2.5;
+    private static final double widthOfPerson = 20.0;
+    private static final double heightOfPerson = 20.0;
+    private static final double widthOfLight = 10.0;
+    private static final double heightOfLight = 10.0;
 
-    static public void createRectangle(Pane root, ArrayList<Room> arr) {
+    /**
+     * Creates the house layout using the array of rooms on the pane. The house
+     * layout is not a real representation of the house, rather an indication of
+     * rooms that exist in the house and the objects that reside in the rooms.
+     * This means that the visualization may not be accurate to a real scenario,
+     * for example two adjacent rooms do not have a door in between them or two
+     * adjacent rooms have a window between them. <br/><br/>
+     * The array of rooms must have a backyard room as its first element. The
+     * last element of the room array must be an outside room. The second to
+     * last element must be an entrance room that connects to outside. Every
+     * room after the first room will be added from left to right then top to
+     * bottom (backyard to outside).<br/><br/>
+     * The layout will have a margin around the edges between the border of the
+     * pane and the house. The size of an indoor room is a square with a fixed
+     * length, while the outdoor room are have a width the width of the house.
+     * The width of the house will be the ceiling of the square root of the
+     * number of indoor rooms up to 4, and the height is the remaining number of
+     * rooms. If the height of the house surpasses the pane layout then the root
+     * pane will expand to accommodate for the rooms up its max height.
+     *
+     * @param root the pane to add the house layout to
+     * @param rooms array of rooms to be added
+     * @return true if was able to create the house; false otherwise
+     */
+    static public boolean drawHouseLayout(Pane root, ArrayList<Room> rooms) {
 
-        ArrayList<Color> color = new ArrayList<Color>();//set random colors
-        color.add(Color.LAVENDER);
-        color.add(Color.AQUAMARINE);
-        color.add(Color.LIGHTPINK);
-        color.add(Color.WHEAT);
-
-        //setting up the rectangles
-        int offsetx = 0;//increment by 50 pixels
-        int offsety = 0;//increment by 50 pixels
-        int it = 0;
-        for (int i = 0; i < arr.size(); i++) {
-            Rectangle rec1 = new Rectangle(50, 50, color.get(it));//create rectangle
-            rec1.setX(550 + offsetx);//place the rectangle in place
-            rec1.setY(100 + offsety);
-            root.getChildren().add(rec1);//add it to gui
-            offsetx += 50;//offset algorythm for each rectangle
-            it++;
-            if (offsetx == 150) {
-                offsetx = 0;
-                offsety += 50;
-            }
-            if (it == 4) {
-                it = 0;
-            }
+        if (rooms.size() < 3) {
+            return false;
         }
 
-	 //seting up doors
-        int offsetDoorx = 0;//needed to replicate door setup to each room
-        int offsetDoory = 0;
-        for (int i = 0; i < arr.size(); i++) {	//for every room				 
+        int numOfRoomsWide = Math.min((int) Math.ceil(Math.sqrt(rooms.size())), 4);
+        double widthOfHouse = numOfRoomsWide * lengthOfRoom;
 
-            for (int k = 0; k < arr.get(i).numberOfDoors(); k++) {	 // for every door in room
+        root.getChildren().clear();
 
-                //door left
-                if (k == 0) {
-                    Arc rec1 = new Arc(550 + offsetDoorx, 130 + offsetDoory, 13, 13, 270, 90);//create half arc 	 
-                    rec1.setType(ArcType.ROUND);
-                    rec1.setFill(Color.BROWN);
-                    root.getChildren().add(rec1);//add it to gui
-                }
+        ArrayList<Color> colors = new ArrayList<>();//set random colors
+        colors.add(Color.LAVENDER);
+        colors.add(Color.AQUAMARINE);
+        colors.add(Color.LIGHTPINK);
+        colors.add(Color.WHEAT);
+        colors.add(Color.BURLYWOOD);
 
-                //door top
-                if (k == 1) {
-                    Arc rec1 = new Arc(556 + offsetDoorx, 100 + offsetDoory, 13, 13, 270, 90);//create  half arc 	 
-                    rec1.setType(ArcType.ROUND);
-                    rec1.setFill(Color.BROWN);
-                    rec1.setRotate(90);
-                    root.getChildren().add(rec1);//add it to gui
-                }
+        // Create backyard room
+        Room backyard = rooms.get(0);
+        Rectangle roomRect = new Rectangle(widthOfHouse, lengthOfRoom, Color.WHITE);
+        Label text = new Label(backyard.getName());
+        text.setLayoutX((widthOfHouse - 50) / 2);
+        text.setLayoutY((lengthOfRoom - 20) / 2);
+        // Adding Doors
+        ArrayList<Arc> doors = new ArrayList<>();
+        for (int doorIdx = 0; doorIdx < backyard.getDoors().size(); ++doorIdx) {
+            double doorOffsetX = (roomRect.getWidth() / (backyard.getDoors().size() + 1)) * (doorIdx + 1);
+            double doorAngle = (backyard.getDoors().get(doorIdx).getOpen() ? angleOfDoorOpened : angleOfDoorClosed);
+            Arc door = new Arc(doorOffsetX, lengthOfRoom, lenghtOfDoor, lenghtOfDoor, 0.0, doorAngle);
+            door.setType(ArcType.ROUND);
+            door.setFill(Color.BROWN);
+            doors.add(door);
+        }
+        // Adding People
+        ArrayList<Rectangle> people = new ArrayList<>();
+        for (int personIdx = 0; personIdx < backyard.getPeople().size(); ++personIdx) {
+            double personOffsetX = ((roomRect.getWidth() / (backyard.getPeople().size() + 1)) - (widthOfPerson / 2)) * (personIdx + 1);
+            Rectangle person = new Rectangle(widthOfPerson, heightOfPerson, new ImagePattern(AssetManager.getPersonImage()));
+            person.setX(personOffsetX);
+            person.setY(lengthOfRoom * 0.1);
+            people.add(person);
+        }
+        // Adding Lights
+        ArrayList<Rectangle> lights = new ArrayList<>();
+        for (int lightIdx = 0; lightIdx < backyard.getWindows().size(); ++lightIdx) {
+            double lightOffsetX = ((roomRect.getWidth() / (backyard.getWindows().size() + 1)) - (widthOfLight / 2)) * (lightIdx + 1);
+            Rectangle light = new Rectangle(widthOfLight, heightOfLight, new ImagePattern((backyard.getWindows().get(lightIdx).getOpen() ? AssetManager.getLightOnImage() : AssetManager.getLightOffImage())));
+            light.setX(lightOffsetX);
+            light.setY(lengthOfRoom * 0.1);
+            lights.add(light);
+        }
+        AnchorPane roomPane = new AnchorPane(roomRect, text);
+        roomPane.getChildren().addAll(doors.toArray(new Arc[doors.size()]));
+        roomPane.getChildren().addAll(people.toArray(new Rectangle[people.size()]));
+        roomPane.setLayoutX(initOffsetX);
+        roomPane.setLayoutY(initOffsetY);
+        root.getChildren().add(roomPane);
 
-                //door right
-                if (k == 2) {
-                    Arc rec1 = new Arc(587 + offsetDoorx, 110 + offsetDoory, 13, 13, 270, 90);//create  half arc 	 
-                    rec1.setType(ArcType.ROUND);
-                    rec1.setFill(Color.BROWN);
-                    rec1.setRotate(180);
-                    root.getChildren().add(rec1);//add it to gui					 
-                }
+        // Create all indoor rooms
+        for (int roomIdx = 1; roomIdx < rooms.size() - 1; roomIdx++) {
+            Room room = rooms.get(roomIdx);
+            roomRect = new Rectangle(lengthOfRoom, lengthOfRoom, colors.get((roomIdx - 1) % colors.size()));
+            text = new Label(room.getName());
+            text.setLayoutX((lengthOfRoom - 50) / 2);
+            text.setLayoutY((lengthOfRoom - 20) / 2);
 
-                //door bot
-                if (k == 3) {
-                    Arc rec1 = new Arc(580 + offsetDoorx, 137 + offsetDoory, 13, 13, 270, 90);//create  half arc 	 
-                    rec1.setType(ArcType.ROUND);
-                    rec1.setFill(Color.BROWN);
-                    rec1.setRotate(270);
-                    root.getChildren().add(rec1);//add it to gui						 
-
-                }
+            // Adding Doors
+            doors = new ArrayList<>();
+            double[] offsetIntervals = {0, 0.5, 1, 0.5};
+            for (int doorIdx = 0; doorIdx < room.getDoors().size(); ++doorIdx) {
+                double doorOffsetX = (roomRect.getWidth() * offsetIntervals[(doorIdx + 1) % offsetIntervals.length]) - (doorIdx % 2 == 1 ? 0 : lenghtOfDoor / 2);
+                double doorOffsetY = (roomRect.getHeight() * offsetIntervals[doorIdx % offsetIntervals.length]) - (doorIdx % 2 == 0 ? 0 : lenghtOfDoor / 2);
+                double doorAngleStart = (doorIdx % 2 == 0 ? (doorIdx + 2) : doorIdx) * 90.0;
+                double doorAngleEnd = (room.getDoors().get(doorIdx).getOpen() ? angleOfDoorOpened : angleOfDoorClosed);
+                Arc door = new Arc(doorOffsetX, doorOffsetY, lenghtOfDoor, lenghtOfDoor, doorAngleStart, doorAngleEnd);
+                door.setType(ArcType.ROUND);
+                door.setFill(Color.BROWN);
+                doors.add(door);
             }
-            offsetDoorx += 50;//needed to replicate door setup
-            if (offsetDoorx == 150) {
-                offsetDoorx = 0;
-                offsetDoory += 50;
+
+            // Adding Windows
+            ArrayList<Rectangle> windows = new ArrayList<>();
+            offsetIntervals = new double[]{0, 0.75, 1, 0.25};
+            for (int windowIdx = 0; windowIdx < room.getWindows().size(); ++windowIdx) {
+                double windowOffsetX = (roomRect.getWidth() * offsetIntervals[(windowIdx + 1) % offsetIntervals.length]) - (windowIdx % 2 == 1 ? (windowIdx % 4 == 1 ? thickOfWindow : 0) : lengthOfWindow / 2);
+                double windowOffsetY = (roomRect.getHeight() * offsetIntervals[windowIdx % offsetIntervals.length]) - (windowIdx % 2 == 0 ? (windowIdx % 4 == 0 ? 0 : thickOfWindow) : lengthOfWindow / 2);
+                Rectangle window = new Rectangle((windowIdx % 2 == 1 ? thickOfWindow : lengthOfWindow), (windowIdx % 2 == 0 ? thickOfWindow : lengthOfWindow), (room.getWindows().get(windowIdx).getOpen() ? Color.GREEN : Color.DEEPSKYBLUE));
+                window.setX(windowOffsetX);
+                window.setY(windowOffsetY);
+                windows.add(window);
             }
+
+            // Adding People
+            people = new ArrayList<>();
+            for (int personIdx = 0; personIdx < room.getPeople().size(); ++personIdx) {
+                double personOffsetX = ((roomRect.getWidth() - widthOfPerson) / 2) + widthOfPerson * Math.sin(((personIdx + 1) * Math.PI * 2) / room.getPeople().size());
+                double personOffsetY = ((roomRect.getHeight() - heightOfPerson) / 2) + widthOfPerson * Math.cos(((personIdx + 1) * Math.PI * 2) / room.getPeople().size());
+                Rectangle person = new Rectangle(widthOfPerson, heightOfPerson, new ImagePattern(AssetManager.getPersonImage()));
+                person.setX(personOffsetX);
+                person.setY(personOffsetY);
+                people.add(person);
+            }
+
+            roomPane = new AnchorPane(roomRect, text);
+            roomPane.getChildren().addAll(doors.toArray(new Arc[doors.size()]));
+            roomPane.getChildren().addAll(people.toArray(new Rectangle[people.size()]));
+            roomPane.getChildren().addAll(windows.toArray(new Rectangle[windows.size()]));
+            roomPane.setLayoutX(initOffsetX + (((roomIdx - 1) % numOfRoomsWide) * lengthOfRoom));
+            roomPane.setLayoutY(initOffsetY + ((Math.floor((roomIdx - 1) / numOfRoomsWide) + 1) * lengthOfRoom));
+            root.getChildren().add(roomPane);
+        }
+        /*
+        
+         Entrance room is created as an indoor room. No need to create it again.
+        
+         // Create Entrance room
+         Room entrance = rooms.get(rooms.size() - 2);
+         roomRect = new Rectangle(lengthOfRoom, lengthOfRoom, colors.get((rooms.size() - 3) % colors.size()));
+         text = new Label(entrance.getName());
+         text.setLayoutX((lengthOfRoom - 50) / 2);
+         text.setLayoutY((lengthOfRoom - 20) / 2);
+         // Adding Doors
+         doors = new ArrayList<>();
+         double[] offsetIntervals = {1, 0.5, 0, 0.5};
+         for (int doorIdx = 0; doorIdx < entrance.getDoors().size(); ++doorIdx) {
+         double doorOffsetX = (roomRect.getWidth() * offsetIntervals[(doorIdx + 1) % offsetIntervals.length]) - (doorIdx % 2 == 1 ? 0 : lenghtOfDoor / 2);
+         double doorOffsetY = (roomRect.getHeight() * offsetIntervals[doorIdx % offsetIntervals.length]) - (doorIdx % 2 == 0 ? 0 : lenghtOfDoor / 2);
+         double doorAngleStart = (doorIdx % 2 == 0 ? (doorIdx + 2) : doorIdx) * 90.0;
+         double doorAngleEnd = (entrance.getDoors().get(doorIdx).getOpen() ? angleOfDoorOpened : angleOfDoorClosed);
+         Arc door = new Arc(doorOffsetX, doorOffsetY, lenghtOfDoor, lenghtOfDoor, doorAngleStart, doorAngleEnd);
+         door.setType(ArcType.ROUND);
+         door.setFill(Color.BROWN);
+         doors.add(door);
+         }
+         // Adding Windows
+         ArrayList<Rectangle> windows = new ArrayList<>();
+         offsetIntervals = new double[]{1, 0.75, 0, 0.25};
+         for (int windowIdx = 0; windowIdx < entrance.getWindows().size(); ++windowIdx) {
+         double windowOffsetX = (roomRect.getWidth() * offsetIntervals[(windowIdx + 1) % offsetIntervals.length]) - (windowIdx % 2 == 1 ? thickOfWindow / 2 : lengthOfWindow / 2);
+         double windowOffsetY = (roomRect.getHeight() * offsetIntervals[windowIdx % offsetIntervals.length]) - (windowIdx % 2 == 0 ? thickOfWindow / 2 : lengthOfWindow / 2);
+         Rectangle window = new Rectangle((windowIdx % 2 == 1 ? thickOfWindow : lengthOfWindow), (windowIdx % 2 == 0 ? thickOfWindow : lengthOfWindow), (entrance.getWindows().get(windowIdx).getOpen() ? Color.GREEN : Color.DEEPSKYBLUE));
+         window.setX(windowOffsetX);
+         window.setY(windowOffsetY);
+         windows.add(window);
+         }
+         // Adding People
+         people = new ArrayList<>();
+         for (int personIdx = 0; personIdx < entrance.getPeople().size(); ++personIdx) {
+         double personOffsetX = ((roomRect.getWidth() - widthOfPerson) / 2) + widthOfPerson * Math.sin(((personIdx + 1) * Math.PI * 2) / entrance.getPeople().size());
+         double personOffsetY = ((roomRect.getHeight() - heightOfPerson) / 2) + widthOfPerson * Math.cos(((personIdx + 1) * Math.PI * 2) / entrance.getPeople().size());
+         Rectangle person = new Rectangle(widthOfPerson, heightOfPerson, new ImagePattern(AssetManager.getPersonImage()));
+         person.setX(personOffsetX);
+         person.setY(personOffsetY);
+         people.add(person);
+         }
+         roomPane = new AnchorPane(roomRect, text);
+         roomPane.getChildren().addAll(doors.toArray(new Arc[doors.size()]));
+         roomPane.getChildren().addAll(people.toArray(new Rectangle[people.size()]));
+         roomPane.getChildren().addAll(windows.toArray(new Rectangle[windows.size()]));
+         roomPane.setLayoutX(initOffsetX + Math.min((((rooms.size() - 4) % numOfRoomsWide) * lengthOfRoom), (Math.floor(numOfRoomsWide / 2) * lengthOfRoom)));
+         roomPane.setLayoutY(initOffsetY + ((Math.floor((rooms.size() - 4) / numOfRoomsWide) + 2) * lengthOfRoom));
+         root.getChildren().add(roomPane);
+         */
+        // Create Outside room
+        Room outside = rooms.get(rooms.size() - 1);
+        roomRect = new Rectangle(widthOfHouse, lengthOfRoom, Color.WHITE);
+        text = new Label(outside.getName());
+        text.setLayoutX((widthOfHouse - 50) / 2);
+        text.setLayoutY((lengthOfRoom - 20) / 2);
+        // Adding Doors
+        doors = new ArrayList<>();
+        for (int doorIdx = 0; doorIdx < outside.getDoors().size(); ++doorIdx) {
+            double doorOffsetX = (roomRect.getWidth() / (outside.getDoors().size() + 1)) * (doorIdx + 1);
+            double doorAngle = (outside.getDoors().get(doorIdx).getOpen() ? angleOfDoorOpened : angleOfDoorClosed);
+            Arc door = new Arc(doorOffsetX, lengthOfRoom, lenghtOfDoor, lenghtOfDoor, 180.0, doorAngle);
+            door.setType(ArcType.ROUND);
+            door.setFill(Color.BROWN);
+            doors.add(door);
+        }
+        roomPane = new AnchorPane(roomRect, text);
+        roomPane.getChildren().addAll(doors.toArray(new Arc[doors.size()]));
+        roomPane.setLayoutX(initOffsetX);
+        roomPane.setLayoutY(initOffsetY + ((Math.floor((rooms.size() - 4) / numOfRoomsWide) + 2) * lengthOfRoom));
+        root.getChildren().add(roomPane);
+
+        if (roomPane.getLayoutY() > root.getHeight() - (initOffsetY * 2)) {
+            root.setPrefHeight(roomPane.getLayoutY() + (initOffsetY * 2));
         }
 
-        //setting up windows, algorythm similar to doors
-        int offsetWindowx = 0;//needed to replicate window set up to other rooms
-        int offsetWindowy = 0;
-        for (int i = 0; i < arr.size(); i++) {//for number of rooms	 				 
-
-            for (int k = 0; k < arr.get(i).numberOfWindows(); k++) {//for every window in room	 
-
-                //window left
-                if (k == 0) {
-                    Rectangle rec1 = new Rectangle(6, 15, Color.DEEPSKYBLUE);//create rectangle 	 
-                    rec1.setX(550 + offsetWindowx);//place the rectangle in place
-                    rec1.setY(110 + offsetWindowy);
-                    root.getChildren().add(rec1);//add it to gui
-                }
-
-                //window top
-                if (k == 1) {
-                    Rectangle rec1 = new Rectangle(15, 6, Color.DEEPSKYBLUE);//create rectangle 	 
-                    rec1.setX(580 + offsetWindowx);
-                    rec1.setY(100 + offsetWindowy);
-                    root.getChildren().add(rec1);//add it to gui
-                }
-
-                //window right
-                if (k == 2) {
-                    Rectangle rec1 = new Rectangle(6, 15, Color.DEEPSKYBLUE);//create rectangle 	
-                    rec1.setX(594 + offsetWindowx);//place the rectangle in place
-                    rec1.setY(129 + offsetWindowy);
-                    root.getChildren().add(rec1);//add it to gui
-                }
-
-                //window bot
-                if (k == 3) {
-                    Rectangle rec1 = new Rectangle(15, 6, Color.DEEPSKYBLUE);//create rectangle 	
-                    rec1.setX(560 + offsetWindowx);
-                    rec1.setY(144 + offsetWindowy);
-                    root.getChildren().add(rec1);//add it to gui
-
-                }
-            }
-            offsetWindowx += 50;//needed to replicate window set up to other rooms
-            if (offsetWindowx == 150) {
-                offsetWindowx = 0;
-                offsetWindowy += 50;
-            }
-        }
-
+        return true;
     }
     //setting up a doorfunction to make code cleaner
 

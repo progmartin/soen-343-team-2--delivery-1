@@ -20,7 +20,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="parentPane" prefHeight="769.0" prefWidth="819.0" stylesheets="@GUIStyle.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.SimulationWindowController">
+<AnchorPane fx:id="parentPane" prefHeight="769.0" prefWidth="936.0" stylesheets="@GUIStyle.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.SimulationWindowController">
    <children>
       <AnchorPane fx:id="dashboardPane" layoutX="23.0" layoutY="22.0" prefHeight="730.0" prefWidth="200.0" styleClass="simulationAnchor">
          <children>
@@ -156,18 +156,21 @@
           </Tab>
         </tabs>
       </TabPane>
-      <AnchorPane fx:id="houseViewPane" layoutX="488.0" layoutY="74.0" prefHeight="230.0" prefWidth="306.0" styleClass="simulationAnchor" />
-      <Label alignment="CENTER" focusTraversable="false" layoutX="586.0" layoutY="320.0" prefHeight="23.0" prefWidth="110.0" text="House view">
+      <AnchorPane fx:id="houseViewPane" layoutX="487.0" layoutY="52.0" maxHeight="540.0" prefHeight="410.0" prefWidth="420.0" styleClass="simulationAnchor">
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding></AnchorPane>
+      <Label alignment="CENTER" focusTraversable="false" layoutX="642.0" layoutY="22.0" prefHeight="23.0" prefWidth="110.0" text="House view">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <Label alignment="CENTER" focusTraversable="false" layoutX="586.0" layoutY="575.0" prefHeight="23.0" prefWidth="110.0" text="Output Console">
+      <Label alignment="CENTER" focusTraversable="false" layoutX="521.0" layoutY="587.0" prefHeight="23.0" prefWidth="110.0" text="Output Console">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <ScrollPane fx:id="outputPane" focusTraversable="false" layoutX="245.0" layoutY="612.0" prefHeight="140.0" prefWidth="517.0" styleClass="simulationAnchor">
+      <ScrollPane fx:id="outputPane" focusTraversable="false" layoutX="245.0" layoutY="612.0" prefHeight="140.0" prefWidth="662.0" styleClass="simulationAnchor">
          <content>
             <Text fx:id="outputConsole" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="499.00000692903996" />
          </content>
