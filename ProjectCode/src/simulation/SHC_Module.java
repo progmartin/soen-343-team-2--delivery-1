@@ -115,12 +115,11 @@ public class SHC_Module extends Module {
      * @param window the window you want to close
      * @return true if successful
      */
-    public boolean closeThisWindow(int room, int window){
-    	ArrayList<Room> rooms = sim.getRooms();
-    	if(rooms.get(room).getWindows().get(window-1).getBlocked()){
+    public boolean closeThisWindow(String room, int window){
+    	if(sim.getRoom(room).getWindows().get(window-1).getBlocked()){
     		return false;
     	} else {
-    		rooms.get(room).getWindows().get(window-1).setOpen(false);
+    		sim.getRoom(room).getWindows().get(window-1).setOpen(false);
     		return true;
     	}
     }
@@ -133,12 +132,11 @@ public class SHC_Module extends Module {
      * @param window the window you want to close
      * @return true if successful
      */
-    public boolean openThisWindow(int room, int window){
-    	ArrayList<Room> rooms = sim.getRooms();
-    	if(rooms.get(room).getWindows().get(window-1).getBlocked()){
+    public boolean openThisWindow(String room, int window){
+    	if(sim.getRoom(room).getWindows().get(window-1).getBlocked()){
     		return false;
     	} else {
-    		rooms.get(room).getWindows().get(window-1).setOpen(true);
+    		sim.getRoom(room).getWindows().get(window-1).setOpen(true);
     		return true;
     	}
     }
@@ -193,13 +191,12 @@ public class SHC_Module extends Module {
      * @param door the specific door you want to lock
      * @return true if successful
      */
-    public boolean lockThisDoor(int room, int door){
-    	ArrayList<Room> rooms = sim.getRooms();
-    	if(rooms.get(room).getDoors().get(door-1).getLocked()){
+    public boolean lockThisDoor(String room, int door){
+    	if(sim.getRoom(room).getDoors().get(door-1).getLocked()){
     		return false;
     		//if door already locked
     	} else {
-    		rooms.get(room).getDoors().get(door-1).setLocked(true);
+    		sim.getRoom(room).getDoors().get(door-1).setLocked(true);
     		return true;
     	}
     }
@@ -212,13 +209,12 @@ public class SHC_Module extends Module {
      * @param door the door you want to close
      * @return true if successful
      */
-    public boolean unlockThisDoor(int room, int door){
-    	ArrayList<Room> rooms = sim.getRooms();
-    	if(rooms.get(room).getDoors().get(door-1).getLocked()){
+    public boolean unlockThisDoor(String room, int door){
+    	if(sim.getRoom(room).getDoors().get(door-1).getLocked()){
     		return false;
     		//if door already locked
     	} else {
-    		rooms.get(room).getDoors().get(door-1).setLocked(true);
+    		sim.getRoom(room).getDoors().get(door-1).setLocked(true);
     		return true;
     	}
     }
@@ -231,13 +227,12 @@ public class SHC_Module extends Module {
      * @param garageDoor the door to be opened
      * @return true if successful
      */
-    public boolean openGarage(int garage, int garageDoor){
-    	ArrayList<Room> rooms = sim.getRooms();
-    	if(rooms.get(garage).getDoors().get(garageDoor-1).getLocked()){
+    public boolean openGarage(String garage, int garageDoor){
+    	if(sim.getRoom(garage).getDoors().get(garageDoor-1).getLocked()){
     		return false;
     		//if door locked
     	} else {
-    		rooms.get(garage).getDoors().get(garageDoor-1).setOpen(true);
+    		sim.getRoom(garage).getDoors().get(garageDoor-1).setOpen(true);
     		return true;
     	}
     }
@@ -250,13 +245,12 @@ public class SHC_Module extends Module {
      * @param garageDoor the door to be opened
      * @return true if successful
      */
-    public boolean closeGarage(int garage, int garageDoor){
-    	ArrayList<Room> rooms = sim.getRooms();
-    	if(rooms.get(garage).getDoors().get(garageDoor-1).getLocked()){
+    public boolean closeGarage(String garage, int garageDoor){
+    	if(sim.getRoom(garage).getDoors().get(garageDoor-1).getLocked()){
     		return false;
     		//if door locked
     	} else {
-    		rooms.get(garage).getDoors().get(garageDoor-1).setOpen(false);
+    		sim.getRoom(garage).getDoors().get(garageDoor-1).setOpen(false);
     		return true;
     	}
     }
@@ -269,13 +263,12 @@ public class SHC_Module extends Module {
      * @param light the light to be turned on
      * @return true if successful
      */
-    public boolean turnOnLight(int room, int light){
-    	ArrayList<Room> rooms = sim.getRooms();
-    	if(rooms.get(room).getLights().get(light-1).getIsOn()){
+    public boolean turnOnLight(String room, int light){
+    	if(sim.getRoom(room).getLights().get(light-1).getIsOn()){
     		return false;
     		//if light already on
     	} else {
-    		rooms.get(room).getLights().get(light-1).setIsOn(true);
+    		sim.getRoom(room).getLights().get(light-1).setIsOn(true);
     		return true;
     	}
     }
@@ -288,13 +281,12 @@ public class SHC_Module extends Module {
      * @param light the light to be turned off
      * @return true if successful
      */
-    public boolean turnOffLight(int room, int light){
-    	ArrayList<Room> rooms = sim.getRooms();
-    	if(!rooms.get(room).getLights().get(light-1).getIsOn()){
+    public boolean turnOffLight(String room, int light){
+    	if(!sim.getRoom(room).getLights().get(light-1).getIsOn()){
     		return false;
     		//if light already off
     	} else {
-    		rooms.get(room).getLights().get(light-1).setIsOn(false);
+    		sim.getRoom(room).getLights().get(light-1).setIsOn(false);
     		return true;
     	}
     }
