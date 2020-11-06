@@ -215,11 +215,11 @@ public class SHC_Module extends Module {
      * @return true if successful
      */
     public boolean unlockThisDoor(String room, int door){
-    	if(sim.getRoom(room).getDoors().get(door-1).getLocked()){
+    	if(!sim.getRoom(room).getDoors().get(door-1).getLocked()){
     		return false;
     		//if door already locked
     	} else {
-    		sim.getRoom(room).getDoors().get(door-1).setLocked(true);
+    		sim.getRoom(room).getDoors().get(door-1).setLocked(false);
     		return true;
     	}
     }
