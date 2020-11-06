@@ -3,14 +3,9 @@ package gui;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.TextStyle;
 import java.util.ResourceBundle;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -29,6 +24,7 @@ import javafx.collections.FXCollections;
 
 import HouseObjects.*;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -46,6 +42,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import simulation.*;
 
 /**
  * FXML Controller class
@@ -134,8 +131,13 @@ public class SimulationWindowController implements Initializable {
     @FXML
     Button shhModuleCreator;
 
-    VBox shcOpenClosePane;
-    ListView shcItems;
+    Label shcCommandOptionsLabel;
+    VBox shcCommandOptionsPane;
+    ListView shcCommands;
+
+    Label shpCommandOptionsLabel;
+    VBox shpCommandOptionsPane;
+    ListView shpCommands;
 
     static Stage editStage;
     static Stage editHomeStage;
@@ -160,9 +162,6 @@ public class SimulationWindowController implements Initializable {
 
         updateOutsideTemp(15);
 
-        LocalDateTime today = LocalDateTime.now();
-        updateTime(today.getHour(), today.getMinute(), today.getSecond());
-        updateDate(today.toLocalDate());
         initializeClock();
         initializeControls();
 
@@ -170,11 +169,11 @@ public class SimulationWindowController implements Initializable {
         Driver.simulation.addNewUser("Default", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
         accounts.put("Default", new Account("Default", "", AssetManager.DEFAULT_USER_IMAGE_URL));
         // ************* //
-        
+        Driver.simulation.notifyAllModules();
         if (!RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms())) {
             writeToConsole("[Initializer] Missing rooms, cannot display house layout");
         }
-        
+
         initializeSHS();
 
     }
@@ -205,13 +204,15 @@ public class SimulationWindowController implements Initializable {
         } else {
             // Simulation was ON, turning OFF
             simulationClock.stop();
-            moduleContainer.getSelectionModel().select(shsTab);
+            locationPane.getChildren().remove(locationOptions);
             for (Node node : shsControls) {
                 node.setDisable(true);
             }
             for (Tab tab : moduleContainer.getTabs()) {
-                if (!tab.getText().equals("SHS")) {
+                if (!tab.equals(shsTab)) {
                     tab.setDisable(true);
+                } else {
+                    moduleContainer.getSelectionModel().select(tab);
                 }
             }
 
@@ -273,6 +274,7 @@ public class SimulationWindowController implements Initializable {
             }
             locationPane.getChildren().remove(locationOptions);
             locationOptions = null;
+            Driver.simulation.notifyAllModules();
             RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
         });
         locationPane.getChildren().add(locationOptions);
@@ -322,6 +324,7 @@ public class SimulationWindowController implements Initializable {
                 String location = Driver.simulation.getUserLocation(loggedInUser);
                 locationLink.setText(location);
                 editHomeStage = null;
+                Driver.simulation.notifyAllModules();
                 RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
             });
             editHomeStage.show();
@@ -341,7 +344,8 @@ public class SimulationWindowController implements Initializable {
     private void handleChooseDate(Event event) {
         DatePicker dateChooser = (DatePicker) event.getSource();
         try {
-            updateDate(dateChooser.getValue());
+            Driver.simulation.updateSimulationDate(dateChooser.getValue());
+            updateDate();
         } catch (NullPointerException ex) {
         }
     }
@@ -358,7 +362,8 @@ public class SimulationWindowController implements Initializable {
             int hr = (int) this.hour.getValue();
             int min = (int) this.minute.getValue();
             int sec = (int) this.second.getValue();
-            updateTime(hr, min, sec);
+            Driver.simulation.updateSimulationTime(LocalTime.of(hr, min, sec));
+            updateTime();
         } catch (NullPointerException ex) {
         }
 
@@ -427,6 +432,7 @@ public class SimulationWindowController implements Initializable {
             editStage.setOnCloseRequest((e) -> {
                 usersList.getSelectionModel().clearSelection();
                 editStage = null;
+                Driver.simulation.notifyAllModules();
                 RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
             });
             editStage.show();
@@ -478,6 +484,17 @@ public class SimulationWindowController implements Initializable {
                 newUser.appendChild(doc.createElement("room").appendChild(doc.createTextNode(Driver.simulation.getUserLocation(username))).getParentNode());
                 newUser.appendChild(doc.createElement("password").appendChild(doc.createTextNode(acc.getPassword())).getParentNode());
                 newUser.appendChild(doc.createElement("image").appendChild(doc.createTextNode(acc.getImageURL())).getParentNode());
+                Element permissions = doc.createElement("permissions");
+                for (Map.Entry<Class, HashMap<String, Boolean>> modulePerm : user.getPermissions().entrySet()) {
+                    Element module = doc.createElement("commands");
+                    module.setAttribute("module", modulePerm.getKey().getName());
+                    for (Map.Entry<String, Boolean> perm : modulePerm.getValue().entrySet()) {
+                        String commandName = perm.getKey().replace(" ", "_SPACE_").replace("/", "_SLASH_");
+                        module.appendChild(doc.createElement(commandName).appendChild(doc.createTextNode(perm.getValue().toString())).getParentNode());
+                    }
+                    permissions.appendChild(module);
+                }
+                newUser.appendChild(permissions);
                 rootElement.appendChild(newUser);
             }
             doc.appendChild(rootElement);
@@ -488,6 +505,8 @@ public class SimulationWindowController implements Initializable {
 
             //write data
             transformer.transform(new DOMSource(doc), new StreamResult(chosenFile));
+
+            writeToConsole("[Save Users] Saving complete");
         } catch (Exception e) {
             writeToConsole("[Save Users] Error saving document");
         }
@@ -522,8 +541,7 @@ public class SimulationWindowController implements Initializable {
 
                 NodeList xmlList = doc.getDocumentElement().getElementsByTagName("User");
                 for (int i = 0; i < xmlList.getLength(); ++i) {
-                    org.w3c.dom.Node node = xmlList.item(i);
-                    Element element = (Element) node;
+                    Element element = (Element) xmlList.item(i);
                     String name = element.getElementsByTagName("username").item(0).getTextContent();
                     if (Driver.simulation.getAllUserNames().contains(name)) {
                         writeToConsole("[Load Users] User \"" + name + "\" already exits, keeping original");
@@ -535,11 +553,30 @@ public class SimulationWindowController implements Initializable {
                     String room = element.getElementsByTagName("room").item(0).getTextContent();
                     String password = element.getElementsByTagName("password").item(0).getTextContent();
                     String imageURL = element.getElementsByTagName("image").item(0).getTextContent();
-
                     Driver.simulation.addNewUser(name, isadmin, usertype, room);
                     accounts.put(name, new Account(name, password, imageURL));
                     usersList.getItems().add(usersList.getItems().size() - 1, name);
+
+                    Person user = Driver.simulation.getUser(name);
+                    NodeList perms = element.getElementsByTagName("permissions").item(0).getChildNodes();
+                    for (int j = 0; j < perms.getLength(); ++j) {
+                        if (perms.item(j).getNodeType() != org.w3c.dom.Node.ELEMENT_NODE) {
+                            continue;
+                        }
+                        Element commands = (Element) perms.item(j);
+                        String module = commands.getAttribute("module");
+                        NodeList coms = commands.getChildNodes();
+                        for (int comIdx = 0; comIdx < coms.getLength(); ++comIdx) {
+                            if (coms.item(comIdx).getNodeType() != org.w3c.dom.Node.ELEMENT_NODE) {
+                                continue;
+                            }
+                            Element command = (Element) coms.item(comIdx);
+                            user.setModulePermission(Class.forName(module), command.getTagName().replace("_SPACE_", " ").replace("_SLASH_", "/"), Boolean.parseBoolean(command.getTextContent()));
+                        }
+                    }
+
                 }
+                writeToConsole("[Load Users] Loading complete");
             } catch (Exception e) {
                 writeToConsole("[Load Users] Error loading document");
             }
@@ -579,6 +616,7 @@ public class SimulationWindowController implements Initializable {
         userProfilePic.setDisable(false);
         usernameDisplay.setText(loggedInUser);
         usersList.getItems().remove(loggedInUser);
+        addTab.setDisable(false);
 
         locationPane.setVisible(true);
         String location = Driver.simulation.getUserLocation(loggedInUser);
@@ -620,6 +658,24 @@ public class SimulationWindowController implements Initializable {
         userProfilePic.setDisable(true);
         loggedInUser = null;
         locationPane.getChildren().remove(locationOptions);
+        locationLink.setText("");
+        addTab.setDisable(true);
+        for (int i = 0; i < moduleContainer.getTabs().size(); ++i) {
+            Tab tab = moduleContainer.getTabs().get(i);
+            if (!tab.equals(shsTab) && !tab.equals(addTab)) {
+                AnchorPane tabPane = (AnchorPane) tab.getContent();
+                for (Node node : tabPane.getChildrenUnmodifiable()) {
+                    if (node instanceof Button) {
+                        Button b = (Button) node;
+                        if (b.getText().equals("Close Module")) {
+                            b.fire();
+                            --i;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         usernameTag.setVisible(true);
         usernameInput.setVisible(true);
@@ -676,37 +732,199 @@ public class SimulationWindowController implements Initializable {
      */
     @FXML
     private void handleSelectSHCItem(Event event) {
-        String item = (String) shcItems.getSelectionModel().getSelectedItem();
-        shcOpenClosePane.getChildren().removeAll(shcOpenClosePane.getChildren());
-
-        if (item.equals("Windows")) {
-            for (Window window : Driver.simulation.getWindows(locationLink.getText().trim())) {
-                CheckBox windowCheck = new CheckBox(window.name);
-                windowCheck.setSelected(window.getOpen());
-                windowCheck.setLayoutX(15);
-                windowCheck.setFocusTraversable(false);
-                windowCheck.setOnAction((e) -> {
-                    window.setOpen(windowCheck.isSelected());
-                });
-                shcOpenClosePane.getChildren().add(windowCheck);
-            }
-        } else if (item.equals("Doors")) {
-            for (Door door : Driver.simulation.getDoors(locationLink.getText().trim())) {
-                CheckBox doorCheck = new CheckBox(door.name);
-                doorCheck.setSelected(door.getOpen());
-                doorCheck.setLayoutX(15);
-                doorCheck.setFocusTraversable(false);
-                doorCheck.setOnAction((e) -> {
-                    door.setOpen(doorCheck.isSelected());
-                });
-                shcOpenClosePane.getChildren().add(doorCheck);
-            }
-
-        } else if (item.equals("Lights")) {
-
+        String command = (String) shcCommands.getSelectionModel().getSelectedItem();
+        if (command == null) {
+            event.consume();
+            return;
         }
-        shcOpenClosePane.applyCss();
-        shcOpenClosePane.layout();
+        Person loggedPerson = Driver.simulation.getUser(loggedInUser);
+        SHC_Module mod = (SHC_Module) Driver.simulation.getModuleOfType(SHC_Module.class);
+
+        shcCommandOptionsPane.getChildren().removeAll(shcCommandOptionsPane.getChildren());
+        String label = "";
+        for (int i = 0; i < command.split(" ").length - 1; ++i) {
+            label += " " + command.split(" ")[i];
+        }
+        shcCommandOptionsLabel.setText(label.trim());
+
+        ArrayList<Room> rooms = new ArrayList<>();
+        switch (loggedPerson.getUserType()) {
+            case ADULT:
+            case STRANGER:
+                rooms = Driver.simulation.getRooms();
+                break;
+            case CHILD:
+            case GUEST:
+                rooms.add(Driver.simulation.getRoom(Driver.simulation.getUserLocation(loggedInUser)));
+                break;
+        }
+        for (Room room : rooms) {
+            if (command.contains("Windows")) {
+                for (Window window : room.getWindows()) {
+                    CheckBox windowCheck = new CheckBox(window.toString());
+                    windowCheck.setSelected(window.getOpen());
+                    windowCheck.setFocusTraversable(false);
+                    windowCheck.setOnAction((e) -> {
+                        if (windowCheck.isSelected()) {
+                            if (!mod.openThisWindow(room.getName(), window.getID())) {
+                                windowCheck.setSelected(false);
+                                writeToConsole("[SHC] Could not open window " + window.toString());
+                            }
+                        } else {
+                            if (!mod.closeThisWindow(room.getName(), window.getID())) {
+                                windowCheck.setSelected(true);
+                                writeToConsole("[SHC] Could not close window " + window.toString());
+                            }
+                        }
+                        RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                    });
+                    shcCommandOptionsPane.getChildren().add(windowCheck);
+                }
+            } else if (command.contains("Doors")) {
+                for (Door door : room.getDoors()) {
+                    CheckBox doorCheck = new CheckBox(door.toString());
+                    doorCheck.setFocusTraversable(false);
+                    if (command.contains("Lock")) {
+                        doorCheck.setSelected(door.getLocked());
+                        doorCheck.setOnAction((e) -> {
+                            if (doorCheck.isSelected()) {
+                                if (!mod.lockThisDoor(room.getName(), door.getID())) {
+                                    doorCheck.setSelected(false);
+                                    writeToConsole("[SHC] Could not lock door" + door.toString());
+                                }
+                            } else {
+                                if (!mod.unlockThisDoor(room.getName(), door.getID())) {
+                                    doorCheck.setSelected(true);
+                                    writeToConsole("[SHC] Could not unlock door" + door.toString());
+                                }
+                            }
+                            RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                        });
+                    } else {
+                        doorCheck.setSelected(door.getOpen());
+                        doorCheck.setOnAction((e) -> {
+                            if (doorCheck.isSelected()) {
+                                if (!mod.openGarage(room.getName(), door.getID())) {
+                                    doorCheck.setSelected(false);
+                                    writeToConsole("[SHC] Could not open door" + door.toString());
+                                }
+                            } else {
+                                if (!mod.closeGarage(room.getName(), door.getID())) {
+                                    doorCheck.setSelected(true);
+                                    writeToConsole("[SHC] Could not close door" + door.toString());
+                                }
+                            }
+                            RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                        });
+                    }
+
+                    shcCommandOptionsPane.getChildren().add(doorCheck);
+                }
+
+            } else if (command.contains("Lights")) {
+                CheckBox auto = new CheckBox("Auto Mode");
+                auto.setOnAction((e) -> {
+                    mod.setAutoMode(auto.isSelected());
+                    Driver.simulation.notifyAllModules();
+                    RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                });
+                for (Light light : room.getLights()) {
+                    CheckBox lightCheck = new CheckBox(light.toString());
+                    lightCheck.setSelected(light.getIsOn());
+                    lightCheck.setFocusTraversable(false);
+                    lightCheck.setOnAction((e) -> {
+                        if (lightCheck.isSelected()) {
+                            if (!mod.turnOnLight(room.getName(), light.getID())) {
+                                lightCheck.setSelected(false);
+                                writeToConsole("[SHC] Could not turn on light" + light.toString());
+                            }
+                        } else {
+                            if (!mod.turnOffLight(room.getName(), light.getID())) {
+                                lightCheck.setSelected(true);
+                                writeToConsole("[SHC] Could not turn off light" + light.toString());
+                            }
+                        }
+                        RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                    });
+                    shcCommandOptionsPane.getChildren().add(lightCheck);
+                }
+            }
+        }
+
+        Hyperlink checkAll = new Hyperlink("All");
+        checkAll.setOnAction((e) -> {
+            for (Node node : shcCommandOptionsPane.getChildren()) {
+                if (node instanceof CheckBox) {
+                    CheckBox otherChecks = (CheckBox) node;
+                    if (!otherChecks.isSelected() && !otherChecks.getText().equals("Auto Mode")) {
+                        otherChecks.fire();
+                    }
+                }
+            }
+        });
+        Hyperlink checkNone = new Hyperlink("None");
+        checkNone.setOnAction((e) -> {
+            for (Node node : shcCommandOptionsPane.getChildren()) {
+                if (node instanceof CheckBox) {
+                    CheckBox otherChecks = (CheckBox) node;
+                    if (otherChecks.isSelected() && !otherChecks.getText().equals("Auto Mode")) {
+                        otherChecks.fire();
+                    }
+                }
+            }
+        });
+        HBox allNonePane = new HBox(checkAll, new Label(" / "), checkNone);
+        shcCommandOptionsPane.getChildren().add(allNonePane);
+        shcCommandOptionsPane.applyCss();
+        shcCommandOptionsPane.layout();
+    }
+
+    /**
+     * Handles events that trigger to select a SHP item. Gets the room item name
+     * from the shcItems ComboBox and determines which name was selected. Clears
+     * and fills the selection pane with the available items taken from the
+     * simulation.
+     *
+     * @param event the event that triggers this method
+     */
+    @FXML
+    private void handleSelectSHPItem(Event event) {
+        String item = (String) shpCommands.getSelectionModel().getSelectedItem();
+        shpCommandOptionsPane.getChildren().removeAll(shpCommandOptionsPane.getChildren());
+        SHP_Module module = (SHP_Module) Driver.simulation.getModuleOfType(SHP_Module.class);
+
+        if (item.contains("Away")) {
+            ToggleButton away = new ToggleButton(item);
+            away.setPrefWidth(shpCommandOptionsPane.getWidth() - 25);
+            away.setSelected(module.getAwayMode());
+            away.setOnAction((e) -> {
+                away.setSelected(module.toggleAwayMode());
+                Driver.simulation.notifyAllModules();
+                RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+            });
+            shpCommandOptionsPane.getChildren().add(away);
+        } else if (item.contains("Light")) {
+            for (Light light : Driver.simulation.getLights(locationLink.getText().trim())) {
+                CheckBox lightCheck = new CheckBox(light.toString());
+
+                lightCheck.setSelected(module.getLights().contains(light.getID()));
+                lightCheck.setFocusTraversable(false);
+                lightCheck.setOnAction((e) -> {
+                    if (lightCheck.isSelected()) {
+                        module.addLight(light.getID());
+                    } else {
+                        module.removeLight(light.getID());
+                    }
+                    Driver.simulation.notifyAllModules();
+                    RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+
+                });
+                shcCommandOptionsPane.getChildren().add(lightCheck);
+            }
+        }
+
+        shpCommandOptionsPane.applyCss();
+        shpCommandOptionsPane.layout();
     }
 
     // --- HELPER METHODS --- //
@@ -721,8 +939,9 @@ public class SimulationWindowController implements Initializable {
             @Override
             public void handle(long now) {
                 if ((long) (prev / timeSpeed) != (long) (now / timeSpeed)) {
-                    LocalTime currentTime = LocalTime.parse(getTime()).plusSeconds(1);
-                    updateTime(currentTime.getHour(), currentTime.getMinute(), currentTime.getSecond());
+                    Driver.simulation.incrementSimulationTime();
+                    updateDate();
+                    updateTime();
                 }
                 prev = now;
             }
@@ -754,6 +973,7 @@ public class SimulationWindowController implements Initializable {
         usersList.getItems().addAll(FXCollections.observableArrayList(Driver.simulation.getAllUserNames()));
         usersList.getItems().add("[New User]");
         locationPane.setVisible(false);
+        addTab.setDisable(true);
     }
 
     /**
@@ -788,9 +1008,8 @@ public class SimulationWindowController implements Initializable {
      *
      * @param date the date to be set
      */
-    private void updateDate(LocalDate date) {
-        String day = date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.CANADA) + " " + date.getMonth().getDisplayName(TextStyle.SHORT, Locale.CANADA) + " " + date.getDayOfMonth() + " " + date.getYear();
-        dateDisplay.setText(day);
+    private void updateDate() {
+        dateDisplay.setText(Driver.simulation.getSimulationTime().format(DateTimeFormatter.ofPattern("EEE MMM d YYY")));
     }
 
     /**
@@ -800,9 +1019,8 @@ public class SimulationWindowController implements Initializable {
      * @param min the minute to be set
      * @param sec the second to be set
      */
-    private void updateTime(int hour, int min, int sec) {
-        String time = String.format("%02d:%02d:%02d", hour, min, sec);
-        timeDisplay.setText(time);
+    private void updateTime() {
+        timeDisplay.setText(Driver.simulation.getSimulationTime().format(DateTimeFormatter.ofPattern("hh:mm:ss")));
     }
 
     /**
@@ -835,13 +1053,14 @@ public class SimulationWindowController implements Initializable {
      * @param module the module name to be created
      */
     private void createModule(Tab module) {
+        Person loggedPerson = Driver.simulation.getUser(loggedInUser);
         moduleContainer.getTabs().add(moduleContainer.getTabs().size() - 1, module);
 
         AnchorPane topPane = new AnchorPane();
         module.setContent(topPane);
         moduleContainer.applyCss();
         moduleContainer.layout();
-
+        Module mod = Driver.simulation.getModuleFromName(module.getText());
         if (module.getText().equals("SHC")) {
             AnchorPane itemsPane = new AnchorPane();
             itemsPane.getStyleClass().add("simulationSubItem");
@@ -850,31 +1069,38 @@ public class SimulationWindowController implements Initializable {
             topPane.applyCss();
             topPane.layout();
 
-            Label itemLabel = new Label("Item");
+            Label itemLabel = new Label("Commands");
             itemLabel.setPrefSize(itemsPane.getWidth(), 20);
             itemLabel.getStyleClass().add("moduleItemTitle");
             itemLabel.setFocusTraversable(false);
             itemsPane.getChildren().add(itemLabel);
 
-            shcItems = new ListView();
-            shcItems.getItems().addAll(Arrays.asList(new String[]{"Windows", "Lights", "Doors"}));
-            shcItems.setPrefSize(itemsPane.getWidth() - 5, itemsPane.getHeight() - 25);
-            shcItems.setFocusTraversable(false);
-            shcItems.setOnMouseClicked((event) -> {
+            shcCommands = new ListView();
+            for (String commands : Driver.simulation.getModuleCommands(SHC_Module.class)) {
+                if (loggedPerson.getModulePermission(SHC_Module.class, commands)) {
+                    shcCommands.getItems().add(commands);
+                }
+            }
+            shcCommands.setPrefSize(itemsPane.getWidth() - 5, itemsPane.getHeight() - 25);
+            shcCommands.setFocusTraversable(false);
+            shcCommands.setOnMouseClicked((event) -> {
                 handleSelectSHCItem(event);
             });
-            itemsPane.getChildren().add(shcItems);
+            itemsPane.getChildren().add(shcCommands);
 
-            Label openCloseLabel = new Label("Open/Close");
-            openCloseLabel.setPrefSize(topPane.getWidth(), 20);
-            openCloseLabel.getStyleClass().add("moduleItemTitle");
-            openCloseLabel.setFocusTraversable(false);
-            topPane.getChildren().add(openCloseLabel);
+            shcCommandOptionsLabel = new Label("Options");
+            shcCommandOptionsLabel.setPrefSize(topPane.getWidth(), 20);
+            shcCommandOptionsLabel.getStyleClass().add("moduleItemTitle");
+            shcCommandOptionsLabel.setFocusTraversable(false);
+            topPane.getChildren().add(shcCommandOptionsLabel);
 
-            shcOpenClosePane = new VBox();
-            shcOpenClosePane.getStyleClass().addAll("simulationSubItem", "moduleVBox");
-            shcOpenClosePane.setPrefSize(itemsPane.getWidth(), 200);
-            topPane.getChildren().add(shcOpenClosePane);
+            shcCommandOptionsPane = new VBox();
+            shcCommandOptionsPane.getStyleClass().add("moduleVBox");
+            shcCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 190);
+            ScrollPane scroll = new ScrollPane(shcCommandOptionsPane);
+            scroll.getStyleClass().add("simulationSubItem");
+            scroll.setPrefSize(itemsPane.getWidth(), 250);
+            topPane.getChildren().add(scroll);
 
             moduleContainer.applyCss();
             moduleContainer.layout();
@@ -882,12 +1108,66 @@ public class SimulationWindowController implements Initializable {
             itemsPane.setLayoutY(30);
             itemLabel.setLayoutX(0);
             itemLabel.setLayoutY(0);
-            shcItems.setLayoutX(2.5);
-            shcItems.setLayoutY(20);
-            openCloseLabel.setLayoutX(0);
-            openCloseLabel.setLayoutY(itemsPane.getLayoutY() + itemsPane.getHeight() + 20);
-            shcOpenClosePane.setLayoutX(15);
-            shcOpenClosePane.setLayoutY(openCloseLabel.getLayoutY() + openCloseLabel.getHeight() + 10);
+            shcCommands.setLayoutX(2.5);
+            shcCommands.setLayoutY(20);
+            shcCommandOptionsLabel.setLayoutX(0);
+            shcCommandOptionsLabel.setLayoutY(itemsPane.getLayoutY() + itemsPane.getHeight() + 20);
+            scroll.setLayoutX(15);
+            scroll.setLayoutY(shcCommandOptionsLabel.getLayoutY() + shcCommandOptionsLabel.getHeight() + 10);
+
+        } else if (module.getText().equals("SHP")) {
+            AnchorPane itemsPane = new AnchorPane();
+            itemsPane.getStyleClass().add("simulationSubItem");
+            itemsPane.setPrefSize(topPane.getWidth() - 30, 120);
+            topPane.getChildren().add(itemsPane);
+            topPane.applyCss();
+            topPane.layout();
+
+            Label itemLabel = new Label("Commands");
+            itemLabel.setPrefSize(itemsPane.getWidth(), 20);
+            itemLabel.getStyleClass().add("moduleItemTitle");
+            itemLabel.setFocusTraversable(false);
+            itemsPane.getChildren().add(itemLabel);
+
+            shpCommands = new ListView();
+            for (String commands : Driver.simulation.getModuleCommands(SHP_Module.class)) {
+                if (loggedPerson.getModulePermission(SHP_Module.class, commands)) {
+                    shpCommands.getItems().add(commands);
+                }
+            }
+            shpCommands.setPrefSize(itemsPane.getWidth() - 5, itemsPane.getHeight() - 25);
+            shpCommands.setFocusTraversable(false);
+            shpCommands.setOnMouseClicked((event) -> {
+                handleSelectSHPItem(event);
+            });
+            itemsPane.getChildren().add(shpCommands);
+
+            shpCommandOptionsLabel = new Label("Options");
+            shpCommandOptionsLabel.setPrefSize(topPane.getWidth(), 20);
+            shpCommandOptionsLabel.getStyleClass().add("moduleItemTitle");
+            shpCommandOptionsLabel.setFocusTraversable(false);
+            topPane.getChildren().add(shpCommandOptionsLabel);
+
+            shpCommandOptionsPane = new VBox();
+            shpCommandOptionsPane.getStyleClass().addAll("moduleVBox");
+            shcCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 190);
+            ScrollPane scroll = new ScrollPane(shpCommandOptionsPane);
+            scroll.getStyleClass().add("simulationSubItem");
+            scroll.setPrefSize(itemsPane.getWidth(), 250);
+            topPane.getChildren().add(shpCommandOptionsPane);
+
+            moduleContainer.applyCss();
+            moduleContainer.layout();
+            itemsPane.setLayoutX(15);
+            itemsPane.setLayoutY(30);
+            itemLabel.setLayoutX(0);
+            itemLabel.setLayoutY(0);
+            shpCommands.setLayoutX(2.5);
+            shpCommands.setLayoutY(20);
+            shpCommandOptionsLabel.setLayoutX(0);
+            shpCommandOptionsLabel.setLayoutY(itemsPane.getLayoutY() + itemsPane.getHeight() + 20);
+            scroll.setLayoutX(15);
+            scroll.setLayoutY(shpCommandOptionsLabel.getLayoutY() + shpCommandOptionsLabel.getHeight() + 10);
         }
 
         Button close = new Button("Close Module");
@@ -900,6 +1180,7 @@ public class SimulationWindowController implements Initializable {
                     break;
                 case "SHP":
                     moduleButton = shpModuleCreator;
+                    mod.detachSimulation();
                     break;
                 case "SHH":
                     moduleButton = shhModuleCreator;

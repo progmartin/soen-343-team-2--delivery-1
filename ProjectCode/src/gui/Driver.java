@@ -48,6 +48,8 @@ public class Driver extends Application {
             Room backyard = new Room("Backyard");
             backyard.addDoor(new Door(1, true, false, "Backdoor"));
             backyard.addDoor(new Door(2, false, false, "Backdoor"));
+            backyard.addLight(new Light(1, true, "BackLight 1"));
+            backyard.addLight(new Light(2, false, "BackLight 2"));
             roomArray.add(0, backyard);
             roomArray.add(new Room("Entrance"));
             roomArray.add(new Room("Outside"));
@@ -58,11 +60,8 @@ public class Driver extends Application {
             
             // Set the simulation scene to swap between scenes if needed.
             Pane root = FXMLLoader.load(getClass().getResource("SimulationWindow.fxml"));
-           
             Scene scene = new Scene(root);
-            
             scene.getRoot().requestFocus();
-            
             Driver.simulationScene = scene;
             
             // Change the attributes if the window
