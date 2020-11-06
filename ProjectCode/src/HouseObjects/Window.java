@@ -123,6 +123,9 @@ public class Window {
         this.name = name;
     }
     
+    /**
+     * Prints the name of the window
+     */
     public String toString(){
     	return name;
     }

@@ -32,7 +32,9 @@ public class Room {
      */
     ArrayList<Window> windows = new ArrayList<>();
     
-    //Lights in room
+    /**
+     * Lights in the room.
+     */
     ArrayList<Light> lights = new ArrayList<>();
 
     /**
@@ -216,11 +218,20 @@ public class Room {
         return people;
     }
     
-    //Methods for Light
+    /**
+     * Adds a light to the light ArrayList
+     * 
+     * @param light the light to be added
+     */
     public void addLight(Light light){
     	lights.add(light);
     }
     
+    /**
+     * Remove a light from the light ArrayList
+     * 
+     * @param light the light to be removed
+     */
     public void removeLight(Light light){
     	for (int i = 1; i <= lights.size(); i++) {
             if (lights.get(i).id == light.id) {
@@ -229,10 +240,20 @@ public class Room {
         }
     }
     
+    /**
+     * A method for returning the number of lights in a room
+     * 
+     * @return number of lights in the given room.
+     */
     public int numberOfLights(){
     	return lights.size();
     }
     
+    /**
+     * A method for getting the ArrayList of lights in the room
+     * 
+     * @return ArrayList of lights
+     */
     public ArrayList<Light> getLights(){
     	return lights;
     }
