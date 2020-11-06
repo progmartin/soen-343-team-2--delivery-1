@@ -96,16 +96,17 @@ public class RoomObjtoDisplay {
         }
         // Adding Lights
         ArrayList<Rectangle> lights = new ArrayList<>();
-        for (int lightIdx = 0; lightIdx < backyard.getWindows().size(); ++lightIdx) {
-            double lightOffsetX = ((roomRect.getWidth() / (backyard.getWindows().size() + 1)) - (widthOfLight / 2)) * (lightIdx + 1);
-            Rectangle light = new Rectangle(widthOfLight, heightOfLight, new ImagePattern((backyard.getWindows().get(lightIdx).getOpen() ? AssetManager.getLightOnImage() : AssetManager.getLightOffImage())));
+        for (int lightIdx = 0; lightIdx < backyard.getLights().size(); ++lightIdx) {
+            double lightOffsetX = ((roomRect.getWidth() / (backyard.getLights().size() + 1)) - (widthOfLight / 2)) * (lightIdx + 1);
+            Rectangle light = new Rectangle(widthOfLight, heightOfLight, new ImagePattern((backyard.getLights().get(lightIdx).getIsOn() ? AssetManager.getLightOnImage() : AssetManager.getLightOffImage())));
             light.setX(lightOffsetX);
-            light.setY(lengthOfRoom * 0.1);
+            light.setY((lengthOfRoom * 0.9) - heightOfLight );
             lights.add(light);
         }
         AnchorPane roomPane = new AnchorPane(roomRect, text);
         roomPane.getChildren().addAll(doors.toArray(new Arc[doors.size()]));
         roomPane.getChildren().addAll(people.toArray(new Rectangle[people.size()]));
+        roomPane.getChildren().addAll(lights.toArray(new Rectangle[lights.size()]));
         roomPane.setLayoutX(initOffsetX);
         roomPane.setLayoutY(initOffsetY);
         root.getChildren().add(roomPane);
@@ -154,11 +155,23 @@ public class RoomObjtoDisplay {
                 person.setY(personOffsetY);
                 people.add(person);
             }
-
+            
+            // Adding Lights
+            lights = new ArrayList<>();
+            for (int lightIdx = 0; lightIdx < room.getLights().size(); ++lightIdx) {
+                double lightOffsetX = ((roomRect.getWidth() - widthOfLight) / 2) + widthOfLight * Math.sin(((lightIdx + 1) * Math.PI * 2) / room.getLights().size());
+                double lightOffsetY = ((roomRect.getHeight() - heightOfLight) / 2) + widthOfLight * Math.cos(((lightIdx + 1) * Math.PI * 2) / room.getLights().size());
+                Rectangle light = new Rectangle(widthOfLight, heightOfLight, new ImagePattern((room.getLights().get(lightIdx).getIsOn() ? AssetManager.getLightOnImage() : AssetManager.getLightOffImage())));
+                light.setX(lightOffsetX);
+                light.setY(lightOffsetY);
+                lights.add(light);
+            }
+            
             roomPane = new AnchorPane(roomRect, text);
             roomPane.getChildren().addAll(doors.toArray(new Arc[doors.size()]));
             roomPane.getChildren().addAll(people.toArray(new Rectangle[people.size()]));
             roomPane.getChildren().addAll(windows.toArray(new Rectangle[windows.size()]));
+            roomPane.getChildren().addAll(lights.toArray(new Rectangle[lights.size()]));
             roomPane.setLayoutX(initOffsetX + (((roomIdx - 1) % numOfRoomsWide) * lengthOfRoom));
             roomPane.setLayoutY(initOffsetY + ((Math.floor((roomIdx - 1) / numOfRoomsWide) + 1) * lengthOfRoom));
             root.getChildren().add(roomPane);
