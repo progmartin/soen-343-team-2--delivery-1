@@ -60,6 +60,7 @@ public class EditFormController implements Initializable {
 
     private boolean newUser = false;
     private String profilePic = "";
+    private Person userPerson;
 
     /**
      * Initializes the controller class.
@@ -71,29 +72,29 @@ public class EditFormController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         accessibility.getItems().addAll(Arrays.asList(new String[]{"Adult (Family)", "Child (Family)", "Guest", "Stranger"}));
         moduleSelector.getItems().addAll(Driver.simulation.getModuleNames());
-        Person person = Driver.simulationController.editedUser;
+        userPerson = Driver.simulationController.editedUser;
 
-        if (person == null) {
+        if (userPerson == null) {
             title.setText("Create New User");
             newUser = true;
             location.setItems(FXCollections.observableArrayList(Driver.simulation.getRoomNames()));
             profilePic = AssetManager.DEFAULT_USER_IMAGE_URL;
             userProfile.setImage(new Image(profilePic));
         } else {
-            usernameInput.setText(person.getName());
+            usernameInput.setText(userPerson.getName());
             usernameInput.setDisable(true);
-            passwordInput.setText(Driver.simulationController.accounts.get(person.getName()).getPassword());
+            passwordInput.setText(Driver.simulationController.accounts.get(userPerson.getName()).getPassword());
             for (int i = 0; i < accessibility.getItems().size(); i++) {
                 String item = (String) accessibility.getItems().get(i);
-                if (person.getUserTypeAsString().equals(item)) {
+                if (userPerson.getUserTypeAsString().equals(item)) {
                     accessibility.getSelectionModel().select(i);
                 }
             }
-            isAdmin.setSelected(person.getIsAdmin());
-            location.getItems().add(Driver.simulation.getUserLocation(person.getName()));
+            isAdmin.setSelected(userPerson.getIsAdmin());
+            location.getItems().add(Driver.simulation.getUserLocation(userPerson.getName()));
             location.getSelectionModel().select(0);
             location.setDisable(true);
-            profilePic = Driver.simulationController.accounts.get(person.getName()).getImageURL();
+            profilePic = Driver.simulationController.accounts.get(userPerson.getName()).getImageURL();
             userProfile.setImage(new Image(profilePic));
 
         }
@@ -223,18 +224,31 @@ public class EditFormController implements Initializable {
     private void handleSelectModule(Event event) {
         String moduleName = (String) moduleSelector.getSelectionModel().getSelectedItem();
         ArrayList<String> commands = Driver.simulation.getModuleCommands(Driver.simulation.getModuleFromName(moduleName).getClass());
-
+        String access = (String) accessibility.getSelectionModel().getSelectedItem();
+        String label = "";
         modulePermissions.getChildren().remove(0, modulePermissions.getChildren().size());
-        Label descr = new Label();
-        descr.setPrefHeight(40);
+
+        if (moduleName.contains("SHC")) {
+            if (access.equals("Adult (Family)") || access.equals("Stranger")) {
+                label = "Permission does not depend on location";
+            } else if (access.equals("Child (Family)") || access.equals("Guest")) {
+                label = "Permission only applies to current location";
+            }
+        } else if (moduleName.contains("SHP")) {
+        }
+
+        Label descr = new Label(label);
+        descr.setPrefHeight(25);
         descr.setWrapText(true);
         modulePermissions.getChildren().add(descr);
         for (String command : commands) {
             CheckBox cb = new CheckBox(command);
-            cb.setDisable(true);
+            cb.setSelected(userPerson.getModulePermission(Driver.simulation.getModuleFromName(moduleName).getClass(), command));
+            cb.setOnAction((e) -> {
+                userPerson.setModulePermission(Driver.simulation.getModuleFromName(moduleName).getClass(), command, cb.isSelected());
+            });
             modulePermissions.getChildren().add(cb);
         }
-        updateModulePermission();
     }
 
     /**
@@ -249,7 +263,7 @@ public class EditFormController implements Initializable {
 
     /**
      * Checks the user's accessibility and their location to determine the
-     * module's permission. 
+     * module's permission.
      */
     private void updateModulePermission() {
         String module = (String) moduleSelector.getSelectionModel().getSelectedItem();
@@ -263,7 +277,8 @@ public class EditFormController implements Initializable {
             if (access.equals("Adult (Family)")) {
                 for (Node node : modulePermissions.getChildren()) {
                     if (node instanceof CheckBox) {
-                        ((CheckBox) node).setSelected(true);
+                        ((CheckBox) node).setSelected(false);
+                        ((CheckBox) node).fire();
                     } else {
                         ((Label) node).setText("Permission does not depend on location");
                     }
