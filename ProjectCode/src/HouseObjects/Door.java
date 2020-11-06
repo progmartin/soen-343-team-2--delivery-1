@@ -68,6 +68,15 @@ public class Door {
     public boolean getOpen() {
         return open;
     }
+    
+    /**
+     * Get method for locked status.
+     * 
+     * @return is the door is locked
+     */
+    public boolean getLocked(){
+    	return locked;
+    }
 
     /**
      * Get method for the name.
@@ -94,6 +103,15 @@ public class Door {
      */
     public void setOpen(boolean open) {
         this.open = open;
+    }
+    
+    /**
+     * Set method for the locked status.
+     * 
+     * @param locked if door is locked
+     */
+    public void setLocked(boolean locked){
+    	this.locked = locked;
     }
 
     /**

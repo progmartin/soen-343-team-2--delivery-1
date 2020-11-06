@@ -38,7 +38,7 @@ public class SHP_Module extends Module {
         if (awayMode) {
             SHC_Module shc = (SHC_Module) this.sim.getModuleOfType(SHC_Module.class);
             //ArrayList<Integer> simLights = sim.getLights();
-            shc.closeAllWindows(this.sim.getRooms());
+            shc.closeAllWindows(); //removed parameter because this is no longer needed
     	// shc.lockAllDoors(sim.getRooms());
             //for (int x=0; x<simLights.size();x++) {
             //if(lights.contains.simLights.get(x)&& sim.getTime()<timeLightsOn[1] &&sim.getTime()>timeLightsOn[0]) {
