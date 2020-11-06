@@ -16,6 +16,11 @@ public class Door {
      * Whether or not door is open.
      */
     boolean open;
+    
+    /**
+     * whether or not door is locked
+     */
+    boolean locked;
 
     /**
      * Name of the door.
@@ -28,6 +33,7 @@ public class Door {
     public Door() {
         id = 0;
         open = false;
+        locked = false;
         name = "";
     }
 
@@ -38,9 +44,10 @@ public class Door {
      * @param open if the door is open
      * @param name name of the door
      */
-    public Door(int id, boolean open, String name) {
+    public Door(int id, boolean open, boolean locked, String name) {
         this.id = id;
         this.open = open;
+        this.locked = locked;
         this.name = name;
     }
 
