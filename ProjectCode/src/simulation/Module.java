@@ -15,7 +15,7 @@ public abstract class Module {
     private String name;
     Simulation sim;
     
-    protected static ArrayList<String> commands;
+    protected ArrayList<String> commands;
 
     public Module(String name, ArrayList<String> commands) {
         this.name = name;
@@ -36,8 +36,8 @@ public abstract class Module {
         return this.name;
     }
     
-    public static ArrayList<String> getCommands(){
-        return Module.commands;
+    public ArrayList<String> getCommands(){
+        return this.commands;
     }
     
 

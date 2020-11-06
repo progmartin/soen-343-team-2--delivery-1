@@ -5,7 +5,6 @@
  */
 package simulation;
 
-import gui.Driver;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -14,7 +13,7 @@ import java.util.Arrays;
  * @author DRC
  */
 public class SHP_Module extends Module {
-    
+
     boolean awayMode;
     //List of Light IDs
     ArrayList<Integer> lights;
@@ -25,8 +24,21 @@ public class SHP_Module extends Module {
     boolean intruderDetected;
 
     public SHP_Module() {
-        super("SHP", new ArrayList<>());
-        this.commands.addAll(Arrays.asList("Away Mode", "Permanent Lights", "Set Alert Time"));
+        super("SHP", new ArrayList<>(Arrays.asList("Away Mode", "Permanent Lights", "Set Alert Time")));
+    }
+
+    public ArrayList<Integer> getLights() {
+        return lights;
+    }
+
+    public void addLight(int lightID) {
+        if (!lights.contains(lightID)) {
+            lights.add(lightID);
+        }
+    }
+    
+    public void removeLight(int lightID){
+        lights.remove(lightID);
     }
 
     public boolean getAwayMode() {
@@ -39,7 +51,7 @@ public class SHP_Module extends Module {
             SHC_Module shc = (SHC_Module) this.sim.getModuleOfType(SHC_Module.class);
             //ArrayList<Integer> simLights = sim.getLights();
             shc.closeAllWindows(); //removed parameter because this is no longer needed
-    	// shc.lockAllDoors(sim.getRooms());
+            // shc.lockAllDoors(sim.getRooms());
             //for (int x=0; x<simLights.size();x++) {
             //if(lights.contains.simLights.get(x)&& sim.getTime()<timeLightsOn[1] &&sim.getTime()>timeLightsOn[0]) {
             //shc.turnOnLight(simLights.get(x));
