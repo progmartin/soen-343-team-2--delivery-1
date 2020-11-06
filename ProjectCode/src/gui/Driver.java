@@ -19,7 +19,7 @@ import HouseObjects.*;
 
 /**
  *
- * @author d_ruiz-cigana
+ * @author d_ruiz-cigana, a_richard
  */
 public class Driver extends Application {
 
@@ -110,7 +110,7 @@ public class Driver extends Application {
 
     //Passes file name as parameters
     /**
-     * Read House Layout file
+     * Read House Layout file for use in the application
      *
      * @param f the file name
      * @return a list of Rooms
@@ -161,7 +161,7 @@ public class Driver extends Application {
                 //add doors to array in room object
                 int nbDoors = input.nextInt();
                 for (int d = 0; d < nbDoors; d++) {
-                    rooms.get(roomCount).addDoor(new Door(doorID, false, false, name.trim() + "Door-" + doorID++));
+                    rooms.get(roomCount).addDoor(new Door(doorID, false, false, name.trim() + " Door-" + doorID++));
                 }
                 input.next();
 
@@ -174,8 +174,8 @@ public class Driver extends Application {
 
                 //add lights to array in room object
                 int nbLights = input.nextInt();
-                for (int w = 0; w < nbLights; w++) {
-                    rooms.get(roomCount).addLight(new Light(lightID++, false));
+                for (int l = 0; l < nbLights; l++) {
+                    rooms.get(roomCount).addLight(new Light(lightID, false, name.trim() + " Light-" + lightID++));
                 }
                 
                 roomCount++;

@@ -236,5 +236,12 @@ public class Room {
     public ArrayList<Light> getLights(){
     	return lights;
     }
+    
+    /**
+     * Prints the given room's name
+     */
+    public String toString(){
+    	return name;
+    }
 
 }

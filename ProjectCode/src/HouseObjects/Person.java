@@ -150,6 +150,13 @@ public class Person {
         }
         return this.getName().equals(((Person) obj).getName());
     }
+    
+    /**
+     * Prints the person's name
+     */
+    public String toString(){
+    	return name;
+    }
 
 	
 

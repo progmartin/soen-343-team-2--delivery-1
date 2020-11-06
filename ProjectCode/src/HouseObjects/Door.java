@@ -104,5 +104,12 @@ public class Door {
     public void setName(String name) {
         this.name = name;
     }
+    
+    /**
+     * This will print the name of the given door
+     */
+    public String toString(){
+    	return name;
+    }
 
 }

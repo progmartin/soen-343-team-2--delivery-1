@@ -9,15 +9,17 @@ public class Light {
 	
 	int id;
 	boolean isOn;
+	String name;
 	
 	public Light(){
 		id = 0;
 		isOn = false;
 	}
 	
-	public Light(int id, boolean isOn){
+	public Light(int id, boolean isOn, String name){
 		this.id = id;
 		this.isOn = isOn;
+		this.name = name;
 	}
 	
 	public int getID(){
@@ -34,6 +36,10 @@ public class Light {
 	
 	public void setIsOn(boolean isOn){
 		this.isOn = isOn;
+	}
+	
+	public String toString(){
+		return name;
 	}
 
 }
