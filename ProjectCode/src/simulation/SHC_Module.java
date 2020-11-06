@@ -20,6 +20,10 @@ public class SHC_Module extends Module {
         this.commands.addAll(Arrays.asList("Open/Close Windows", "Lock/Unlock Doors", "Open/Close Garage", "Turn On/Off Lights"));
     }
 
+    @Override
+    public void update() {
+    }
+
     public void closeAllWindows(ArrayList<Room> rooms) {
         for (Room room : rooms) {
             for (Window w : room.getWindows()) {
