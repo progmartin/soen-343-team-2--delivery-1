@@ -9,16 +9,59 @@ import java.util.Arrays;
  * @author DRC, a_richard
  */
 public class SHC_Module extends Module {
+	
+	/**
+	 * Auto mode will turn on lights in a room automatically if someone is in a room, and turn them off if they leave a room.
+	 * By default, auto mode is set to off.
+	 */
+	boolean autoMode = false;
 
     public SHC_Module() {
         super("SHC", new ArrayList<>(Arrays.asList("Open/Close Windows", "Lock/Unlock Doors", "Open/Close Garage", "Turn On/Off Lights")));
     }
 
     /**
-     * Updates the simulation
+     * Updates the simulation.
+     * 
+     * If auto mode is on, this will turn on lights in a room that has people in it.
+     * It will also turn off lights in a room where there is no one.
      */
     @Override
     public void update() {
+    	//Auto mode functionality
+    	//turns lights on if people in room
+    	//turns lights off if no one in room
+    	if(autoMode){
+    		ArrayList<Room> rooms = sim.getRooms();
+    		for(Room room : rooms){
+    			if(room.numberOfPeople()>0){
+    				for(Light l : room.getLights()){
+    					l.setIsOn(true);
+    				}
+    			}
+    			else if(room.numberOfPeople()==0){
+    				for(Light l : room.getLights()){
+    					l.setIsOn(false);
+    				}
+    			}
+    		}
+    	}
+    }
+    
+    /**
+     * A method to return the status of autoMode
+     * @return true if auto mode is on
+     */
+    public boolean getAutoMode(){
+    	return autoMode;
+    }
+    
+    /**
+     * Method for turning auto mode on and off
+     * @param autoMode new status of auto mode
+     */
+    public void setAutoMode(boolean autoMode){
+    	this.autoMode = autoMode;
     }
 
     /**
