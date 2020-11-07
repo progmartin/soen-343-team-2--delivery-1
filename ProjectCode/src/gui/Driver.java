@@ -31,7 +31,6 @@ public class Driver extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
         try {
-
             FileChooser fileChooserWindow = new FileChooser();
             fileChooserWindow.setTitle("Open House Layout File");
             fileChooserWindow.setInitialDirectory(new File(System.getProperty("user.dir")));
@@ -45,13 +44,6 @@ public class Driver extends Application {
 
             //ArrayList of rooms
             ArrayList<Room> roomArray = readFile(chosenFile.getPath());
-            Room backyard = new Room("Backyard");
-            backyard.addDoor(new Door(1, true, false, "Backdoor"));
-            backyard.addDoor(new Door(2, false, false, "Backdoor"));
-            backyard.addLight(new Light(1, true, "BackLight 1"));
-            backyard.addLight(new Light(2, false, "BackLight 2"));
-            roomArray.add(0, backyard);
-            roomArray.add(new Room("Entrance"));
             roomArray.add(new Room("Outside"));
             
             Driver.simulation = new Simulation(roomArray);
