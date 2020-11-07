@@ -68,6 +68,7 @@ public class SHP_Module extends Module{
     		if(sim.getRooms().get(x).numberOfPeople() != 0)
     		{
     			y++;
+    			break;
     		}
     	}
     	if (y==0)
