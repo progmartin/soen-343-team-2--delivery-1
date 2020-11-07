@@ -1,9 +1,7 @@
 package HouseObjects;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map.Entry;
 import simulation.*;
 
 /**
@@ -51,6 +49,24 @@ public class Person {
     }
 
     /**
+     * Copy Constructor.
+     *
+     * @param copy the person to be copied
+     */
+    public Person(Person copy) {
+        this.name = copy.getName();
+        this.isAdmin = copy.getIsAdmin();
+        this.userType = copy.getUserType();
+        this.modulePermissions = new HashMap<>();
+        for (Entry<Class, HashMap<String, Boolean>> modulePerms : copy.getPermissions().entrySet()) {
+            this.modulePermissions.put(modulePerms.getKey(), new HashMap<>());
+            for (Entry<String, Boolean> permissions : modulePerms.getValue().entrySet()) {
+                this.updateModulePermission(modulePerms.getKey(), permissions.getKey(), permissions.getValue());
+            }
+        }
+    }
+
+    /**
      * Parameterized constructor.
      *
      * @param name the name of the person
@@ -62,11 +78,17 @@ public class Person {
         this.isAdmin = isAdmin;
         this.userType = userType;
         this.modulePermissions = new HashMap<>();
-        initializeDefaultPermissions(SHC_Module.class);
-        initializeDefaultPermissions(SHP_Module.class);
+        this.initializeDefaultPermissions(SHC_Module.class);
+        this.initializeDefaultPermissions(SHP_Module.class);
     }
 
-    private void initializeDefaultPermissions(Class<? extends Module> module) {
+    /**
+     * Default module permissions for a person based on the their accessibility
+     * and their location.
+     *
+     * @param module module to initial permissions for
+     */
+    public final void initializeDefaultPermissions(Class<? extends Module> module) {
         Module mod;
         try {
             mod = module.newInstance();
@@ -79,21 +101,21 @@ public class Person {
         if (mod.getName().equals("SHC")) {
             if (this.userType.equals(Person.UserTypes.ADULT) || this.userType.equals(Person.UserTypes.CHILD) || this.userType.equals(Person.UserTypes.GUEST)) {
                 for (String command : mod.getCommands()) {
-                    this.setModulePermission(module, command, true);
+                    this.updateModulePermission(module, command, true);
                 }
             } else if (this.userType.equals(Person.UserTypes.STRANGER)) {
                 for (String command : mod.getCommands()) {
-                    this.setModulePermission(module, command, false);
+                    this.updateModulePermission(module, command, false);
                 }
             }
         } else if (mod.getName().equals("SHP")) {
             if (this.userType.equals(Person.UserTypes.ADULT) || this.userType.equals(Person.UserTypes.CHILD)) {
                 for (String command : mod.getCommands()) {
-                    this.setModulePermission(module, command, true);
+                    this.updateModulePermission(module, command, true);
                 }
             } else if (this.userType.equals(Person.UserTypes.GUEST) || this.userType.equals(Person.UserTypes.STRANGER)) {
                 for (String command : mod.getCommands()) {
-                    this.setModulePermission(module, command, false);
+                    this.updateModulePermission(module, command, false);
                 }
             }
         }
@@ -202,13 +224,17 @@ public class Person {
      * @return true if the module exists and successfully set permission; false
      * otherwise
      */
-    public boolean setModulePermission(Class module, String command, boolean permission) {
+    public boolean updateModulePermission(Class module, String command, boolean permission) {
         try {
             modulePermissions.get(module).put(command, permission);
         } catch (NullPointerException ex) {
             return false;
         }
         return true;
+    }
+
+    public void setModulePermission(HashMap<Class, HashMap<String, Boolean>> modulePermissions) {
+        this.modulePermissions = modulePermissions;
     }
 
     /**
