@@ -24,7 +24,8 @@ public class SHP_Module extends Module {
     boolean intruderDetected;
 
     public SHP_Module() {
-        super("SHP", new ArrayList<>(Arrays.asList("Away Mode", "Permanent Lights", "Set Alert Time")));
+        super("SHP", new ArrayList<>(Arrays.asList("Away Mode", "Lights On When Away", "Set Alert Time")));
+        lights = new ArrayList<>();
     }
 
     public ArrayList<Integer> getLights() {

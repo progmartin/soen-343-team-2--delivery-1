@@ -17,7 +17,7 @@ public class SHC_Module extends Module {
 	boolean autoMode = false;
 
     public SHC_Module() {
-        super("SHC", new ArrayList<>(Arrays.asList("Open/Close Windows", "Lock/Unlock Doors", "Open/Close Garage", "Turn On/Off Lights")));
+        super("SHC", new ArrayList<>(Arrays.asList("Open/Close Windows", "Lock/Unlock Doors", "Turn On/Off Lights")));
     }
 
     /**
