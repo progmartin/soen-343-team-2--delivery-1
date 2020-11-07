@@ -571,7 +571,7 @@ public class SimulationWindowController implements Initializable {
                                 continue;
                             }
                             Element command = (Element) coms.item(comIdx);
-                            user.setModulePermission(Class.forName(module), command.getTagName().replace("_SPACE_", " ").replace("_SLASH_", "/"), Boolean.parseBoolean(command.getTextContent()));
+                            user.updateModulePermission(Class.forName(module), command.getTagName().replace("_SPACE_", " ").replace("_SLASH_", "/"), Boolean.parseBoolean(command.getTextContent()));
                         }
                     }
 
@@ -817,7 +817,6 @@ public class SimulationWindowController implements Initializable {
                             RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
                         });
                     }
-
                     shcCommandOptionsPane.getChildren().add(doorCheck);
                 }
 
@@ -827,6 +826,7 @@ public class SimulationWindowController implements Initializable {
                     mod.setAutoMode(auto.isSelected());
                     Driver.simulation.notifyAllModules();
                     RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                    writeToConsole("[SHC] Auto Mode is turned " + (mod.getAutoMode() ? "on" : "off"));
                 });
                 for (Light light : room.getLights()) {
                     CheckBox lightCheck = new CheckBox(light.toString());
@@ -889,24 +889,61 @@ public class SimulationWindowController implements Initializable {
      */
     @FXML
     private void handleSelectSHPItem(Event event) {
-        String item = (String) shpCommands.getSelectionModel().getSelectedItem();
+        String command = (String) shpCommands.getSelectionModel().getSelectedItem();
+        if (command == null) {
+            event.consume();
+            return;
+        }
         shpCommandOptionsPane.getChildren().removeAll(shpCommandOptionsPane.getChildren());
         SHP_Module module = (SHP_Module) Driver.simulation.getModuleOfType(SHP_Module.class);
 
-        if (item.contains("Away")) {
-            ToggleButton away = new ToggleButton(item);
+        if (command.contains("Away Mode")) {
+            ToggleButton away = new ToggleButton(command);
             away.setPrefWidth(shpCommandOptionsPane.getWidth() - 25);
             away.setSelected(module.getAwayMode());
             away.setOnAction((e) -> {
                 away.setSelected(module.toggleAwayMode());
                 Driver.simulation.notifyAllModules();
                 RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                writeToConsole("[SHP] Away Mode is turned " + (module.getAwayMode() ? "on" : "off"));
             });
             shpCommandOptionsPane.getChildren().add(away);
-        } else if (item.contains("Light")) {
+
+        } else if (command.contains("Light")) {
+            TextField fromTimeText = new TextField();
+            fromTimeText.setPromptText("ex: 14:23:34");
+            VBox fromTimePane = new VBox(new Label("From"), fromTimeText);
+
+            TextField toTimeText = new TextField();
+            toTimeText.setPromptText("ex: 20:30:57");
+            VBox toTimePane = new VBox(new Label("To"), toTimeText);
+            HBox allTimePane = new HBox(fromTimePane, toTimePane);
+
+            Button setTimebutton = new Button("Set Time");
+            setTimebutton.setOnAction((e) -> {
+                String fromTime = fromTimeText.getText().trim();
+                String toTime = toTimeText.getText().trim();
+                if (!fromTime.matches("^\\d\\d:\\d\\d:\\d\\d$")) {
+                    writeToConsole("[SHP] From time of \"" + fromTime + "\" is not valid");
+                    e.consume();
+                    return;
+                } else if (!toTime.matches("^\\d\\d:\\d\\d:\\d\\d$")) {
+                    writeToConsole("[SHP] To time of \"" + toTime + "\" is not valid");
+                    e.consume();
+                    return;
+                }
+                writeToConsole("[SHP] Time is set for lights in away mode");
+            });
+            Button removeTimeButton = new Button("Remove Set Time");
+            removeTimeButton.setOnAction((e) -> {
+                writeToConsole("[SHP] Time is removed for lights in away mode");
+            });
+            HBox buttons = new HBox(setTimebutton, removeTimeButton);
+            VBox timePane = new VBox(new Label("Time Range"), allTimePane, buttons);
+            shpCommandOptionsPane.getChildren().add(timePane);
+
             for (Light light : Driver.simulation.getLights(locationLink.getText().trim())) {
                 CheckBox lightCheck = new CheckBox(light.toString());
-
                 lightCheck.setSelected(module.getLights().contains(light.getID()));
                 lightCheck.setFocusTraversable(false);
                 lightCheck.setOnAction((e) -> {
@@ -917,10 +954,49 @@ public class SimulationWindowController implements Initializable {
                     }
                     Driver.simulation.notifyAllModules();
                     RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
-
                 });
-                shcCommandOptionsPane.getChildren().add(lightCheck);
+                shpCommandOptionsPane.getChildren().add(lightCheck);
+
             }
+            Hyperlink checkAll = new Hyperlink("All");
+            checkAll.setOnAction((e) -> {
+                for (Node node : shpCommandOptionsPane.getChildren()) {
+                    if (node instanceof CheckBox) {
+                        CheckBox otherChecks = (CheckBox) node;
+                        if (!otherChecks.isSelected()) {
+                            otherChecks.fire();
+                        }
+                    }
+                }
+            });
+            Hyperlink checkNone = new Hyperlink("None");
+            checkNone.setOnAction((e) -> {
+                for (Node node : shpCommandOptionsPane.getChildren()) {
+                    if (node instanceof CheckBox) {
+                        CheckBox otherChecks = (CheckBox) node;
+                        if (otherChecks.isSelected()) {
+                            otherChecks.fire();
+                        }
+                    }
+                }
+            });
+            HBox allNonePane = new HBox(checkAll, new Label(" / "), checkNone);
+            shpCommandOptionsPane.getChildren().add(allNonePane);
+        } else if (command.contains("Alert")) {
+            TextField timeDelayText = new TextField();
+            timeDelayText.setPromptText("ex: 20:30:57");
+            Button setTimeDelayButton = new Button("Set Delay");
+            setTimeDelayButton.setOnAction((e) -> {
+                String timeDelay = timeDelayText.getText().trim();
+                if (!timeDelay.matches("^\\d\\d:\\d\\d:\\d\\d$")) {
+                    writeToConsole("[SHP] From time of \"" + timeDelay + "\" is not valid");
+                    e.consume();
+                    return;
+                }
+                module.setAlertTime(1);
+                writeToConsole("[SHP] Time Delay is set for alerting authorities");
+            });
+            shpCommandOptionsPane.getChildren().addAll(new Label("Time Delay"), timeDelayText, setTimeDelayButton);
         }
 
         shpCommandOptionsPane.applyCss();
@@ -1096,7 +1172,7 @@ public class SimulationWindowController implements Initializable {
 
             shcCommandOptionsPane = new VBox();
             shcCommandOptionsPane.getStyleClass().add("moduleVBox");
-            shcCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 190);
+            shcCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 180);
             ScrollPane scroll = new ScrollPane(shcCommandOptionsPane);
             scroll.getStyleClass().add("simulationSubItem");
             scroll.setPrefSize(itemsPane.getWidth(), 250);
@@ -1150,11 +1226,11 @@ public class SimulationWindowController implements Initializable {
 
             shpCommandOptionsPane = new VBox();
             shpCommandOptionsPane.getStyleClass().addAll("moduleVBox");
-            shcCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 190);
+            shpCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 180);
             ScrollPane scroll = new ScrollPane(shpCommandOptionsPane);
             scroll.getStyleClass().add("simulationSubItem");
             scroll.setPrefSize(itemsPane.getWidth(), 250);
-            topPane.getChildren().add(shpCommandOptionsPane);
+            topPane.getChildren().add(scroll);
 
             moduleContainer.applyCss();
             moduleContainer.layout();
