@@ -9,59 +9,67 @@ import java.util.Arrays;
  * @author DRC, a_richard
  */
 public class SHC_Module extends Module {
-	
-	/**
-	 * Auto mode will turn on lights in a room automatically if someone is in a room, and turn them off if they leave a room.
-	 * By default, auto mode is set to off.
-	 */
-	boolean autoMode = false;
+
+    /**
+     * Auto mode will turn on lights in a room automatically if someone is in a
+     * room, and turn them off if they leave a room. By default, auto mode is
+     * set to off.
+     */
+    boolean autoMode = false;
 
     public SHC_Module() {
-        super("SHC", new ArrayList<>(Arrays.asList("Open/Close Windows", "Lock/Unlock Doors", "Turn On/Off Lights")));
+        super("SHC", new ArrayList<>(Arrays.asList("Open/Close Windows", "Lock/Unlock Doors", "Open/Close Doors", "Turn On/Off Lights")));
     }
 
     /**
      * Updates the simulation.
-     * 
-     * If auto mode is on, this will turn on lights in a room that has people in it.
-     * It will also turn off lights in a room where there is no one.
+     *
+     * If auto mode is on, this will turn on lights in a room that has people in
+     * it. It will also turn off lights in a room where there is no one.
+     *
+     * @return true if the simulation was updated and the GUI needs to update
+     * display
      */
     @Override
-    public void update() {
+    public boolean update() {
+        boolean updateGUI = false;
     	//Auto mode functionality
-    	//turns lights on if people in room
-    	//turns lights off if no one in room
-    	if(autoMode){
-    		ArrayList<Room> rooms = sim.getRooms();
-    		for(Room room : rooms){
-    			if(room.numberOfPeople()>0){
-    				for(Light l : room.getLights()){
-    					l.setIsOn(true);
-    				}
-    			}
-    			else if(room.numberOfPeople()==0){
-    				for(Light l : room.getLights()){
-    					l.setIsOn(false);
-    				}
-    			}
-    		}
-    	}
+        //turns lights on if people in room
+        //turns lights off if no one in room
+        if (autoMode) {
+            ArrayList<Room> rooms = sim.getRooms();
+            for (Room room : rooms) {
+                if (room.numberOfPeople() > 0) {
+                    for (Light l : room.getLights()) {
+                        l.setIsOn(true);
+                    }
+                } else if (room.numberOfPeople() == 0) {
+                    for (Light l : room.getLights()) {
+                        l.setIsOn(false);
+                    }
+                }
+            }
+            updateGUI = true;
+        }
+        return updateGUI;
     }
-    
+
     /**
      * A method to return the status of autoMode
+     *
      * @return true if auto mode is on
      */
-    public boolean getAutoMode(){
-    	return autoMode;
+    public boolean getAutoMode() {
+        return autoMode;
     }
-    
+
     /**
      * Method for turning auto mode on and off
+     *
      * @param autoMode new status of auto mode
      */
-    public void setAutoMode(boolean autoMode){
-    	this.autoMode = autoMode;
+    public void setAutoMode(boolean autoMode) {
+        this.autoMode = autoMode;
     }
 
     /**
@@ -115,14 +123,13 @@ public class SHC_Module extends Module {
      * @param window the window you want to close
      * @return true if successful
      */
-
-    public boolean closeThisWindow(String room, int window){
-    	if(sim.getRoom(room).getWindows().get(window-1).getBlocked()){
-    		return false;
-    	} else {
-    		sim.getRoom(room).getWindows().get(window-1).setOpen(false);
-    		return true;
-    	}
+    public boolean closeThisWindow(String room, int window) {
+        if (sim.getRoom(room).getWindows().get(window - 1).getBlocked()) {
+            return false;
+        } else {
+            sim.getRoom(room).getWindows().get(window - 1).setOpen(false);
+            return true;
+        }
     }
 
     /**
@@ -133,14 +140,13 @@ public class SHC_Module extends Module {
      * @param window the window you want to close
      * @return true if successful
      */
-
-    public boolean openThisWindow(String room, int window){
-    	if(sim.getRoom(room).getWindows().get(window-1).getBlocked()){
-    		return false;
-    	} else {
-    		sim.getRoom(room).getWindows().get(window-1).setOpen(true);
-    		return true;
-    	}
+    public boolean openThisWindow(String room, int window) {
+        if (sim.getRoom(room).getWindows().get(window - 1).getBlocked()) {
+            return false;
+        } else {
+            sim.getRoom(room).getWindows().get(window - 1).setOpen(true);
+            return true;
+        }
     }
 
     /**
@@ -195,15 +201,14 @@ public class SHC_Module extends Module {
      * @param door the specific door you want to lock
      * @return true if successful
      */
-
-    public boolean lockThisDoor(String room, int door){
-    	if(sim.getRoom(room).getDoors().get(door-1).getLocked()){
-    		return false;
-    		//if door already locked
-    	} else {
-    		sim.getRoom(room).getDoors().get(door-1).setLocked(true);
-    		return true;
-    	}
+    public boolean lockThisDoor(String room, int door) {
+        if (sim.getRoom(room).getDoors().get(door - 1).getLocked()) {
+            return false;
+            //if door already locked
+        } else {
+            sim.getRoom(room).getDoors().get(door - 1).setLocked(true);
+            return true;
+        }
     }
 
     /**
@@ -214,14 +219,14 @@ public class SHC_Module extends Module {
      * @param door the door you want to close
      * @return true if successful
      */
-    public boolean unlockThisDoor(String room, int door){
-    	if(!sim.getRoom(room).getDoors().get(door-1).getLocked()){
-    		return false;
-    		//if door already locked
-    	} else {
-    		sim.getRoom(room).getDoors().get(door-1).setLocked(false);
-    		return true;
-    	}
+    public boolean unlockThisDoor(String room, int door) {
+        if (!sim.getRoom(room).getDoors().get(door - 1).getLocked()) {
+            return false;
+            //if door already locked
+        } else {
+            sim.getRoom(room).getDoors().get(door - 1).setLocked(false);
+            return true;
+        }
     }
 
     /**
@@ -232,14 +237,14 @@ public class SHC_Module extends Module {
      * @param garageDoor the door to be opened
      * @return true if successful
      */
-    public boolean openGarage(String garage, int garageDoor){
-    	if(sim.getRoom(garage).getDoors().get(garageDoor-1).getLocked()){
-    		return false;
-    		//if door locked
-    	} else {
-    		sim.getRoom(garage).getDoors().get(garageDoor-1).setOpen(true);
-    		return true;
-    	}
+    public boolean openGarage(String garage, int garageDoor) {
+        if (sim.getRoom(garage).getDoors().get(garageDoor - 1).getLocked()) {
+            return false;
+            //if door locked
+        } else {
+            sim.getRoom(garage).getDoors().get(garageDoor - 1).setOpen(true);
+            return true;
+        }
     }
 
     /**
@@ -250,14 +255,14 @@ public class SHC_Module extends Module {
      * @param garageDoor the door to be opened
      * @return true if successful
      */
-    public boolean closeGarage(String garage, int garageDoor){
-    	if(sim.getRoom(garage).getDoors().get(garageDoor-1).getLocked()){
-    		return false;
-    		//if door locked
-    	} else {
-    		sim.getRoom(garage).getDoors().get(garageDoor-1).setOpen(false);
-    		return true;
-    	}
+    public boolean closeGarage(String garage, int garageDoor) {
+        if (sim.getRoom(garage).getDoors().get(garageDoor - 1).getLocked()) {
+            return false;
+            //if door locked
+        } else {
+            sim.getRoom(garage).getDoors().get(garageDoor - 1).setOpen(false);
+            return true;
+        }
 
     }
 
@@ -269,14 +274,14 @@ public class SHC_Module extends Module {
      * @param light the light to be turned on
      * @return true if successful
      */
-    public boolean turnOnLight(String room, int light){
-    	if(sim.getRoom(room).getLights().get(light-1).getIsOn()){
-    		return false;
-    		//if light already on
-    	} else {
-    		sim.getRoom(room).getLights().get(light-1).setIsOn(true);
-    		return true;
-    	}
+    public boolean turnOnLight(String room, int light) {
+        if (sim.getRoom(room).getLights().get(light - 1).getIsOn()) {
+            return false;
+            //if light already on
+        } else {
+            sim.getRoom(room).getLights().get(light - 1).setIsOn(true);
+            return true;
+        }
     }
 
     /**
@@ -287,13 +292,13 @@ public class SHC_Module extends Module {
      * @param light the light to be turned off
      * @return true if successful
      */
-    public boolean turnOffLight(String room, int light){
-    	if(!sim.getRoom(room).getLights().get(light-1).getIsOn()){
-    		return false;
-    		//if light already off
-    	} else {
-    		sim.getRoom(room).getLights().get(light-1).setIsOn(false);
-    		return true;
-    	}
+    public boolean turnOffLight(String room, int light) {
+        if (!sim.getRoom(room).getLights().get(light - 1).getIsOn()) {
+            return false;
+            //if light already off
+        } else {
+            sim.getRoom(room).getLights().get(light - 1).setIsOn(false);
+            return true;
+        }
     }
 }

@@ -16,6 +16,7 @@ import javafx.stage.FileChooser;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import HouseObjects.*;
+import simulation.Module;
 
 /**
  *
@@ -45,24 +46,28 @@ public class Driver extends Application {
             //ArrayList of rooms
             ArrayList<Room> roomArray = readFile(chosenFile.getPath());
             roomArray.add(new Room("Outside"));
-            
+
             Driver.simulation = new Simulation(roomArray);
+            for (String mod : simulation.getModuleNames()) {
+                Module module = simulation.getModuleFromName(mod);
+                module.attachSimulation(simulation);
+            }
             // Set the stage/window to later reference if needed.
             Driver.mainStage = primaryStage;
-            
+
             // Set the simulation scene to swap between scenes if needed.
             Pane root = FXMLLoader.load(getClass().getResource("SimulationWindow.fxml"));
             Scene scene = new Scene(root);
             scene.getRoot().requestFocus();
             Driver.simulationScene = scene;
-            
+
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");
-            
+
             while (!primaryStage.getIcons().isEmpty()) {
                 primaryStage.getIcons().remove(0);
             }
-            
+
             //primaryStage.getIcons().add(AssetManager.DEFAULT_USER_IMAGE);
             primaryStage.setScene(scene);
             primaryStage.centerOnScreen();
@@ -83,7 +88,7 @@ public class Driver extends Application {
                     event.consume();
                 }
             });
-            
+
             // Display the UI to the user
             primaryStage.show();
         } catch (IOException ex) {
@@ -168,7 +173,7 @@ public class Driver extends Application {
                 for (int l = 0; l < nbLights; l++) {
                     rooms.get(roomCount).addLight(new Light(lightID, false, name.trim() + " Light-" + lightID++));
                 }
-                
+
                 roomCount++;
                 doorID = 1;
                 windowID = 1;

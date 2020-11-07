@@ -35,21 +35,24 @@ public class Simulation {
     public Simulation(ArrayList<Room> rooms) {
         this.rooms = rooms;
         this.simModules = new ArrayList<>();
-        this.simModules.addAll(Arrays.asList(new SHC_Module(),new SHP_Module()));
+        this.simModules.addAll(Arrays.asList(new SHC_Module(), new SHP_Module()));
         this.simTime = LocalDateTime.now();
-        for (Module mod : this.simModules) {
-            mod.attachSimulation(this);
-        }
+        
 
     }
 
     /**
      * Notifies all modules that are listening for updates.
+     *
+     * @return true if the simulation was updated and the GUI needs to update
+     * display
      */
-    public void notifyAllModules() {
+    public boolean notifyAllModules() {
+        boolean updateGUI = false;
         for (Module mod : simModules) {
-            mod.update();
+            updateGUI = updateGUI || mod.update();
         }
+        return updateGUI;
     }
 
     /**

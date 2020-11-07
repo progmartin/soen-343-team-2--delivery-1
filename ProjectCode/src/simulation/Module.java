@@ -30,7 +30,7 @@ public abstract class Module {
         this.sim = null;
     }
     
-    public abstract void update();
+    public abstract boolean update();
     
     public String getName(){
         return this.name;

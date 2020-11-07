@@ -25,6 +25,7 @@ import javafx.collections.FXCollections;
 import HouseObjects.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -70,6 +71,8 @@ public class SimulationWindowController implements Initializable {
     ImageView userProfilePic;
     @FXML
     Label usernameDisplay;
+    @FXML
+    Label userAccessibilityDisplay;
     @FXML
     Pane locationPane;
     @FXML
@@ -324,8 +327,9 @@ public class SimulationWindowController implements Initializable {
                 String location = Driver.simulation.getUserLocation(loggedInUser);
                 locationLink.setText(location);
                 editHomeStage = null;
-                Driver.simulation.notifyAllModules();
-                RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                if (Driver.simulation.notifyAllModules()) {
+                    RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                }
             });
             editHomeStage.show();
         } catch (IOException ex) {
@@ -434,6 +438,7 @@ public class SimulationWindowController implements Initializable {
                 editStage = null;
                 Driver.simulation.notifyAllModules();
                 RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+
             });
             editStage.show();
         } catch (IOException ex) {
@@ -615,6 +620,7 @@ public class SimulationWindowController implements Initializable {
         userProfilePic.setImage(new Image(accounts.get(loggedInUser).getImageURL()));
         userProfilePic.setDisable(false);
         usernameDisplay.setText(loggedInUser);
+        userAccessibilityDisplay.setText("(" + Driver.simulation.getUser(loggedInUser).getUserTypeAsString() + ")");
         usersList.getItems().remove(loggedInUser);
         addTab.setDisable(false);
 
@@ -653,6 +659,7 @@ public class SimulationWindowController implements Initializable {
         }
 
         usernameDisplay.setText("Not Logged In");
+        userAccessibilityDisplay.setText("");
         usersList.getItems().add(usersList.getItems().size() - 1, loggedInUser);
         userProfilePic.setImage(new Image(AssetManager.DEFAULT_USER_IMAGE_URL));
         userProfilePic.setDisable(true);
@@ -822,12 +829,15 @@ public class SimulationWindowController implements Initializable {
 
             } else if (command.contains("Lights")) {
                 CheckBox auto = new CheckBox("Auto Mode");
+                auto.setSelected(mod.getAutoMode());
                 auto.setOnAction((e) -> {
                     mod.setAutoMode(auto.isSelected());
-                    Driver.simulation.notifyAllModules();
-                    RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                    if (Driver.simulation.notifyAllModules()) {
+                        RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                    }
                     writeToConsole("[SHC] Auto Mode is turned " + (mod.getAutoMode() ? "on" : "off"));
                 });
+                shcCommandOptionsPane.getChildren().add(auto);
                 for (Light light : room.getLights()) {
                     CheckBox lightCheck = new CheckBox(light.toString());
                     lightCheck.setSelected(light.getIsOn());
@@ -902,10 +912,21 @@ public class SimulationWindowController implements Initializable {
             away.setPrefWidth(shpCommandOptionsPane.getWidth() - 25);
             away.setSelected(module.getAwayMode());
             away.setOnAction((e) -> {
-                away.setSelected(module.toggleAwayMode());
-                Driver.simulation.notifyAllModules();
-                RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
-                writeToConsole("[SHP] Away Mode is turned " + (module.getAwayMode() ? "on" : "off"));
+                if (away.isSelected()) {
+                    if (module.setAwayOn()) {
+                        writeToConsole("[SHP] Away mode is turned on");
+                    } else {
+                        away.setSelected(false);
+                        writeToConsole("[SHP] Cannot turn away mode on, people in the house");
+                    }
+                } else {
+                    if (module.setAwayOff()) {
+                        writeToConsole("[SHP] Away mode is turned off");
+                    }
+                }
+                if (Driver.simulation.notifyAllModules()) {
+                    RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                }
             });
             shpCommandOptionsPane.getChildren().add(away);
 
@@ -932,10 +953,16 @@ public class SimulationWindowController implements Initializable {
                     e.consume();
                     return;
                 }
-                writeToConsole("[SHP] Time is set for lights in away mode");
+                try {
+                    module.setTimeLightsOn(LocalTime.parse(fromTime), LocalTime.parse(toTime));
+                    writeToConsole("[SHP] Time is set for lights in away mode");
+                } catch (DateTimeParseException ex) {
+                    writeToConsole("[SHP] Time range of \"" + fromTime + "\" to \"" + toTime + "\" is not valid");
+                }
             });
             Button removeTimeButton = new Button("Remove Set Time");
             removeTimeButton.setOnAction((e) -> {
+                module.resetTimeLightsOn();
                 writeToConsole("[SHP] Time is removed for lights in away mode");
             });
             HBox buttons = new HBox(setTimebutton, removeTimeButton);
@@ -944,16 +971,17 @@ public class SimulationWindowController implements Initializable {
 
             for (Light light : Driver.simulation.getLights(locationLink.getText().trim())) {
                 CheckBox lightCheck = new CheckBox(light.toString());
-                lightCheck.setSelected(module.getLights().contains(light.getID()));
+                lightCheck.setSelected(module.getLights().contains(light));
                 lightCheck.setFocusTraversable(false);
                 lightCheck.setOnAction((e) -> {
                     if (lightCheck.isSelected()) {
-                        module.addLight(light.getID());
+                        module.addLight(light);
                     } else {
-                        module.removeLight(light.getID());
+                        module.removeLight(light);
                     }
-                    Driver.simulation.notifyAllModules();
-                    RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                    if (Driver.simulation.notifyAllModules()) {
+                        RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                    }
                 });
                 shpCommandOptionsPane.getChildren().add(lightCheck);
 
@@ -989,14 +1017,23 @@ public class SimulationWindowController implements Initializable {
             setTimeDelayButton.setOnAction((e) -> {
                 String timeDelay = timeDelayText.getText().trim();
                 if (!timeDelay.matches("^\\d\\d:\\d\\d:\\d\\d$")) {
-                    writeToConsole("[SHP] From time of \"" + timeDelay + "\" is not valid");
+                    writeToConsole("[SHP] Time delay of \"" + timeDelay + "\" is not valid");
                     e.consume();
                     return;
                 }
-                module.setAlertTime(1);
-                writeToConsole("[SHP] Time Delay is set for alerting authorities");
+                try {
+                    LocalTime delay = LocalTime.parse(timeDelay);
+                    module.setAlertTime((delay.getHour() * 3600) + (delay.getMinute() * 60) + delay.getSecond());
+                    writeToConsole("[SHP] Time Delay is set for alerting authorities");
+                } catch (DateTimeParseException ex) {
+                    writeToConsole("[SHP] Time delay of \"" + timeDelay + "\" is not valid");
+                }
             });
-            shpCommandOptionsPane.getChildren().addAll(new Label("Time Delay"), timeDelayText, setTimeDelayButton);
+            Button resetTimeDelayButton = new Button("Remove Delay");
+            resetTimeDelayButton.setOnAction((e) -> {
+                module.resetAlertTime();
+            });
+            shpCommandOptionsPane.getChildren().addAll(new Label("Time Delay"), timeDelayText, setTimeDelayButton, resetTimeDelayButton);
         }
 
         shpCommandOptionsPane.applyCss();
@@ -1018,6 +1055,14 @@ public class SimulationWindowController implements Initializable {
                     Driver.simulation.incrementSimulationTime();
                     updateDate();
                     updateTime();
+                    if (Driver.simulation.notifyAllModules()) {
+                        RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms());
+                        SHP_Module mod = (SHP_Module) Driver.simulation.getModuleOfType(SHP_Module.class);
+                        String contact = mod.contactAuthorities();
+                        if (!contact.equals("")) {
+                            writeToConsole("[SHP] " + contact);
+                        }
+                    }
                 }
                 prev = now;
             }
@@ -1096,7 +1141,7 @@ public class SimulationWindowController implements Initializable {
      * @param sec the second to be set
      */
     private void updateTime() {
-        timeDisplay.setText(Driver.simulation.getSimulationTime().format(DateTimeFormatter.ofPattern("hh:mm:ss")));
+        timeDisplay.setText(Driver.simulation.getSimulationTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
     }
 
     /**
