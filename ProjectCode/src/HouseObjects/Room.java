@@ -31,8 +31,10 @@ public class Room {
      * Windows in the room.
      */
     ArrayList<Window> windows = new ArrayList<>();
-    
-    //Lights in room
+
+    /**
+     * Lights in the room.
+     */
     ArrayList<Light> lights = new ArrayList<>();
 
     /**
@@ -142,7 +144,7 @@ public class Room {
      * @param door the door to be removed
      */
     public void removeDoor(Door door) {
-        for (int i = 0; i < doors.size(); i++) {
+        for (int i = 1; i <= doors.size(); i++) {
             if (doors.get(i).getID() == door.getID()) {
                 doors.remove(i);
             }
@@ -173,7 +175,7 @@ public class Room {
      * @param window the window to be removed
      */
     public void removeWindow(Window window) {
-        for (int i = 0; i < windows.size(); i++) {
+        for (int i = 1; i <= windows.size(); i++) {
             if (windows.get(i).id == window.id) {
                 windows.remove(i);
             }
@@ -215,26 +217,53 @@ public class Room {
     public ArrayList<Person> getPeople() {
         return people;
     }
-    
-    //Methods for Light
-    public void addLight(Light light){
-    	lights.add(light);
+
+    /**
+     * Adds a light to the light ArrayList
+     *
+     * @param light the light to be added
+     */
+    public void addLight(Light light) {
+        lights.add(light);
     }
-    
-    public void removeLight(Light light){
-    	for (int i = 0; i < lights.size(); i++) {
+
+    /**
+     * Remove a light from the light ArrayList
+     *
+     * @param light the light to be removed
+     */
+    public void removeLight(Light light) {
+        for (int i = 1; i <= lights.size(); i++) {
+
             if (lights.get(i).id == light.id) {
                 windows.remove(i);
             }
         }
     }
-    
-    public int numberOfLights(){
-    	return lights.size();
+
+    /**
+     * A method for returning the number of lights in a room
+     *
+     * @return number of lights in the given room.
+     */
+    public int numberOfLights() {
+        return lights.size();
     }
-    
-    public ArrayList<Light> getLights(){
-    	return lights;
+
+    /**
+     * A method for getting the ArrayList of lights in the room
+     *
+     * @return ArrayList of lights
+     */
+    public ArrayList<Light> getLights() {
+        return lights;
+    }
+
+    /**
+     * Prints the given room's name
+     */
+    public String toString() {
+        return name;
     }
 
 }

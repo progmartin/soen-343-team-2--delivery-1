@@ -25,7 +25,7 @@
       <Label layoutX="261.0" layoutY="123.0" text="Accessibility:" />
       <TextField fx:id="usernameInput" layoutX="103.0" layoutY="87.0" />
       <TextField fx:id="passwordInput" layoutX="103.0" layoutY="119.0" />
-      <ComboBox fx:id="accessibility" layoutX="338.0" layoutY="119.0" onAction="#handleUpdatePermission" prefHeight="25.0" prefWidth="143.0" />
+      <ComboBox fx:id="accessibility" layoutX="338.0" layoutY="119.0" onAction="#handleUpdateAccessibility" prefHeight="25.0" prefWidth="143.0" />
       <Button fx:id="saveButton" layoutX="308.0" layoutY="228.0" mnemonicParsing="false" onAction="#handleSave" text="Save" />
       <Button fx:id="deleteButton" layoutX="384.0" layoutY="228.0" mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
       <Label fx:id="output" alignment="TOP_CENTER" layoutX="103.0" layoutY="294.0" prefHeight="41.0" prefWidth="317.0" wrapText="true" />
@@ -33,7 +33,7 @@
       <AnchorPane fx:id="locationPane" layoutX="242.0" layoutY="164.0" prefHeight="51.0" prefWidth="244.0">
          <children>
             <Label layoutX="38.0" layoutY="17.0" text="Location:" />
-            <ComboBox fx:id="location" layoutX="93.0" layoutY="13.0" onAction="#handleUpdatePermission" prefHeight="25.0" prefWidth="143.0" />
+            <ComboBox fx:id="location" layoutX="93.0" layoutY="13.0" onAction="#handleUpdateLocation" prefHeight="25.0" prefWidth="143.0" />
          </children>
       </AnchorPane>
       <Separator layoutX="489.0" orientation="VERTICAL" prefHeight="379.0" prefWidth="5.0" />

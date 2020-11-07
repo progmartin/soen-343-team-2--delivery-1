@@ -16,6 +16,11 @@ public class Door {
      * Whether or not door is open.
      */
     boolean open;
+    
+    /**
+     * whether or not door is locked
+     */
+    boolean locked;
 
     /**
      * Name of the door.
@@ -28,6 +33,7 @@ public class Door {
     public Door() {
         id = 0;
         open = false;
+        locked = false;
         name = "";
     }
 
@@ -38,9 +44,10 @@ public class Door {
      * @param open if the door is open
      * @param name name of the door
      */
-    public Door(int id, boolean open, String name) {
+    public Door(int id, boolean open, boolean locked, String name) {
         this.id = id;
         this.open = open;
+        this.locked = locked;
         this.name = name;
     }
 
@@ -60,6 +67,15 @@ public class Door {
      */
     public boolean getOpen() {
         return open;
+    }
+    
+    /**
+     * Get method for locked status.
+     * 
+     * @return is the door is locked
+     */
+    public boolean getLocked(){
+    	return locked;
     }
 
     /**
@@ -88,6 +104,15 @@ public class Door {
     public void setOpen(boolean open) {
         this.open = open;
     }
+    
+    /**
+     * Set method for the locked status.
+     * 
+     * @param locked if door is locked
+     */
+    public void setLocked(boolean locked){
+    	this.locked = locked;
+    }
 
     /**
      * Set method for the name.
@@ -96,6 +121,13 @@ public class Door {
      */
     public void setName(String name) {
         this.name = name;
+    }
+    
+    /**
+     * This will print the name of the given door
+     */
+    public String toString(){
+    	return name;
     }
 
 }

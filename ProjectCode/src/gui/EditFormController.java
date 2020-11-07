@@ -14,11 +14,13 @@ import javafx.collections.FXCollections;
 import HouseObjects.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
+import simulation.*;
 
 /**
  * FXML Controller class
@@ -58,8 +60,10 @@ public class EditFormController implements Initializable {
     @FXML
     VBox modulePermissions;
 
+    private String access;
     private boolean newUser = false;
     private String profilePic = "";
+    private Person userPerson;
 
     /**
      * Initializes the controller class.
@@ -71,31 +75,35 @@ public class EditFormController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         accessibility.getItems().addAll(Arrays.asList(new String[]{"Adult (Family)", "Child (Family)", "Guest", "Stranger"}));
         moduleSelector.getItems().addAll(Driver.simulation.getModuleNames());
-        Person person = Driver.simulationController.editedUser;
+        userPerson = Driver.simulationController.editedUser;
 
-        if (person == null) {
+        if (userPerson == null) {
+            userPerson = new Person();
             title.setText("Create New User");
             newUser = true;
             location.setItems(FXCollections.observableArrayList(Driver.simulation.getRoomNames()));
             profilePic = AssetManager.DEFAULT_USER_IMAGE_URL;
             userProfile.setImage(new Image(profilePic));
+            moduleSelector.setDisable(true);
         } else {
-            usernameInput.setText(person.getName());
+            userPerson = new Person(userPerson);
+            usernameInput.setText(userPerson.getName());
             usernameInput.setDisable(true);
-            passwordInput.setText(Driver.simulationController.accounts.get(person.getName()).getPassword());
+            passwordInput.setText(Driver.simulationController.accounts.get(userPerson.getName()).getPassword());
             for (int i = 0; i < accessibility.getItems().size(); i++) {
                 String item = (String) accessibility.getItems().get(i);
-                if (person.getUserTypeAsString().equals(item)) {
+                if (userPerson.getUserTypeAsString().equals(item)) {
                     accessibility.getSelectionModel().select(i);
+                    access = (String) accessibility.getSelectionModel().getSelectedItem();
+                    break;
                 }
             }
-            isAdmin.setSelected(person.getIsAdmin());
-            location.getItems().add(Driver.simulation.getUserLocation(person.getName()));
+            isAdmin.setSelected(userPerson.getIsAdmin());
+            location.getItems().add(Driver.simulation.getUserLocation(userPerson.getName()));
             location.getSelectionModel().select(0);
             location.setDisable(true);
-            profilePic = Driver.simulationController.accounts.get(person.getName()).getImageURL();
+            profilePic = Driver.simulationController.accounts.get(userPerson.getName()).getImageURL();
             userProfile.setImage(new Image(profilePic));
-
         }
     }
 
@@ -146,13 +154,13 @@ public class EditFormController implements Initializable {
             event.consume();
             return;
         }
-        if (accessibility.getSelectionModel().isEmpty()) {
-            output.setText("Must select an accessibility");
+        if (newUser && Driver.simulationController.accounts.containsKey(usernameInput.getText().trim())) {
+            output.setText("Username is already taken");
             event.consume();
             return;
         }
-        if (newUser && Driver.simulationController.accounts.containsKey(usernameInput.getText().trim())) {
-            output.setText("Username is already taken");
+        if (accessibility.getSelectionModel().isEmpty()) {
+            output.setText("Must select an accessibility");
             event.consume();
             return;
         }
@@ -173,7 +181,8 @@ public class EditFormController implements Initializable {
             Driver.simulationController.usersList.getSelectionModel().selectLast();
             Driver.simulationController.usersList.getSelectionModel().selectPrevious();
         }
-        Driver.simulation.updateUser(usernameInput.getText().trim(), isAdmin.isSelected(), Person.getUserType((String) accessibility.getSelectionModel().getSelectedItem()), (String) location.getSelectionModel().getSelectedItem());
+        Driver.simulation.updateUser(usernameInput.getText().trim(), isAdmin.isSelected(), Person.getUserType(access), (String) location.getSelectionModel().getSelectedItem());
+        Driver.simulation.getUser(usernameInput.getText().trim()).setModulePermission(userPerson.getPermissions());
         Driver.simulationController.accounts.put(usernameInput.getText().trim(), new SimulationWindowController.Account(usernameInput.getText().trim(), passwordInput.getText(), profilePic));
         SimulationWindowController.editStage.fireEvent(new WindowEvent(SimulationWindowController.editStage, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
@@ -221,98 +230,109 @@ public class EditFormController implements Initializable {
      */
     @FXML
     private void handleSelectModule(Event event) {
+        if (access == null) {
+            return;
+        }
         String moduleName = (String) moduleSelector.getSelectionModel().getSelectedItem();
         ArrayList<String> commands = Driver.simulation.getModuleCommands(Driver.simulation.getModuleFromName(moduleName).getClass());
-
         modulePermissions.getChildren().remove(0, modulePermissions.getChildren().size());
-        Label descr = new Label();
-        descr.setPrefHeight(40);
+
+        String label = "";
+        if (moduleName.contains("SHC")) {
+            if (access.equals("Adult (Family)") || access.equals("Stranger")) {
+                label = "Permission does not depend on location";
+            } else if (access.equals("Child (Family)") || access.equals("Guest")) {
+                label = "Permission only applies to current location";
+            }
+        } else if (moduleName.contains("SHP")) {
+        }
+
+        Label descr = new Label(label);
+        descr.setPrefHeight(25);
         descr.setWrapText(true);
         modulePermissions.getChildren().add(descr);
         for (String command : commands) {
             CheckBox cb = new CheckBox(command);
-            cb.setDisable(true);
+            cb.setSelected(userPerson.getModulePermission(Driver.simulation.getModuleFromName(moduleName).getClass(), command));
+            cb.setOnAction((e) -> {
+                userPerson.updateModulePermission(Driver.simulation.getModuleFromName(moduleName).getClass(), command, cb.isSelected());
+            });
             modulePermissions.getChildren().add(cb);
         }
-        updateModulePermission();
+        modulePermissions.applyCss();
+        modulePermissions.layout();
     }
 
     /**
-     * Handles events that trigger to update the module permissions.
+     * Handles events that trigger to select a new accessibility.
      *
      * @param event the event that triggers this method
      */
     @FXML
-    private void handleUpdatePermission(Event event) {
-        updateModulePermission();
+    private void handleUpdateAccessibility(Event event) {
+        access = (String) accessibility.getSelectionModel().getSelectedItem();
+        userPerson.setUserType(Person.getUserType(access));
+        handleUpdatePermission();
     }
 
     /**
-     * Checks the user's accessibility and their location to determine the
-     * module's permission. 
+     * Handles events that trigger to select a new location.
+     *
+     * @param event the event that triggers this method
      */
-    private void updateModulePermission() {
+    @FXML
+    private void handleUpdateLocation(Event event) {
+        handleUpdatePermission();
+    }
+
+    /**
+     * Updates the permission of the user with default permissions. The default
+     * commands are the same as creating a new user with the given
+     * accessibility, and location.
+     */
+    private void handleUpdatePermission() {
+        if (access == null) {
+            return;
+        }
+        moduleSelector.setDisable(false);
+
+        for (String module : Driver.simulation.getModuleNames()) {
+            Class moduleClass = Driver.simulation.getModuleFromName(module).getClass();
+            userPerson.initializeDefaultPermissions(moduleClass);
+        }
+
+        updateModulePermissionDisplay();
+    }
+
+    /**
+     * Checks the user's preference for module permissions to update the visual
+     * of a module's permission.
+     */
+    private void updateModulePermissionDisplay() {
         String module = (String) moduleSelector.getSelectionModel().getSelectedItem();
-        String access = (String) accessibility.getSelectionModel().getSelectedItem();
-        String loc = (String) location.getSelectionModel().getSelectedItem();
-        if (access == null || loc == null || module == null) {
+        if (access == null || module == null) {
             return;
         }
 
-        if (module.contains("SHC")) {
-            if (access.equals("Adult (Family)")) {
-                for (Node node : modulePermissions.getChildren()) {
-                    if (node instanceof CheckBox) {
-                        ((CheckBox) node).setSelected(true);
-                    } else {
-                        ((Label) node).setText("Permission does not depend on location");
-                    }
-                }
+        Class moduleClass = Driver.simulation.getModuleFromName(module).getClass();
+        String label = "";
+        if (moduleClass.equals(SHC_Module.class)) {
+            if (access.equals("Adult (Family)") || access.equals("Stranger")) {
+                label = "Permission does not depend on location";
             } else if (access.equals("Child (Family)") || access.equals("Guest")) {
-                for (Node node : modulePermissions.getChildren()) {
-                    if (node instanceof CheckBox) {
-                        if (loc.equalsIgnoreCase("Outside")) {
-                            ((CheckBox) node).setSelected(false);
-                        } else {
-                            if (((CheckBox) node).getText().contains("Light") || ((CheckBox) node).getText().contains("Window")) {
-                                ((CheckBox) node).setSelected(true);
-                            } else {
-                                ((CheckBox) node).setSelected(true);
-                            }
-                        }
-                    } else {
-                        ((Label) node).setText("Permission only applies to current location");
-                    }
-                }
-            } else if (access.equals("Stranger")) {
-                for (Node node : modulePermissions.getChildren()) {
-                    if (node instanceof CheckBox) {
-                        ((CheckBox) node).setSelected(false);
-                    } else {
-                        ((Label) node).setText("Permission does not depend on location");
-                    }
-                }
+                label = "Permission only applies to current location";
             }
-        } else if (module.contains("SHP")) {
-            if (access.equals("Adult (Family)") || access.equals("Child (Family)")) {
-                for (Node node : modulePermissions.getChildren()) {
-                    if (node instanceof CheckBox) {
-                        ((CheckBox) node).setSelected(true);
-                    } else {
-                        ((Label) node).setText("");
-                    }
-                }
-            } else if (access.equals("Guest") || access.equals("Stranger")) {
-                for (Node node : modulePermissions.getChildren()) {
-                    if (node instanceof CheckBox) {
-                        ((CheckBox) node).setSelected(false);
-                    } else {
-                        ((Label) node).setText("");
-                    }
-                }
-            }
+        } else if (moduleClass.equals(SHP_Module.class)) {
         }
 
+        for (Node node : modulePermissions.getChildren()) {
+            if (node instanceof CheckBox) {
+                CheckBox check = (CheckBox) node;
+                check.setSelected(userPerson.getModulePermission(moduleClass, check.getText()));
+            } else {
+                ((Label) node).setText(label);
+            }
+        }
         modulePermissions.applyCss();
         modulePermissions.layout();
     }
