@@ -3,19 +3,15 @@ package gui;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.ResourceBundle;
 
 import HouseObjects.Window;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import simulation.Simulation;
 
 public class EditHomeFormController implements Initializable {
 	
@@ -68,15 +64,6 @@ public class EditHomeFormController implements Initializable {
 		windowTitle.setOpacity(0);
 		blockedWindowsLabel.setOpacity(0);
 		peopleInRoomLabel.setOpacity(0);
-		
-		
-		
-		
-		
-		
-		
-		
-		
 	}
 	
 	public void handleSelectRoom(Event e)

@@ -13,6 +13,7 @@ import java.util.ArrayList;
  */
 public abstract class Module {
     private String name;
+    Simulation sim;
     
     protected ArrayList<String> commands;
 
@@ -21,7 +22,15 @@ public abstract class Module {
         this.commands = commands;
     }
     
+    public void attachSimulation(Simulation simulation){
+        this.sim = simulation;
+    }
     
+    public void detachSimulation(){
+        this.sim = null;
+    }
+    
+    public abstract boolean update();
     
     public String getName(){
         return this.name;

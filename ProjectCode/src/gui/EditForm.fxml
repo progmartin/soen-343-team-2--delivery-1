@@ -7,6 +7,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -23,15 +25,15 @@
       <Label layoutX="261.0" layoutY="123.0" text="Accessibility:" />
       <TextField fx:id="usernameInput" layoutX="103.0" layoutY="87.0" />
       <TextField fx:id="passwordInput" layoutX="103.0" layoutY="119.0" />
-      <ComboBox fx:id="accessibility" layoutX="338.0" layoutY="119.0" onAction="#handleUpdatePermission" prefHeight="25.0" prefWidth="143.0" />
-      <Button fx:id="saveButton" layoutX="142.0" layoutY="200.0" mnemonicParsing="false" onAction="#handleSave" text="Save" />
-      <Button fx:id="deleteButton" layoutX="247.0" layoutY="200.0" mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
-      <Label fx:id="output" alignment="TOP_CENTER" layoutX="103.0" layoutY="240.0" prefHeight="41.0" prefWidth="317.0" wrapText="true" />
+      <ComboBox fx:id="accessibility" layoutX="338.0" layoutY="119.0" onAction="#handleUpdateAccessibility" prefHeight="25.0" prefWidth="143.0" />
+      <Button fx:id="saveButton" layoutX="308.0" layoutY="228.0" mnemonicParsing="false" onAction="#handleSave" text="Save" />
+      <Button fx:id="deleteButton" layoutX="384.0" layoutY="228.0" mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
+      <Label fx:id="output" alignment="TOP_CENTER" layoutX="103.0" layoutY="294.0" prefHeight="41.0" prefWidth="317.0" wrapText="true" />
       <CheckBox fx:id="isAdmin" layoutX="261.0" layoutY="91.0" mnemonicParsing="false" prefHeight="17.0" prefWidth="106.0" text="Is An Admin" />
-      <AnchorPane fx:id="locationPane" layoutX="54.0" layoutY="149.0" prefHeight="51.0" prefWidth="333.0">
+      <AnchorPane fx:id="locationPane" layoutX="242.0" layoutY="164.0" prefHeight="51.0" prefWidth="244.0">
          <children>
-            <Label layoutX="75.0" layoutY="18.0" text="Location:" />
-            <ComboBox fx:id="location" layoutX="132.0" layoutY="14.0" onAction="#handleUpdatePermission" prefWidth="150.0" />
+            <Label layoutX="38.0" layoutY="17.0" text="Location:" />
+            <ComboBox fx:id="location" layoutX="93.0" layoutY="13.0" onAction="#handleUpdateLocation" prefHeight="25.0" prefWidth="143.0" />
          </children>
       </AnchorPane>
       <Separator layoutX="489.0" orientation="VERTICAL" prefHeight="379.0" prefWidth="5.0" />
@@ -46,5 +48,11 @@
             <Insets />
          </opaqueInsets>
       </VBox>
+      <ImageView fx:id="userProfile" fitHeight="120.0" fitWidth="120.0" layoutX="103.0" layoutY="164.0" onMouseClicked="#handleChangeProfilePic" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../assets/defaultUserProfile.png" />
+         </image>
+      </ImageView>
+      <Label layoutX="30.0" layoutY="190.0" text="User Profile:" />
    </children>
 </AnchorPane>

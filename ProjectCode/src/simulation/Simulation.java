@@ -2,6 +2,9 @@ package simulation;
 
 import java.util.ArrayList;
 import HouseObjects.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 
 /**
@@ -15,8 +18,7 @@ public class Simulation {
      */
     private ArrayList<Room> rooms;
     private ArrayList<Module> simModules;
-    private SHC_Module shcModule;
-    private SHP_Module shpModule;
+    private LocalDateTime simTime;
 
     /**
      * Default constructor. Creates a simulation with no rooms.
@@ -33,25 +35,129 @@ public class Simulation {
     public Simulation(ArrayList<Room> rooms) {
         this.rooms = rooms;
         this.simModules = new ArrayList<>();
-        this.simModules.add(new SHC_Module());
-        this.simModules.add(new SHP_Module());
+        this.simModules.addAll(Arrays.asList(new SHC_Module(), new SHP_Module()));
+        this.simTime = LocalDateTime.now();
+        
+
     }
-    
-    public ArrayList<String> getModuleNames(){
+
+    /**
+     * Notifies all modules that are listening for updates.
+     *
+     * @return true if the simulation was updated and the GUI needs to update
+     * display
+     */
+    public boolean notifyAllModules() {
+        boolean updateGUI = false;
+        for (Module mod : simModules) {
+            updateGUI = updateGUI || mod.update();
+        }
+        return updateGUI;
+    }
+
+    /**
+     * Get the simulation time.
+     *
+     * @return the simulation time
+     */
+    public LocalDateTime getSimulationTime() {
+        return this.simTime;
+    }
+
+    /**
+     * Set the simulation date and time with the new datetime.
+     *
+     * @param newDateTime the new datetime
+     */
+    public void updateSimulationDateTime(LocalDateTime newDateTime) {
+        this.simTime = newDateTime;
+    }
+
+    /**
+     * Set the simulation date with the new date.
+     *
+     * @param newDate the new date
+     */
+    public void updateSimulationDate(LocalDate newDate) {
+        this.simTime = this.simTime.withYear(newDate.getYear()).withMonth(newDate.getMonthValue()).withDayOfMonth(newDate.getDayOfMonth());
+    }
+
+    /**
+     * Set the simulation time with the new time.
+     *
+     * @param newTime the new time
+     */
+    public void updateSimulationTime(LocalTime newTime) {
+        this.simTime = this.simTime.withHour(newTime.getHour()).withMinute(newTime.getSecond()).withSecond(newTime.getSecond());
+    }
+
+    /**
+     * Increments the simulation time by 1 second.
+     */
+    public void incrementSimulationTime() {
+        this.simTime = this.simTime.plusSeconds(1);
+    }
+
+    /**
+     * Returns the names of all the modules loaded in the simulation.
+     *
+     * @return the simulation's module's names
+     */
+    public ArrayList<String> getModuleNames() {
         ArrayList<String> names = new ArrayList<>();
-        for (Module m : this.simModules){
+        for (Module m : this.simModules) {
             names.add(m.getName());
         }
         return names;
     }
-    
-    public ArrayList<String> getModuleCommands(String moduleName){
-        for (Module m : this.simModules){
-            if (m.getName().equals(moduleName)){
+
+    /**
+     * Get the commands that a module in the simulation can make.
+     *
+     * @param moduleName the module class to search for
+     * @return an array of commands
+     */
+    public ArrayList<String> getModuleCommands(Class moduleName) {
+        for (Module m : this.simModules) {
+            if (m.getClass().equals(moduleName)) {
                 return m.getCommands();
             }
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * Returns the module of this simulation from the class type. If this
+     * simulation does not contain a module of the given type, then null is
+     * returned. <br/>
+     * An example of how to get the SHC module is as follows:<br/>
+     * SHC_Module module = (SHC_Module) getModuleOfType(SHC_Module.class);
+     *
+     * @param moduleName the module class to search for
+     * @return one of the simulation's module, null if cannot be found
+     */
+    public Module getModuleOfType(Class moduleName) {
+        for (Module m : this.simModules) {
+            if (m.getClass() == moduleName) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the module with the given name.
+     *
+     * @param moduleName the name of the module
+     * @return a module from this simulation
+     */
+    public Module getModuleFromName(String moduleName) {
+        for (Module m : this.simModules) {
+            if (m.getName().equals(moduleName)) {
+                return m;
+            }
+        }
+        return null;
     }
 
     /**
@@ -119,16 +225,140 @@ public class Simulation {
         }
         return null;
     }
-    
+
+    /**
+     * Returns a window with the given id.
+     *
+     * @param id the window id
+     * @return the window with the id
+     */
     public Window getWindow(int id) {
-    	for (Room r : this.rooms) {
+        for (Room r : this.rooms) {
             for (Window w : r.getWindows()) {
-                if (w.getID()==id) {
+                if (w.getID() == id) {
                     return w;
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Returns an array list of windows in the room.
+     *
+     * @param roomName the name of the room to search
+     * @return a list of windows
+     */
+    public ArrayList<Window> getWindows(String roomName) {
+        for (Room r : rooms) {
+            if (r.getName().equals(roomName)) {
+                return r.getWindows();
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Returns an array of all windows in the simulation.
+     *
+     * @return a list of windows
+     */
+    public ArrayList<Window> getAllWindows() {
+        ArrayList<Window> windows = new ArrayList<>();
+        for (Room r : rooms) {
+            windows.addAll(r.getWindows());
+        }
+        return windows;
+    }
+
+    /**
+     * Returns a door with the given id.
+     *
+     * @param id the door id
+     * @return the door with the id
+     */
+    public Door getDoor(int id) {
+        for (Room r : this.rooms) {
+            for (Door d : r.getDoors()) {
+                if (d.getID() == id) {
+                    return d;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns an array list of doors in the room.
+     *
+     * @param roomName the name of the room to search
+     * @return a list of doors
+     */
+    public ArrayList<Door> getDoors(String roomName) {
+        for (Room r : rooms) {
+            if (r.getName().equals(roomName)) {
+                return r.getDoors();
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Returns an array of all doors in the simulation.
+     *
+     * @return a list of doors
+     */
+    public ArrayList<Door> getAllDoors() {
+        ArrayList<Door> doors = new ArrayList<>();
+        for (Room r : rooms) {
+            doors.addAll(r.getDoors());
+        }
+        return doors;
+    }
+
+    /**
+     * Returns a light with the given id.
+     *
+     * @param id the light id
+     * @return the light with the id
+     */
+    public Light getLight(int id) {
+        for (Room r : this.rooms) {
+            for (Light l : r.getLights()) {
+                if (l.getID() == id) {
+                    return l;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns an array list of lights in the room.
+     *
+     * @param roomName the name of the room to search
+     * @return a list of lights
+     */
+    public ArrayList<Light> getLights(String roomName) {
+        for (Room r : rooms) {
+            if (r.getName().equals(roomName)) {
+                return r.getLights();
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Returns an array of all lights in the simulation.
+     *
+     * @return a list of lights
+     */
+    public ArrayList<Light> getAllLights() {
+        ArrayList<Light> lights = new ArrayList<>();
+        for (Room r : rooms) {
+            lights.addAll(r.getLights());
+        }
+        return lights;
     }
 
     /**
@@ -198,6 +428,19 @@ public class Simulation {
     }
 
     /**
+     * Gets all the Persons in the simulation.
+     *
+     * @return a list of people
+     */
+    public ArrayList<Person> getAllUsers() {
+        ArrayList<Person> people = new ArrayList<>();
+        for (Room r : rooms) {
+            people.addAll(r.getPeople());
+        }
+        return people;
+    }
+
+    /**
      * Adds a Person to the simulation with the following attributes.
      *
      * @param name the name of the Person
@@ -208,6 +451,7 @@ public class Simulation {
     public void addNewUser(String name, boolean isAdmin, Person.UserTypes userType, String room) {
         Room r = this.getRoom(room);
         r.addPerson(new Person(name, isAdmin, userType));
+        notifyAllModules();
     }
 
     /**
@@ -218,6 +462,7 @@ public class Simulation {
     public void removeUser(String user) {
         Person p = this.getUser(user);
         this.getUsersRoom(user).removePerson(p);
+        notifyAllModules();
     }
 
     /**
@@ -275,36 +520,7 @@ public class Simulation {
         Person p = this.getUser(name);
         original.removePerson(p);
         destination.addPerson(p);
-    }
-
-    /**
-     * Returns an array list of doors in the room.
-     *
-     * @param roomName the name of the room to search
-     * @return a list of door names
-     */
-    public ArrayList<Door> getDoors(String roomName) {
-        for (Room r : rooms) {
-            if (r.getName().equals(roomName)) {
-                return r.getDoors();
-            }
-        }
-        return new ArrayList<>();
-    }
-
-    /**
-     * Returns Returns an array list of windows in the room.
-     *
-     * @param roomName the name of the room to search
-     * @return a list of room names
-     */
-    public ArrayList<Window> getWindows(String roomName) {
-        for (Room r : rooms) {
-            if (r.getName().equals(roomName)) {
-                return r.getWindows();
-            }
-        }
-        return new ArrayList<>();
+        notifyAllModules();
     }
 
 }

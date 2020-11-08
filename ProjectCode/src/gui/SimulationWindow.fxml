@@ -8,6 +8,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
@@ -19,18 +20,13 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane fx:id="parentPane" prefHeight="769.0" prefWidth="819.0" stylesheets="@GUIStyle.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.SimulationWindowController">
+<AnchorPane fx:id="parentPane" prefHeight="769.0" prefWidth="936.0" stylesheets="@GUIStyle.css" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gui.SimulationWindowController">
    <children>
       <AnchorPane fx:id="dashboardPane" layoutX="23.0" layoutY="22.0" prefHeight="730.0" prefWidth="200.0" styleClass="simulationAnchor">
          <children>
             <Label alignment="CENTER" focusTraversable="false" layoutX="9.0" layoutY="-12.0" prefHeight="25.0" prefWidth="91.0" styleClass="simulationLabel" text="Simulation" textFill="WHITE" />
             <ToggleButton focusTraversable="false" layoutX="53.0" layoutY="35.0" mnemonicParsing="false" onAction="#handleToggleSimulation" prefHeight="25.0" prefWidth="95.0" selected="true" text="ON" />
-            <ImageView fx:id="editUserProfilePic" fitHeight="20.0" fitWidth="20.0" layoutX="91.0" layoutY="86.0" onMouseClicked="#handleEditProfilePic" pickOnBounds="true" preserveRatio="true" styleClass="clickable">
-               <image>
-                  <Image url="@../assets/editProfilePic.png" />
-               </image>
-            </ImageView>
-            <ImageView fx:id="userProfilePic" fitHeight="65.0" fitWidth="91.0" layoutX="55.0" layoutY="119.0" pickOnBounds="true">
+            <ImageView fx:id="userProfilePic" disable="true" fitHeight="65.0" fitWidth="91.0" layoutX="53.0" layoutY="102.0" onMouseClicked="#handleEditProfilePic" pickOnBounds="true">
                <image>
                   <Image url="@../assets/defaultUserProfile.png" />
                </image>
@@ -40,24 +36,33 @@
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
-            <Label fx:id="dateDisplay" alignment="TOP_CENTER" focusTraversable="false" layoutX="37.0" layoutY="431.0" prefHeight="31.0" prefWidth="126.0" text="Fri Sep 12 2020" textAlignment="CENTER" wrapText="true">
+            <Label fx:id="dateDisplay" alignment="TOP_CENTER" focusTraversable="false" layoutX="39.0" layoutY="394.0" prefHeight="31.0" prefWidth="126.0" text="Fri Sep 12 2020" textAlignment="CENTER" wrapText="true">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
-            <Label fx:id="usernameDisplay" alignment="TOP_CENTER" focusTraversable="false" layoutX="14.0" layoutY="191.0" prefHeight="31.0" prefWidth="171.0" text="Not Logged In" wrapText="true" />
+            <Label fx:id="usernameDisplay" alignment="TOP_CENTER" focusTraversable="false" layoutX="13.0" layoutY="167.0" prefHeight="31.0" prefWidth="171.0" text="Not Logged In" wrapText="true" />
             <AnchorPane fx:id="locationPane" layoutX="22.0" layoutY="222.0" prefHeight="97.0" prefWidth="153.0">
                <children>
                   <Hyperlink fx:id="locationLink" alignment="CENTER" focusTraversable="false" layoutX="4.0" layoutY="23.0" onAction="#handleChangeLocation" prefHeight="23.0" prefWidth="149.0" text="location" underline="true" />
                   <Label alignment="CENTER" focusTraversable="false" layoutX="39.0" layoutY="6.0" prefHeight="17.0" prefWidth="78.0" text="Location:" />
                </children>
             </AnchorPane>
-            <Button fx:id="editHome" layoutX="45.0" layoutY="507.0" mnemonicParsing="false" onAction="#handleEditHome" text="Edit Home Status" />
-            <Label fx:id="timeDisplay" alignment="TOP_CENTER" focusTraversable="false" layoutX="36.0" layoutY="454.0" prefHeight="31.0" prefWidth="126.0" text="04:26:09" textAlignment="CENTER" wrapText="true">
+            <Button fx:id="editHome" layoutX="46.0" layoutY="571.0" mnemonicParsing="false" onAction="#handleEditHome" text="Edit Home Status" />
+            <Label fx:id="timeDisplay" alignment="TOP_CENTER" focusTraversable="false" layoutX="38.0" layoutY="417.0" prefHeight="31.0" prefWidth="126.0" text="04:26:09" textAlignment="CENTER" wrapText="true">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
+            <Slider fx:id="timeRateSlider" blockIncrement="0.1" layoutX="30.0" layoutY="481.0" majorTickUnit="0.25" max="1.0" min="-1.0" onKeyPressed="#handleChangeTimeRate" onMouseClicked="#handleChangeTimeRate" onMouseDragged="#handleChangeTimeRate" showTickMarks="true" snapToTicks="true" />
+            <Label layoutX="67.0" layoutY="464.0" text="Time Speed">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Label>
+            <Label layoutX="136.0" layoutY="497.0" text="10x Faster" />
+            <Label layoutX="8.0" layoutY="497.0" text="10x Slower" />
+            <Label fx:id="userAccessibilityDisplay" alignment="TOP_CENTER" focusTraversable="false" layoutX="13.0" layoutY="191.0" prefHeight="31.0" prefWidth="171.0" wrapText="true" />
          </children>
       </AnchorPane>
       <TabPane fx:id="moduleContainer" focusTraversable="false" layoutX="237.0" layoutY="22.0" prefHeight="576.0" prefWidth="234.0" styleClass="simulationAnchor" tabClosingPolicy="UNAVAILABLE">
@@ -91,7 +96,7 @@
                               <TextField fx:id="outsideTempInput" layoutX="95.0" layoutY="40.0" onKeyReleased="#handleChangeTemp" prefHeight="25.0" prefWidth="57.0" />
                            </children>
                         </AnchorPane>
-                        <AnchorPane layoutX="16.0" layoutY="255.0" prefHeight="94.0" prefWidth="200.0" styleClass="simulationSubItem">
+                        <AnchorPane layoutX="16.0" layoutY="255.0" prefHeight="130.0" prefWidth="200.0" styleClass="simulationSubItem">
                            <children>
                               <Label focusTraversable="false" layoutX="75.0" layoutY="14.0" styleClass="moduleItemTitle" text="Edit User">
                                  <font>
@@ -99,9 +104,11 @@
                                  </font>
                               </Label>
                               <ComboBox fx:id="usersList" focusTraversable="false" layoutX="26.0" layoutY="45.0" onAction="#handleEditUser" prefWidth="150.0" />
+                              <Button layoutX="46.0" layoutY="85.0" mnemonicParsing="false" onAction="#handleSaveUserToFile" text="Save" />
+                              <Button layoutX="105.0" layoutY="85.0" mnemonicParsing="false" onAction="#handleLoadUserFromFile" text="Load" />
                            </children>
                         </AnchorPane>
-                        <AnchorPane layoutX="16.0" layoutY="363.0" prefHeight="133.0" prefWidth="200.0" styleClass="simulationSubItem">
+                        <AnchorPane layoutX="16.0" layoutY="398.0" prefHeight="133.0" prefWidth="200.0" styleClass="simulationSubItem">
                            <children>
                               <Label focusTraversable="false" layoutX="84.0" layoutY="6.0" styleClass="moduleItemTitle" text="Login">
                                  <font>
@@ -150,18 +157,21 @@
           </Tab>
         </tabs>
       </TabPane>
-      <AnchorPane fx:id="houseViewPane" layoutX="488.0" layoutY="74.0" prefHeight="230.0" prefWidth="306.0" styleClass="simulationAnchor" />
-      <Label alignment="CENTER" focusTraversable="false" layoutX="586.0" layoutY="320.0" prefHeight="23.0" prefWidth="110.0" text="House view">
+      <AnchorPane fx:id="houseViewPane" layoutX="487.0" layoutY="52.0" maxHeight="540.0" prefHeight="410.0" prefWidth="420.0" styleClass="simulationAnchor">
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding></AnchorPane>
+      <Label alignment="CENTER" focusTraversable="false" layoutX="642.0" layoutY="22.0" prefHeight="23.0" prefWidth="110.0" text="House view">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <Label alignment="CENTER" focusTraversable="false" layoutX="586.0" layoutY="575.0" prefHeight="23.0" prefWidth="110.0" text="Output Console">
+      <Label alignment="CENTER" focusTraversable="false" layoutX="521.0" layoutY="587.0" prefHeight="23.0" prefWidth="110.0" text="Output Console">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <ScrollPane fx:id="outputPane" focusTraversable="false" layoutX="245.0" layoutY="612.0" prefHeight="140.0" prefWidth="517.0" styleClass="simulationAnchor">
+      <ScrollPane fx:id="outputPane" focusTraversable="false" layoutX="245.0" layoutY="612.0" prefHeight="140.0" prefWidth="662.0" styleClass="simulationAnchor">
          <content>
             <Text fx:id="outputConsole" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="499.00000692903996" />
          </content>
