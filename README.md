@@ -2,8 +2,8 @@
 
 important links:
 
-* googledocs:
-https://docs.google.com/document/d/1CysjpGlRve3vnj5nxMPdGd10vt1GZ81bGitQxi75SWQ/edit?usp=sharing
+* google drive:
+https://drive.google.com/drive/folders/1hO9a-aUbZhh9P7SSdQDxAM1uUCRCDHjp
 * flowchartlink:
 https://drive.google.com/file/d/1QxOiCZf_gCF2XE8xIXlh6-bxLDqY_U_Z/view?usp=sharing
 
