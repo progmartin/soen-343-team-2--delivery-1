@@ -37,6 +37,10 @@ public class SHH_Module {
 			this.rooms = new ArrayList<Room>();
 			this.temps = new double[3];
 		}
+		 public Zone(double x, double y, double z) {
+			 this.setTemps(x, y, z);
+			 this.rooms = new ArrayList<Room>();
+		 }
 		public void setTemps(double x) {
 			this.temps[0] = x;
 			
