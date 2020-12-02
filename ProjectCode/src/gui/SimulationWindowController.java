@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import javafx.animation.AnimationTimer;
+import javafx.event.ActionEvent;
+import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
@@ -141,6 +143,10 @@ public class SimulationWindowController implements Initializable {
     Label shpCommandOptionsLabel;
     VBox shpCommandOptionsPane;
     ListView shpCommands;
+
+    Label shhCommandOptionsLabel;
+    VBox shhCommandOptionsPane;
+    ListView shhCommands;
 
     static Stage editStage;
     static Stage editHomeStage;
@@ -1040,6 +1046,161 @@ public class SimulationWindowController implements Initializable {
         shpCommandOptionsPane.layout();
     }
 
+    private void handleSelectSHHItem(Event event) {
+        String command = (String) shhCommands.getSelectionModel().getSelectedItem();
+        if (command == null) {
+            event.consume();
+            return;
+        }
+        shhCommandOptionsPane.getChildren().removeAll(shhCommandOptionsPane.getChildren());
+        SHH_Module module = (SHH_Module) Driver.simulation.getModuleOfType(SHH_Module.class);
+
+        if (command.contains("Zones")) {
+            Label roomLabel = new Label("Room");
+            Label zoneLabel = new Label("Zone");
+            HBox row = new HBox(roomLabel, zoneLabel);
+            shhCommandOptionsPane.getChildren().add(row);
+
+            for (String roomName : Driver.simulation.getRoomNames()) {
+                roomLabel = new Label(roomName);
+                ComboBox<String> zoneName = new ComboBox<>(FXCollections.observableArrayList(module.getZoneNames()));
+                zoneName.setOnAction((e) -> {
+                    module.changeZone(module.getRoom(roomName), module.getZone(zoneName.getSelectionModel().getSelectedItem()));
+                });
+                row = new HBox(roomLabel, zoneName);
+                shhCommandOptionsPane.getChildren().add(row);
+            }
+        } else if (command.contains("Periods")) {
+
+            for (int i = 1; i <= module.getNoPeriods(); i++) {
+
+                int period = i;
+                Label periodName = new Label("Period " + period);
+
+                Label fromText = new Label(module.getPeriodStartTime(period));
+                Label dash = new Label(" - ");
+                Label toText = new Label(module.getPeriodEndTime(period));
+                HBox timePeriod = new HBox(fromText, dash, toText);
+
+                VBox periodBox = new VBox(periodName, timePeriod);
+                periodBox.getStyleClass().addAll("simulationSubItem");
+                shhCommandOptionsPane.getChildren().add(periodBox);
+            }
+
+            Button remove = new Button("Remove");
+            Button add = new Button("Add");
+
+            remove.setOnAction((e) -> {
+                module.removePeriod();
+                handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
+            });
+            add.setOnAction((e) -> {
+                module.addPeriod();
+                handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
+            });
+
+            if (module.getNoPeriods() == 1) {
+                remove.setManaged(false);
+                remove.setVisible(false);
+            } else if (module.getNoPeriods() == 3) {
+                add.setManaged(false);
+                add.setVisible(false);
+            }
+            HBox row = new HBox(add, remove);
+            row.setSpacing(10);
+            shhCommandOptionsPane.getChildren().add(row);
+
+        } else if (command.contains("Temp")) {
+            Label zone = new Label("Zone");
+            ComboBox<String> zoneSelecter = new ComboBox<>(FXCollections.observableArrayList(module.getZoneNames()));
+            HBox row = new HBox(zone, zoneSelecter);
+            row.setSpacing(10);
+            shhCommandOptionsPane.getChildren().add(row);
+
+            Label period = new Label("Period");
+            ArrayList<String> numPeriods = new ArrayList<>();
+            for (int i = 1; i <= module.getNoPeriods(); i++) {
+                numPeriods.add(String.valueOf(i));
+            }
+            ComboBox<String> periodSelecter = new ComboBox<>(FXCollections.observableArrayList(numPeriods));
+            row = new HBox(period, periodSelecter);
+            row.setSpacing(10);
+            shhCommandOptionsPane.getChildren().add(row);
+
+            Label tempName = new Label("Temperature");
+            String temp = "";
+            if (zoneSelecter.getSelectionModel().getSelectedItem() != null && periodSelecter.getSelectionModel().getSelectedItem() != null) {
+                temp = String.valueOf(module.getZoneTemp(module.getZone(zoneSelecter.getSelectionModel().getSelectedItem()), Integer.parseInt(periodSelecter.getSelectionModel().getSelectedItem())));
+            }
+            TextField tempText = new TextField(temp);
+            tempText.setOnAction((e) -> {
+                try {
+                    String zoneName = zoneSelecter.getSelectionModel().getSelectedItem();
+                    String periodName = periodSelecter.getSelectionModel().getSelectedItem();
+                    if (zoneName != null && periodName != null) {
+                        module.setZoneTemp(module.getZone(zoneName), Integer.parseInt(periodName), Double.parseDouble(tempText.getText()));
+                    }
+                } catch (NumberFormatException ex) {
+                }
+            });
+
+            row = new HBox(tempName, tempText);
+            row.setSpacing(10);
+            shhCommandOptionsPane.getChildren().add(row);
+
+            Separator line = new Separator(Orientation.HORIZONTAL);
+            shhCommandOptionsPane.getChildren().add(line);
+
+            VBox overridenRooms = new VBox();
+            /*ScrollPane scroll = new ScrollPane(overridenRooms);
+            scroll.getStyleClass().add("simulationSubItem");*/
+            shhCommandOptionsPane.getChildren().add(overridenRooms);
+
+            Label overriden = new Label("Overridden Rooms");
+            overridenRooms.getChildren().add(overriden);
+
+            for (String roomName : module.getOverridenRooms()) {
+                Label roomLabel = new Label(roomName);
+                TextField tempTexts = new TextField(String.valueOf(module.getRoomTemp(roomName)));
+                tempTexts.setOnKeyPressed((e) -> {
+                    try {
+                        module.setRoomTemp(roomName, Double.parseDouble(tempTexts.getText()));
+                    } catch (NumberFormatException ex) {
+                    }
+                });
+                Button remove = new Button("Remove");
+                HBox newrow = new HBox(roomLabel, tempTexts, remove);
+
+                remove.setOnAction((e) -> {
+                    overridenRooms.getChildren().remove(newrow);
+                });
+                overridenRooms.getChildren().add(newrow);
+            }
+
+            HBox newRoom = new HBox();
+            Button add = new Button("Add");
+            add.setOnAction((e) -> {
+                add.setManaged(false);
+                add.setVisible(false);
+                ArrayList<String> allRooms = Driver.simulation.getRoomNames();
+                allRooms.removeAll(module.getOverridenRooms());
+                ComboBox<String> rooms = new ComboBox<>(FXCollections.observableArrayList(allRooms));
+                rooms.setPromptText("Rooms");
+                rooms.setOnAction((ev) -> {
+                    module.addOverriddenRoom(rooms.getSelectionModel().getSelectedItem());
+                    overridenRooms.getChildren().remove(rooms);
+                    handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
+                });
+                overridenRooms.getChildren().add(rooms);
+            });
+            newRoom.getChildren().add(add);
+            overridenRooms.getChildren().add(newRoom);
+        }
+
+        shhCommandOptionsPane.applyCss();
+        shhCommandOptionsPane.layout();
+    }
+
     // --- HELPER METHODS --- //
     /**
      * Initializes the simulation clock to update the time every second.
@@ -1289,6 +1450,59 @@ public class SimulationWindowController implements Initializable {
             shpCommandOptionsLabel.setLayoutY(itemsPane.getLayoutY() + itemsPane.getHeight() + 20);
             scroll.setLayoutX(15);
             scroll.setLayoutY(shpCommandOptionsLabel.getLayoutY() + shpCommandOptionsLabel.getHeight() + 10);
+        } else if (module.getText().equals("SHH")) {
+            AnchorPane itemsPane = new AnchorPane();
+            itemsPane.getStyleClass().add("simulationSubItem");
+            itemsPane.setPrefSize(topPane.getWidth() - 30, 120);
+            topPane.getChildren().add(itemsPane);
+            topPane.applyCss();
+            topPane.layout();
+
+            Label itemLabel = new Label("Commands");
+            itemLabel.setPrefSize(itemsPane.getWidth(), 20);
+            itemLabel.getStyleClass().add("moduleItemTitle");
+            itemLabel.setFocusTraversable(false);
+            itemsPane.getChildren().add(itemLabel);
+
+            shhCommands = new ListView();
+            for (String commands : Driver.simulation.getModuleCommands(SHH_Module.class)) {
+                if (loggedPerson.getModulePermission(SHH_Module.class, commands)) {
+                    shhCommands.getItems().add(commands);
+                }
+            }
+            shhCommands.setPrefSize(itemsPane.getWidth() - 5, itemsPane.getHeight() - 25);
+            shhCommands.setFocusTraversable(false);
+            shhCommands.setOnMouseClicked((event) -> {
+                handleSelectSHHItem(event);
+            });
+            itemsPane.getChildren().add(shhCommands);
+
+            shhCommandOptionsLabel = new Label("Options");
+            shhCommandOptionsLabel.setPrefSize(topPane.getWidth(), 20);
+            shhCommandOptionsLabel.getStyleClass().add("moduleItemTitle");
+            shhCommandOptionsLabel.setFocusTraversable(false);
+            topPane.getChildren().add(shhCommandOptionsLabel);
+
+            shhCommandOptionsPane = new VBox();
+            shhCommandOptionsPane.getStyleClass().addAll("moduleVBox");
+            shhCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 180);
+            ScrollPane scroll = new ScrollPane(shhCommandOptionsPane);
+            scroll.getStyleClass().add("simulationSubItem");
+            scroll.setPrefSize(itemsPane.getWidth(), 250);
+            topPane.getChildren().add(scroll);
+
+            moduleContainer.applyCss();
+            moduleContainer.layout();
+            itemsPane.setLayoutX(15);
+            itemsPane.setLayoutY(30);
+            itemLabel.setLayoutX(0);
+            itemLabel.setLayoutY(0);
+            shhCommands.setLayoutX(2.5);
+            shhCommands.setLayoutY(20);
+            shhCommandOptionsLabel.setLayoutX(0);
+            shhCommandOptionsLabel.setLayoutY(itemsPane.getLayoutY() + itemsPane.getHeight() + 20);
+            scroll.setLayoutX(15);
+            scroll.setLayoutY(shhCommandOptionsLabel.getLayoutY() + shhCommandOptionsLabel.getHeight() + 10);
         }
 
         Button close = new Button("Close Module");
@@ -1301,7 +1515,6 @@ public class SimulationWindowController implements Initializable {
                     break;
                 case "SHP":
                     moduleButton = shpModuleCreator;
-                    mod.detachSimulation();
                     break;
                 case "SHH":
                     moduleButton = shhModuleCreator;
