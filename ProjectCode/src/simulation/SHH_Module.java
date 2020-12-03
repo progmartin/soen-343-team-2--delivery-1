@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import HouseObjects.Room;
 import HouseObjects.Window;
+import gui.Driver;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -100,6 +101,7 @@ public class SHH_Module extends Module {
         super("SHH", new ArrayList<>(Arrays.asList("Manage Zones", "Manage Periods", "Change Temperatures")));
         this.noPeriods = 1;
         this.zones = new ArrayList<>();
+        Zone initZone = new Zone();
         this.overriddenRooms = new HashMap<Room, Double>();
         this.awayMode = false;
         this.winterDefault = 22;
@@ -733,7 +735,10 @@ public class SHH_Module extends Module {
          */
         public Zone() {
         	this.name = "Default Zone";
-            this.rooms = new ArrayList<Room>();
+        	ArrayList<Room> temporary = Driver.simulation.getRooms();
+        	temporary.remove(Driver.simulation.getRoom("Outside"));
+        	temporary.remove(Driver.simulation.getRoom("Backyard"));
+            this.rooms = temporary;
             this.temps = new double[3];
         }
 
