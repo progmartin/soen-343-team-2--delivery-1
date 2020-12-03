@@ -3,12 +3,16 @@ package simulation;
 import java.util.ArrayList;
 
 import HouseObjects.Room;
+import HouseObjects.Window;
+
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 /**
  * 
- * @author a_khalil, a_richard
+ * @author a_khalil, a_richard, d_ruiz
  *
  */
 public class SHH_Module extends Module {
@@ -29,6 +33,8 @@ public class SHH_Module extends Module {
     //the simulation
     private ArrayList<Zone> zones;
     private ArrayList<Room> overriddenRooms;
+    
+    DateTimeFormatter parser = DateTimeFormatter.ofPattern("HH:MM:SS");
 
     public SHH_Module() {
         super("SHH", new ArrayList<>(Arrays.asList("Manage Zones", "Manage Periods", "Change Temperatures")));
@@ -36,6 +42,58 @@ public class SHH_Module extends Module {
         this.zones = new ArrayList<>();
         this.overriddenRooms = new ArrayList<>();
         this.awayMode = false;
+    }
+    
+    //does not currently account for summer vs winter
+    @Override
+    public boolean update(){
+    	boolean updateGUI = false;
+    	double targetTemp = 22;
+    	for(Zone z : zones){
+    		if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p1end, parser))){
+    			targetTemp = z.getTemp(0);
+    		}
+    		else if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p2end, parser))){
+    			targetTemp = z.getTemp(1);
+    		}
+    		else if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p3end, parser))){
+    			targetTemp = z.getTemp(2);
+    		}
+    		for(Room r : z.getRooms()){
+    			if(r.getTemp()<targetTemp){
+    				r.setTemp(r.getTemp()+0.1);
+    			}
+    			else if(r.getTemp()>targetTemp){
+    				if(sim.getRoom("Outside").getTemp()<r.getTemp()){
+    					for(Window w : r.getWindows()){
+    						if(!this.awayMode&&!w.getBlocked()&&isSummer(sim)){
+    							w.setOpen(true);
+    						}
+    					}
+    				}
+    				else{
+    					for(Window w : r.getWindows()){
+    						if(!w.getBlocked()){
+    							w.setOpen(false);
+    						}
+    					}
+    				}
+    				r.setTemp(r.getTemp()-0.1);
+    			}
+    		}
+    		
+    	}
+    	updateGUI = true;
+    	return updateGUI;
+    }
+    
+    public static boolean isSummer(Simulation sim){
+    	if(sim.getSimulationTime().getMonth().equals("JUNE")||sim.getSimulationTime().getMonth().equals("JULY")||sim.getSimulationTime().getMonth().equals("AUGUST")){
+    		return true;
+    	}
+    	else{
+    		return false;
+    	}
     }
 
     @Override
@@ -93,8 +151,6 @@ public class SHH_Module extends Module {
         }
     	return zoneNames;
     }
-
-    ////---Need start and end time attributes?
     
     // returns start times of requested period
     //if invalid input, returns 00:00:00
@@ -239,12 +295,20 @@ public class SHH_Module extends Module {
         Room r = sim.getRoom(name);
         r.setTemp(temp);
     }
-
-    @Override
-    public boolean update() {
-        return false;
+    
+    public void setAwayMode(boolean awayMode){
+    	this.awayMode = awayMode;
+    }
+    
+    public boolean getAwayMode(){
+    	return this.awayMode;
     }
 
+    /**
+     * 
+     * @author a_khalil
+     *
+     */
     public class Zone {
         //the array of temperatures that are set for each period, so temps[0] will be what the zone is set to all day if there is one period, 
         //the first half of the day if there are two periods, and the the first third of the day if there are three periods
