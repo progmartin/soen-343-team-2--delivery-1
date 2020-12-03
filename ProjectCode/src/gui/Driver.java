@@ -60,6 +60,7 @@ public class Driver extends Application {
             Scene scene = new Scene(root);
             scene.getRoot().requestFocus();
             Driver.simulationScene = scene;
+            Driver.simulationController = (SimulationWindowController) root.getUserData();
 
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");
@@ -91,6 +92,7 @@ public class Driver extends Application {
 
             // Display the UI to the user
             primaryStage.show();
+
         } catch (IOException ex) {
             System.out.println("Some error caused the document not to load");
             throw ex;

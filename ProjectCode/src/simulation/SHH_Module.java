@@ -101,7 +101,6 @@ public class SHH_Module extends Module {
         super("SHH", new ArrayList<>(Arrays.asList("Manage Zones", "Manage Periods", "Change Temperatures")));
         this.noPeriods = 1;
         this.zones = new ArrayList<>();
-        Zone initZone = new Zone();
         this.overriddenRooms = new HashMap<Room, Double>();
         this.awayMode = false;
         this.winterDefault = 22;
@@ -346,14 +345,14 @@ public class SHH_Module extends Module {
 
     /**
      * Connects to simulation.
-     * @param sim The simulation to be connected to.
+     * @param simulation The simulation to be connected to.
      */
     @Override
     public void attachSimulation(Simulation simulation) {
         super.attachSimulation(simulation);
         Zone initZone = new Zone();
         initZone.setTemps(22);
-        for (Room room : sim.getRooms()) {
+        for (Room room : Driver.simulation.getRooms()) {
             initZone.addRoom(room);
         }
         zones.add(initZone);
@@ -735,7 +734,7 @@ public class SHH_Module extends Module {
          */
         public Zone() {
         	this.name = "Default Zone";
-        	ArrayList<Room> temporary = Driver.simulation.getRooms();
+        	ArrayList<Room> temporary = (ArrayList<Room>) Driver.simulation.getRooms().clone();
         	temporary.remove(Driver.simulation.getRoom("Outside"));
         	temporary.remove(Driver.simulation.getRoom("Backyard"));
             this.rooms = temporary;
