@@ -6,7 +6,6 @@ import HouseObjects.Room;
 import HouseObjects.Window;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -42,6 +41,10 @@ public class SHH_Module extends Module {
     private double winterDefault;
     private double summerDefault;
     
+    //threshhold temperatures
+    private double lowThresh;
+    private double highThresh;
+    
     DateTimeFormatter parser = DateTimeFormatter.ofPattern("HH:MM:SS");
 
     public SHH_Module() {
@@ -53,6 +56,8 @@ public class SHH_Module extends Module {
         this.winterDefault = 22;
         this.summerDefault = 20;
         this.havcOn = false;
+        this.lowThresh = 0;
+        this.highThresh = 40;
     }
     
     //does not currently account for open windows
@@ -89,6 +94,12 @@ public class SHH_Module extends Module {
     				targetTemp = z.getTemp(2);
     			}
     			this.adjustTemp(z, targetTemp);
+    		}
+    	}
+    	
+    	for(Zone z: zones){
+    		for(Room r: z.getRooms()){
+    			this.checkThreshold(r);
     		}
     	}
     	
@@ -188,6 +199,18 @@ public class SHH_Module extends Module {
 				r.setHeaterOn(false);
 				r.setAcOn(false);
 			}
+    	}
+    }
+    
+    public int checkThreshold(Room r){
+    	if(r.getTemp()<=this.lowThresh){
+    		return -1;
+    	}
+    	else if(r.getTemp()>=this.highThresh){
+    		return 1;
+    	}
+    	else{
+    		return 0;
     	}
     }
     
@@ -438,6 +461,22 @@ public class SHH_Module extends Module {
     
     public void setHavcOn(boolean havcOn){
     	this.havcOn = havcOn;
+    }
+    
+    public void setLowThresh(double lowThresh){
+    	this.lowThresh = lowThresh;
+    }
+    
+    public double getLowThresh(){
+    	return this.getLowThresh();
+    }
+    
+    public void setHighThresh(double highThresh){
+    	this.highThresh = highThresh;
+    }
+    
+    public double getHighThresh(){
+    	return this.highThresh;
     }
 
     /**
