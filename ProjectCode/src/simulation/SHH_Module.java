@@ -61,6 +61,10 @@ public class SHH_Module extends Module {
     	boolean updateGUI = false;
     	double targetTemp = 22;
     	
+    	for(Room r: overriddenRooms.keySet()){
+    		this.adjustOverrideTemp(r, overriddenRooms.get(r));
+    	}
+    	
     	if(awayMode&&this.isSummer(sim)){
     		targetTemp = summerDefault;
     		for(Zone z: zones){
@@ -101,10 +105,10 @@ public class SHH_Module extends Module {
     					break;
     				}
     				else{
-    					if(r.getTemp()>targetTemp){
+    					if(r.getTemp()>targetTemp && !overriddenRooms.containsKey(r)){
     						r.setTemp(r.getTemp()-0.05);
     					}
-    					else if(r.getTemp()<targetTemp){
+    					else if(r.getTemp()<targetTemp && !overriddenRooms.containsKey(r)){
     						r.setTemp(r.getTemp()+0.05);
     					}
     				}
@@ -112,20 +116,53 @@ public class SHH_Module extends Module {
     	}
     	else{
     		for(Room r: z.getRooms()){
-				if(r.getTemp()>=targetTemp+0.25){
+				if(r.getTemp()>=targetTemp+0.25 && !overriddenRooms.containsKey(r)){
 					r.setHeaterOn(false);
 					r.setAcOn(true);
 					r.setTemp(r.getTemp()-0.1);
 				}
-				else if(r.getTemp()<=targetTemp){
+				else if(r.getTemp()<=targetTemp && !overriddenRooms.containsKey(r)){
 					r.setHeaterOn(true);
 					r.setAcOn(false);
 					r.setTemp(r.getTemp()+0.1);
 				}
-				else{
+				else if(!overriddenRooms.containsKey(r)){
 					r.setHeaterOn(false);
 					r.setAcOn(false);
 				}
+			}
+    	}
+    }
+    
+    //adjusts temperature of overridden room
+    public void adjustOverrideTemp(Room r, double targetTemp){
+    	if(!havcOn){
+			if(r.getTemp()>=targetTemp+1||r.getTemp()<=targetTemp-1){
+				this.havcOn = true;
+			}
+			else{
+				if(r.getTemp()>targetTemp){
+					r.setTemp(r.getTemp()-0.05);
+				}
+				else if(r.getTemp()<targetTemp){
+					r.setTemp(r.getTemp()+0.05);
+				}
+			}
+    	}
+    	else{
+			if(r.getTemp()>=targetTemp+0.25){
+				r.setHeaterOn(false);
+				r.setAcOn(true);
+				r.setTemp(r.getTemp()-0.1);
+			}
+			else if(r.getTemp()<=targetTemp){
+				r.setHeaterOn(true);
+				r.setAcOn(false);
+				r.setTemp(r.getTemp()+0.1);
+			}
+			else{
+				r.setHeaterOn(false);
+				r.setAcOn(false);
 			}
     	}
     }
@@ -369,6 +406,14 @@ public class SHH_Module extends Module {
     
     public void setSummerDefault(double summerDefault){
     	this.summerDefault = summerDefault;
+    }
+    
+    public boolean getHavcOn(){
+    	return this.havcOn;
+    }
+    
+    public void setHavcOn(boolean havcOn){
+    	this.havcOn = havcOn;
     }
 
     /**
