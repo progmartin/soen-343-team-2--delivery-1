@@ -117,8 +117,20 @@ public class SHH_Module extends Module {
     	else{
     		for(Room r: z.getRooms()){
 				if(r.getTemp()>=targetTemp+0.25 && !overriddenRooms.containsKey(r)){
-					r.setHeaterOn(false);
-					r.setAcOn(true);
+					if(this.isSummer(sim)&&!awayMode&&sim.getRoom("Outside").getTemp()<r.getTemp()){
+						for(Window w: r.getWindows()){
+							if(!w.getBlocked()) w.setOpen(true);
+						}
+						r.setHeaterOn(false);
+						r.setAcOn(false);
+					}
+					else{
+						for(Window w:r.getWindows()){
+							if(!w.getBlocked()) w.setOpen(false);
+						}
+						r.setHeaterOn(false);
+						r.setAcOn(true);
+					}
 					r.setTemp(r.getTemp()-0.1);
 				}
 				else if(r.getTemp()<=targetTemp && !overriddenRooms.containsKey(r)){
@@ -151,8 +163,20 @@ public class SHH_Module extends Module {
     	}
     	else{
 			if(r.getTemp()>=targetTemp+0.25){
-				r.setHeaterOn(false);
-				r.setAcOn(true);
+				if(this.isSummer(sim)&&!awayMode&&sim.getRoom("Outside").getTemp()<r.getTemp()){
+					for(Window w: r.getWindows()){
+						if(!w.getBlocked()) w.setOpen(true);
+					}
+					r.setHeaterOn(false);
+					r.setAcOn(false);
+				}
+				else{
+					for(Window w: r.getWindows()){
+						if(!w.getBlocked()) w.setOpen(false);
+					}
+					r.setHeaterOn(false);
+					r.setAcOn(true);
+				}
 				r.setTemp(r.getTemp()-0.1);
 			}
 			else if(r.getTemp()<=targetTemp){
@@ -431,11 +455,13 @@ public class SHH_Module extends Module {
         private ArrayList<Room> rooms;
 
         public Zone() {
+        	this.name = "Default Zone";
             this.rooms = new ArrayList<Room>();
             this.temps = new double[3];
         }
 
         public Zone(double x, double y, double z) {
+        	this.name = "New Zone";
             this.setTemps(x, y, z);
             this.rooms = new ArrayList<Room>();
         }
