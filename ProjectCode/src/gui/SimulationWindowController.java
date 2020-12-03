@@ -1187,6 +1187,7 @@ public class SimulationWindowController implements Initializable {
                 ComboBox<String> rooms = new ComboBox<>(FXCollections.observableArrayList(allRooms));
                 rooms.setPromptText("Rooms");
                 rooms.setOnAction((ev) -> {
+                	//addOverriddenRoom(String, double) -- below call needs double
                     module.addOverriddenRoom(rooms.getSelectionModel().getSelectedItem());
                     overridenRooms.getChildren().remove(rooms);
                     handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
