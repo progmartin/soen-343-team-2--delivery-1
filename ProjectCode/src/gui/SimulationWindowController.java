@@ -1159,7 +1159,7 @@ public class SimulationWindowController implements Initializable {
             Label overriden = new Label("Overridden Rooms");
             overridenRooms.getChildren().add(overriden);
 
-            for (String roomName : module.getOverridenRooms()) {
+            for (String roomName : module.getOverriddenRooms()) {
                 Label roomLabel = new Label(roomName);
                 TextField tempTexts = new TextField(String.valueOf(module.getRoomTemp(roomName)));
                 tempTexts.setOnKeyPressed((e) -> {
@@ -1183,7 +1183,7 @@ public class SimulationWindowController implements Initializable {
                 add.setManaged(false);
                 add.setVisible(false);
                 ArrayList<String> allRooms = Driver.simulation.getRoomNames();
-                allRooms.removeAll(module.getOverridenRooms());
+                allRooms.removeAll(module.getOverriddenRooms());
                 ComboBox<String> rooms = new ComboBox<>(FXCollections.observableArrayList(allRooms));
                 rooms.setPromptText("Rooms");
                 rooms.setOnAction((ev) -> {
