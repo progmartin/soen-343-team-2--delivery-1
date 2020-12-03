@@ -16,6 +16,9 @@ public class Room {
      * Temperature of the room.
      */
     double heatingTemp;
+    
+    boolean heaterOn;
+    boolean acOn;
 
     /**
      * People currently in the room.
@@ -43,6 +46,8 @@ public class Room {
     public Room() {
         this.name = "Empty Room";
         this.heatingTemp = 21;
+        this.heaterOn = false;
+        this.acOn = false;
     }
 
     /**
@@ -53,6 +58,8 @@ public class Room {
     public Room(String name) {
         this.name = name;
         this.heatingTemp = 21;
+        this.heaterOn = false;
+        this.acOn = false;
     }
 
     /**
@@ -64,6 +71,8 @@ public class Room {
     public Room(String name, double temp) {
         this.name = name;
         this.heatingTemp = temp;
+        this.heaterOn = false;
+        this.acOn = false;
     }
 
     /**
@@ -257,6 +266,22 @@ public class Room {
      */
     public ArrayList<Light> getLights() {
         return lights;
+    }
+    
+    public boolean getHeaterOn(){
+    	return heaterOn;
+    }
+    
+    public void setHeaterOn(boolean heaterOn){
+    	this.heaterOn = heaterOn;
+    }
+    
+    public boolean getAcOn(){
+    	return acOn;
+    }
+    
+    public void setAcOn(boolean acOn){
+    	this.acOn = acOn;
     }
 
     /**

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * 
@@ -30,9 +31,16 @@ public class SHH_Module extends Module {
     
     //boolean representing whether or not away mode in the SHP is on or off
     private boolean awayMode;
+    
+    private boolean havcOn;
+    
     //the simulation
     private ArrayList<Zone> zones;
-    private ArrayList<Room> overriddenRooms;
+    private HashMap<Room, Double> overriddenRooms;
+    
+    //summer and winter default temperatures
+    private double winterDefault;
+    private double summerDefault;
     
     DateTimeFormatter parser = DateTimeFormatter.ofPattern("HH:MM:SS");
 
@@ -40,55 +48,102 @@ public class SHH_Module extends Module {
         super("SHH", new ArrayList<>(Arrays.asList("Manage Zones", "Manage Periods", "Change Temperatures")));
         this.noPeriods = 1;
         this.zones = new ArrayList<>();
-        this.overriddenRooms = new ArrayList<>();
+        this.overriddenRooms = new HashMap<Room, Double>();
         this.awayMode = false;
+        this.winterDefault = 22;
+        this.summerDefault = 20;
+        this.havcOn = false;
     }
     
-    //does not currently account for summer vs winter
+    //does not currently account for open windows
     @Override
     public boolean update(){
     	boolean updateGUI = false;
     	double targetTemp = 22;
-    	for(Zone z : zones){
-    		if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p1end, parser))){
-    			targetTemp = z.getTemp(0);
+    	
+    	if(awayMode&&this.isSummer(sim)){
+    		targetTemp = summerDefault;
+    		for(Zone z: zones){
+    			this.adjustTemp(z, targetTemp);
     		}
-    		else if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p2end, parser))){
-    			targetTemp = z.getTemp(1);
-    		}
-    		else if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p3end, parser))){
-    			targetTemp = z.getTemp(2);
-    		}
-    		for(Room r : z.getRooms()){
-    			if(r.getTemp()<targetTemp){
-    				r.setTemp(r.getTemp()+0.1);
-    			}
-    			else if(r.getTemp()>targetTemp){
-    				if(sim.getRoom("Outside").getTemp()<r.getTemp()){
-    					for(Window w : r.getWindows()){
-    						if(!this.awayMode&&!w.getBlocked()&&isSummer(sim)){
-    							w.setOpen(true);
-    						}
-    					}
-    				}
-    				else{
-    					for(Window w : r.getWindows()){
-    						if(!w.getBlocked()){
-    							w.setOpen(false);
-    						}
-    					}
-    				}
-    				r.setTemp(r.getTemp()-0.1);
-    			}
-    		}
-    		
     	}
+    	else if(awayMode&&this.isWinter(sim)){
+    		targetTemp = winterDefault;
+    		for(Zone z: zones){
+    			this.adjustTemp(z, targetTemp);
+    		}
+    	}
+    	else{
+    		for(Zone z : zones){
+    			if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p1end, parser))){
+    				targetTemp = z.getTemp(0);
+    			}
+    			else if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p2end, parser))){
+    				targetTemp = z.getTemp(1);
+    			}
+    			else if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p3end, parser))){
+    				targetTemp = z.getTemp(2);
+    			}
+    			this.adjustTemp(z, targetTemp);
+    		}
+    	}
+    	
     	updateGUI = true;
     	return updateGUI;
     }
     
-    public static boolean isSummer(Simulation sim){
+    //adjusts the temperature of the house according to appropriate method
+    public void adjustTemp(Zone z, double targetTemp){
+    	if(!havcOn){
+    			for(Room r: z.getRooms()){
+    				if(r.getTemp()>=targetTemp+1||r.getTemp()<=targetTemp-1){
+    					this.havcOn = true;
+    					break;
+    				}
+    				else{
+    					if(r.getTemp()>targetTemp){
+    						r.setTemp(r.getTemp()-0.05);
+    					}
+    					else if(r.getTemp()<targetTemp){
+    						r.setTemp(r.getTemp()+0.05);
+    					}
+    				}
+    			}
+    	}
+    	else{
+    		for(Room r: z.getRooms()){
+				if(r.getTemp()>=targetTemp+0.25){
+					r.setHeaterOn(false);
+					r.setAcOn(true);
+					r.setTemp(r.getTemp()-0.1);
+				}
+				else if(r.getTemp()<=targetTemp){
+					r.setHeaterOn(true);
+					r.setAcOn(false);
+					r.setTemp(r.getTemp()+0.1);
+				}
+				else{
+					r.setHeaterOn(false);
+					r.setAcOn(false);
+				}
+			}
+    	}
+    }
+    
+    //returns true if it is summer
+    public boolean isSummer(Simulation sim){
     	if(sim.getSimulationTime().getMonth().equals("JUNE")||sim.getSimulationTime().getMonth().equals("JULY")||sim.getSimulationTime().getMonth().equals("AUGUST")){
+    		return true;
+    	}
+    	else{
+    		return false;
+    	}
+    }
+    
+    //returns true if it is winter
+    public boolean isWinter(Simulation sim){
+    	if(sim.getSimulationTime().getMonth().equals("NOVEMBER")||sim.getSimulationTime().getMonth().equals("DECEMBER")||
+    			sim.getSimulationTime().getMonth().equals("JANUARY")||sim.getSimulationTime().getMonth().equals("FEBRUARY")||sim.getSimulationTime().getMonth().equals("MARCH")){
     		return true;
     	}
     	else{
@@ -262,15 +317,15 @@ public class SHH_Module extends Module {
     // returns names of over-ridden rooms
     public ArrayList<String> getOverriddenRooms(){
         ArrayList<String> roomNames = new ArrayList<>();
-        for (Room r : overriddenRooms) {
+        for (Room r : overriddenRooms.keySet()) {
             roomNames.add(r.getName());
         }
         return roomNames;
     }
     
     // adds room to list of overridden rooms
-    public void addOverriddenRoom(String room){
-        overriddenRooms.add(getRoom(room));
+    public void addOverriddenRoom(String room, double temp){
+        overriddenRooms.put(getRoom(room), temp);
     }
     
     // removes room from list of overridden rooms
@@ -302,6 +357,18 @@ public class SHH_Module extends Module {
     
     public boolean getAwayMode(){
     	return this.awayMode;
+    }
+    
+    public void setWinterDefault(double winterDefault){
+    	this.winterDefault = winterDefault;
+    }
+    
+    public double getWinterDefault(){
+    	return winterDefault;
+    }
+    
+    public void setSummerDefault(double summerDefault){
+    	this.summerDefault = summerDefault;
     }
 
     /**
