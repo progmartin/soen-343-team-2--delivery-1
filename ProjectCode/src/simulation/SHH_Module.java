@@ -15,6 +15,15 @@ public class SHH_Module extends Module {
 
     //the number or periods the user currently chooses to have, either 1, 2, or 3
     private int noPeriods;
+    
+    //period start and end times
+    private String p1start;
+    private String p1end;
+    private String p2start;
+    private String p2end;
+    private String p3start;
+    private String p3end;
+    
     //boolean representing whether or not away mode in the SHP is on or off
     private boolean awayMode;
     //the simulation
@@ -87,35 +96,111 @@ public class SHH_Module extends Module {
 
     ////---Need start and end time attributes?
     
-    // TODO
+    // returns start times of requested period
+    //if invalid input, returns 00:00:00
     public String getPeriodStartTime(int periodIndex) {
-        // String.matches("^\\d\\d:\\d\\d:\\d\\d$") // "HH:MM:SS"
-        return "13:23:45";
+        if(periodIndex==0){
+        	return p1start;
+        }
+        else if(periodIndex==1){
+        	return p2start;
+        }
+        else if(periodIndex==2){
+        	return p3start;
+        }
+        else{
+        	return "00:00:00";
+        }
     }
 
-    // TODO
+    // returns end times of requested period
+    //if invalid, returns 00:00:00
     public String getPeriodEndTime(int periodIndex) {
-        // String.matches("^\\d\\d:\\d\\d:\\d\\d$") // "HH:MM:SS"
-        return "13:23:45";
+    	if(periodIndex==0){
+        	return p1end;
+        }
+        else if(periodIndex==1){
+        	return p2end;
+        }
+        else if(periodIndex==2){
+        	return p3end;
+        }
+        else{
+        	return "00:00:00";
+        }
     }
 
-    //TODO set start and end times
+    //adds a new period to the day and changes start and end times
     public void addPeriod() {
         // increaseNumPeriod
         this.noPeriods++;
-        // change time start and end for each period
+        //change start and end time for each period
+        if(this.noPeriods==1){
+        	p1start = "00:00:00";
+        	p1end = "23:59:59";
+        }
+        else if(this.noPeriods==2){
+        	p1start = "00:00:00";
+        	p1end = "11:59:59";
+        	p2start = "12:00:00";
+        	p2end = "23:59:59";
+        }
+        else if(this.noPeriods==3){
+        	p1start = "00:00:00";
+        	p1end = "07:59:59";
+        	p2start = "08:00:00";
+        	p2end = "15:59:59";
+        	p3start = "16:00:00";
+        	p3end = "23:59:59";
+        }
     }
 
-    // TODO set start and end times
+    // removes a period from the day and changes start and end times
     public void removePeriod() {
         // decreases num period
         this.noPeriods--;
         // change time start and end for each period
+        if(this.noPeriods==1){
+        	p1start = "00:00:00";
+        	p1end = "23:59:59";
+        }
+        else if(this.noPeriods==2){
+        	p1start = "00:00:00";
+        	p1end = "11:59:59";
+        	p2start = "12:00:00";
+        	p2end = "23:59:59";
+        }
+        else if(this.noPeriods==3){
+        	p1start = "00:00:00";
+        	p1end = "07:59:59";
+        	p2start = "08:00:00";
+        	p2end = "15:59:59";
+        	p3start = "16:00:00";
+        	p3end = "23:59:59";
+        }
     }
     
-    //TODO set start and end times
+    //sets number of periods in a day and changes start and end times
     public void setNoPeriods(int noPeriods){
     	this.noPeriods = noPeriods;
+    	if(this.noPeriods==1){
+        	p1start = "00:00:00";
+        	p1end = "23:59:59";
+        }
+        else if(this.noPeriods==2){
+        	p1start = "00:00:00";
+        	p1end = "11:59:59";
+        	p2start = "12:00:00";
+        	p2end = "23:59:59";
+        }
+        else if(this.noPeriods==3){
+        	p1start = "00:00:00";
+        	p1end = "07:59:59";
+        	p2start = "08:00:00";
+        	p2end = "15:59:59";
+        	p3start = "16:00:00";
+        	p3end = "23:59:59";
+        }
     }
     
     // returns names of over-ridden rooms
