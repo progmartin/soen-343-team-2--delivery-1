@@ -176,12 +176,13 @@ public class SimulationWindowController implements Initializable {
 
         // Temporary DEFAULT USER for testing users //
         Driver.simulation.addNewUser("Default", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
-        accounts.put("Default", new Account("Default", "", AssetManager.DEFAULT_USER_IMAGE_URL));
-        // ************* //
-        Driver.simulation.notifyAllModules();
-        if (!RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms())) {
-            writeToConsole("[Initializer] Missing rooms, cannot display house layout");
-        }
+        accounts.put("Default", new SimulationWindowController.Account("Default", "", AssetManager.DEFAULT_USER_IMAGE_URL));
+            // ************* //
+        /*
+         Driver.simulation.notifyAllModules();
+         if (!RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms())) {
+         writeToConsole("[Initializer] Missing rooms, cannot display house layout");
+         }*/
 
         initializeSHS();
 
@@ -1153,7 +1154,7 @@ public class SimulationWindowController implements Initializable {
 
             VBox overridenRooms = new VBox();
             /*ScrollPane scroll = new ScrollPane(overridenRooms);
-            scroll.getStyleClass().add("simulationSubItem");*/
+             scroll.getStyleClass().add("simulationSubItem");*/
             shhCommandOptionsPane.getChildren().add(overridenRooms);
 
             Label overriden = new Label("Overridden Rooms");
@@ -1187,8 +1188,9 @@ public class SimulationWindowController implements Initializable {
                 ComboBox<String> rooms = new ComboBox<>(FXCollections.observableArrayList(allRooms));
                 rooms.setPromptText("Rooms");
                 rooms.setOnAction((ev) -> {
-                	//addOverriddenRoom(String, double) -- below call needs double
-                    module.addOverriddenRoom(rooms.getSelectionModel().getSelectedItem());
+
+                    String roomName = rooms.getSelectionModel().getSelectedItem();
+                    module.addOverriddenRoom(roomName, module.getRoomTemp(roomName));
                     overridenRooms.getChildren().remove(rooms);
                     handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
                 });
@@ -1279,11 +1281,8 @@ public class SimulationWindowController implements Initializable {
      * @param temp the temperature in degrees Celsius
      */
     private void updateOutsideTemp(double temp) {
+        Driver.simulation.getRoom("Outside").setTemp(temp);
         outsideTempDisplay.setText(String.format("Outside Temp. %.2f" + "\u00B0" + "C", temp));
-    }
-
-    private void updateInsideTemp(double temp) {
-        insideTempDisplay.setText(String.format("Inside Temp. %.2f" + "\u00B0" + "C", temp));
     }
 
     /**
