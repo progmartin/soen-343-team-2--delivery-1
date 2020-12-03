@@ -6,6 +6,11 @@ import HouseObjects.Room;
 import java.time.LocalTime;
 import java.util.Arrays;
 
+/**
+ * 
+ * @author a_khalil, a_richard
+ *
+ */
 public class SHH_Module extends Module {
 
     //the number or periods the user currently chooses to have, either 1, 2, or 3
@@ -35,33 +40,53 @@ public class SHH_Module extends Module {
         zones.add(initZone);
     }
     
-    // TODO
+    // returns target temp for zone
     public double getZoneTemp(Zone zone, int periodIndex){
-        return 22;
+        return zone.getTemp(periodIndex);
     }
     
-    // TODO
+    // sets target temp for zone
     public void setZoneTemp(Zone zone, int periodIndex, double temp){
-        
+        zone.setTemp(temp, periodIndex);
     }
     
-    // TODO
+    // removes room from old zone, then adds to new zone
     public void changeZone(Room room, Zone zone) {
         // remove room from current zone
+    	for(Zone z : zones){
+    		for(Room r : z.getRooms()){
+    			if(r.equals(room)){
+    				z.removeRoom(r);
+    				break;
+    			}
+    		}
+    	}
         // add room to new zone
+    	zone.addRoom(room);
     }
 
-    // TODO
-
+    // finds zone by name
     public Zone getZone(String zoneName) {
-        return zones.get(0);
+    	for(Zone z : zones){
+    		if(z.getName().equals(zoneName)){
+    			return z;
+    		}
+    	}
+    	//returns default if could not find
+    	return zones.get(0);
     }
 
-    // TODO
+    // returns list of names of all zones
     public ArrayList<String> getZoneNames() {
-        return new ArrayList<>();
+        ArrayList<String> zoneNames = new ArrayList<>();
+        for(Zone z: zones){
+        	zoneNames.add(z.getName());
+        }
+    	return zoneNames;
     }
 
+    ////---Need start and end time attributes?
+    
     // TODO
     public String getPeriodStartTime(int periodIndex) {
         // String.matches("^\\d\\d:\\d\\d:\\d\\d$") // "HH:MM:SS"
@@ -74,22 +99,27 @@ public class SHH_Module extends Module {
         return "13:23:45";
     }
 
-    //TODO
+    //TODO set start and end times
     public void addPeriod() {
         // increaseNumPeriod
         this.noPeriods++;
         // change time start and end for each period
     }
 
-    // TODO
+    // TODO set start and end times
     public void removePeriod() {
         // decreases num period
         this.noPeriods--;
         // change time start and end for each period
     }
     
-    // TODO
-    public ArrayList<String> getOverridenRooms(){
+    //TODO set start and end times
+    public void setNoPeriods(int noPeriods){
+    	this.noPeriods = noPeriods;
+    }
+    
+    // returns names of over-ridden rooms
+    public ArrayList<String> getOverriddenRooms(){
         ArrayList<String> roomNames = new ArrayList<>();
         for (Room r : overriddenRooms) {
             roomNames.add(r.getName());
@@ -97,14 +127,14 @@ public class SHH_Module extends Module {
         return roomNames;
     }
     
-    // TODO
+    // adds room to list of overridden rooms
     public void addOverriddenRoom(String room){
         overriddenRooms.add(getRoom(room));
     }
     
-    // TODO
+    // removes room from list of overridden rooms
     public void removeOverridenRoom(String room){
-        
+        overriddenRooms.remove(getRoom(room));
     }
     
 
@@ -134,6 +164,7 @@ public class SHH_Module extends Module {
         //the array of temperatures that are set for each period, so temps[0] will be what the zone is set to all day if there is one period, 
         //the first half of the day if there are two periods, and the the first third of the day if there are three periods
 
+    	private String name;
         private double[] temps;
         //the list of rooms that are in this zone
         private ArrayList<Room> rooms;
@@ -146,6 +177,10 @@ public class SHH_Module extends Module {
         public Zone(double x, double y, double z) {
             this.setTemps(x, y, z);
             this.rooms = new ArrayList<Room>();
+        }
+        
+        public void setName(String name){
+        	this.name=name;
         }
 
         public void setTemps(double x) {
@@ -174,6 +209,10 @@ public class SHH_Module extends Module {
         public void setTemp(double x, int i) {
             this.temps[i] = x;
         }
+        
+        public String getName(){
+        	return name;
+        }
 
         public double getTemp(int i) {
             return temps[i];
@@ -197,6 +236,10 @@ public class SHH_Module extends Module {
 
         public void addRoom(Room r) {
             this.rooms.add(r);
+        }
+        
+        public void removeRoom(Room r){
+        	this.rooms.remove(r);
         }
 
         public double getRoomTemp(int i) {
@@ -230,4 +273,6 @@ public class SHH_Module extends Module {
         }
 
     }
+    //End of inner class Zone
 }
+//End of class SHH
