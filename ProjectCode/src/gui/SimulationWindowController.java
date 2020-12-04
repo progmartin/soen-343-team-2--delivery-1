@@ -177,7 +177,7 @@ public class SimulationWindowController implements Initializable {
         // Temporary DEFAULT USER for testing users //
         Driver.simulation.addNewUser("Default", true, Person.UserTypes.CHILD, Driver.simulation.getRoomNames().get(0));
         accounts.put("Default", new SimulationWindowController.Account("Default", "", AssetManager.DEFAULT_USER_IMAGE_URL));
-            // ************* //
+        // ************* //
         /*
          Driver.simulation.notifyAllModules();
          if (!RoomObjtoDisplay.drawHouseLayout(houseViewPane, Driver.simulation.getRooms())) {
@@ -1060,23 +1060,97 @@ public class SimulationWindowController implements Initializable {
             Label roomLabel = new Label("Room");
             Label zoneLabel = new Label("Zone");
             HBox row = new HBox(roomLabel, zoneLabel);
+            row.setSpacing(30);
             shhCommandOptionsPane.getChildren().add(row);
 
-            for (String roomName : Driver.simulation.getRoomNames()) {
+            for (String roomName : module.getRoomNames()) {
                 roomLabel = new Label(roomName);
                 ComboBox<String> zoneName = new ComboBox<>(FXCollections.observableArrayList(module.getZoneNames()));
                 zoneName.setOnAction((e) -> {
                     module.changeZone(module.getRoom(roomName), module.getZone(zoneName.getSelectionModel().getSelectedItem()));
                 });
                 row = new HBox(roomLabel, zoneName);
+                row.setSpacing(10);
                 shhCommandOptionsPane.getChildren().add(row);
             }
+
+            Button add = new Button("Add");
+            HBox addPane = new HBox(add);
+            add.setOnAction((e) -> {
+                add.setManaged(false);
+                add.setVisible(false);
+                
+                VBox newZone = new VBox();
+
+                TextField zoneName = new TextField();
+                zoneName.setPromptText("Zone Name");
+                zoneName.setOnKeyPressed((ev) -> {
+                    zoneName.getStyleClass().remove("redText");
+                    zoneName.getStyleClass().add("blackText");
+                });
+                newZone.getChildren().add(zoneName);
+                
+                TextField[] periods = new TextField[module.getNoPeriods()];
+                for (int i = 0; i < module.getNoPeriods(); ++i) {
+                    TextField periodTemp = new TextField();
+                    periodTemp.setPromptText("Period " + (i + 1) + " Temp");
+                    periodTemp.setOnKeyPressed((ev) -> {
+                        periodTemp.getStyleClass().remove("redText");
+                        periodTemp.getStyleClass().add("blackText");
+                    });
+                    newZone.getChildren().add(periodTemp);
+                    periods[i] = periodTemp;
+                }
+
+                Button addZone = new Button("Confirm");
+                Button cancel = new Button("Cancel");
+                newZone.getChildren().addAll(addZone, cancel);
+                
+                addZone.setOnAction((ev) -> {
+                    // validate zone
+                    boolean valid = true;
+                    for (String zone : module.getZoneNames()) {
+                        if (zoneName.getText().equals(zone)) {
+                            valid = false;
+                            zoneName.getStyleClass().add("redText");
+                            zoneName.getStyleClass().remove("blackText");
+                            break;
+                        }
+                    }
+
+                    for (TextField period : periods) {
+                        try {
+                            Double.parseDouble(period.getText());
+                        } catch (NumberFormatException ex) {
+                            valid = false;
+                            period.getStyleClass().add("redText");
+                            period.getStyleClass().remove("blackText");
+                            break;
+                        }
+                    }
+
+                    if (valid) {
+                        double[] temps = new double[periods.length];
+                        for (int i = 0; i < periods.length; i++){
+                            temps[i] = Double.parseDouble(periods[i].getText());
+                        }
+                        module.addNewZone(zoneName.getText(), temps);
+                        addPane.getChildren().remove(newZone);
+                        handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
+                    }
+                });
+                cancel.setOnAction((ev) -> {
+                    addPane.getChildren().remove(newZone);
+                    handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
+                }); 
+            });
+            shhCommandOptionsPane.getChildren().add(addPane);
         } else if (command.contains("Periods")) {
 
             for (int i = 1; i <= module.getNoPeriods(); i++) {
 
-                int period = i;
-                Label periodName = new Label("Period " + period);
+                int period = i - 1;
+                Label periodName = new Label("Period " + i);
 
                 Label fromText = new Label(module.getPeriodStartTime(period));
                 Label dash = new Label(" - ");
@@ -1183,7 +1257,7 @@ public class SimulationWindowController implements Initializable {
             add.setOnAction((e) -> {
                 add.setManaged(false);
                 add.setVisible(false);
-                ArrayList<String> allRooms = Driver.simulation.getRoomNames();
+                ArrayList<String> allRooms = module.getRoomNames();
                 allRooms.removeAll(module.getOverriddenRooms());
                 ComboBox<String> rooms = new ComboBox<>(FXCollections.observableArrayList(allRooms));
                 rooms.setPromptText("Rooms");
@@ -1342,7 +1416,6 @@ public class SimulationWindowController implements Initializable {
         module.setContent(topPane);
         moduleContainer.applyCss();
         moduleContainer.layout();
-        Module mod = Driver.simulation.getModuleFromName(module.getText());
         if (module.getText().equals("SHC")) {
             AnchorPane itemsPane = new AnchorPane();
             itemsPane.getStyleClass().add("simulationSubItem");
