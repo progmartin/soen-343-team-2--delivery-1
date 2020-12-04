@@ -102,7 +102,7 @@ public class SHH_Module extends Module {
      * Default constructor
      */
     public SHH_Module() {
-        super("SHH", new ArrayList<>(Arrays.asList("Manage Zones", "Manage Periods", "Change Temperatures")));
+        super("SHH", new ArrayList<>(Arrays.asList("Manage Zones", "Manage Periods", "Change Temperatures", "Monitor Temperatures")));
         this.noPeriods = 1;
         this.zones = new ArrayList<>();
         this.overriddenRooms = new HashMap<>();
