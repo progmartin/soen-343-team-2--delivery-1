@@ -26,7 +26,7 @@ public class Driver extends Application {
 
     static Stage mainStage;
     static Scene simulationScene = null;
-    static SimulationWindowController simulationController = null;
+    static SimulationWindowController simulationController;
     public static Simulation simulation;
 
     @Override
@@ -60,7 +60,6 @@ public class Driver extends Application {
             Scene scene = new Scene(root);
             scene.getRoot().requestFocus();
             Driver.simulationScene = scene;
-            Driver.simulationController = (SimulationWindowController) root.getUserData();
 
             // Change the attributes if the window
             primaryStage.setTitle("Smart Home Simulator");
