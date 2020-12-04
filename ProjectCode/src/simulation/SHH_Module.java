@@ -11,6 +11,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -413,6 +414,13 @@ public class SHH_Module extends Module {
         zones.add(z);
     }
     
+    public void removeZone(String name){
+        Zone z = getZone(name);
+        ArrayList<Room> roomsInZone = z.getRooms();
+        zones.remove(z);
+        zones.get(0).addAllRooms(roomsInZone);
+    }
+    
     /**
      * A method for finding a zone by its name.
      *
@@ -612,6 +620,15 @@ public class SHH_Module extends Module {
      */
     public Room getRoom(String name) {
         return sim.getRoom(name);
+    }
+    
+    public Zone getRoomZone(Room room){
+        for (Zone z : zones){
+            if (z.getRooms().contains(room)){
+                return z;
+            }
+        }
+        return null;
     }
 
     /**
@@ -908,6 +925,10 @@ public class SHH_Module extends Module {
          */
         public void addRoom(Room r) {
             this.rooms.add(r);
+        }
+        
+        public void addAllRooms(Collection<Room> rooms){
+            this.rooms.addAll(rooms);
         }
 
         /**
