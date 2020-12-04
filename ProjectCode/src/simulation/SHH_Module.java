@@ -194,7 +194,10 @@ public class SHH_Module extends Module {
                 //if temp needs adjusting
                 if (r.getTemp() >= targetTemp + 0.25 && !overriddenRooms.containsKey(r)) {
                     //adjust by open window
+
+                	System.out.println(sim.getSimulationTime().getMonth());
                     if (this.isSummer(sim) && !awayMode && sim.getRoom("Outside").getTemp() < r.getTemp()) {
+                    	System.out.println(this.isSummer(sim));
                         for (Window w : r.getWindows()) {
                             if (!w.getBlocked()) {
                                 w.setOpen(true);
@@ -221,6 +224,11 @@ public class SHH_Module extends Module {
                     r.setTemp(r.getTemp() + 0.1);
                 } //adjust by outside temp
                 else if (!overriddenRooms.containsKey(r)) {
+                	for (Window w : r.getWindows()) {
+                        if (!w.getBlocked()) {
+                            w.setOpen(false);
+                        }
+                    }
                     r.setHeaterOn(false);
                     r.setAcOn(false);
                     if (r.getTemp() > sim.getRoom("Outside").getTemp()) {
@@ -258,6 +266,7 @@ public class SHH_Module extends Module {
             if (r.getTemp() >= targetTemp + 0.25) {
                 //adjust temp by open windows
                 if (this.isSummer(sim) && !awayMode && sim.getRoom("Outside").getTemp() < r.getTemp()) {
+                	System.out.println(this.isSummer(sim));
                     for (Window w : r.getWindows()) {
                         if (!w.getBlocked()) {
                             w.setOpen(true);
@@ -283,6 +292,11 @@ public class SHH_Module extends Module {
                 r.setTemp(r.getTemp() + 0.1);
             } //adjust temp to outside
             else {
+            	for (Window w : r.getWindows()) {
+                    if (!w.getBlocked()) {
+                        w.setOpen(false);
+                    }
+                }
                 r.setHeaterOn(false);
                 r.setAcOn(false);
                 if (r.getTemp() > sim.getRoom("Outside").getTemp()) {
@@ -318,7 +332,7 @@ public class SHH_Module extends Module {
      * @return true if it is summer.
      */
     private boolean isSummer(Simulation sim) {
-        if (sim.getSimulationTime().getMonth().equals("JUNE") || sim.getSimulationTime().getMonth().equals("JULY") || sim.getSimulationTime().getMonth().equals("AUGUST")) {
+        if (sim.getSimulationTime().getMonth().getValue()==6 || sim.getSimulationTime().getMonth().getValue()==7 || sim.getSimulationTime().getMonth().getValue()==8) {
             return true;
         } else {
             return false;
@@ -332,8 +346,8 @@ public class SHH_Module extends Module {
      * @return true if it is Winter.
      */
     private boolean isWinter(Simulation sim) {
-        if (sim.getSimulationTime().getMonth().equals("NOVEMBER") || sim.getSimulationTime().getMonth().equals("DECEMBER")
-                || sim.getSimulationTime().getMonth().equals("JANUARY") || sim.getSimulationTime().getMonth().equals("FEBRUARY") || sim.getSimulationTime().getMonth().equals("MARCH")) {
+        if (sim.getSimulationTime().getMonth().getValue()==11 || sim.getSimulationTime().getMonth().getValue()==12
+                || sim.getSimulationTime().getMonth().getValue()==1 || sim.getSimulationTime().getMonth().getValue()==2 || sim.getSimulationTime().getMonth().getValue()==3) {
             return true;
         } else {
             return false;
