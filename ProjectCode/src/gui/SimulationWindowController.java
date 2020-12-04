@@ -1178,10 +1178,9 @@ public class SimulationWindowController implements Initializable {
             shhCommandOptionsPane.getChildren().add(remove);
         } else if (command.contains("Periods")) {
 
-            for (int i = 1; i <= module.getNoPeriods(); i++) {
-
-                int period = i - 1;
-                Label periodName = new Label("Period " + i);
+            for (int i = 0; i < module.getNoPeriods(); i++) {
+                int period = i;
+                Label periodName = new Label("Period " + (period + 1));
 
                 Label fromText = new Label(module.getPeriodStartTime(period));
                 Label dash = new Label(" - ");
@@ -1236,28 +1235,28 @@ public class SimulationWindowController implements Initializable {
             Label tempName = new Label("Temperature");
             TextField tempText = new TextField();
             tempText.setPrefWidth(75);
-            tempText.setOnAction((e) -> {
+            tempText.setOnKeyReleased((e) -> {
                 try {
                     String zoneName = zoneSelecter.getSelectionModel().getSelectedItem();
                     String periodName = periodSelecter.getSelectionModel().getSelectedItem();
                     if (zoneName != null && periodName != null) {
-                        module.setZoneTemp(module.getZone(zoneName), Integer.parseInt(periodName), Double.parseDouble(tempText.getText()));
-                        writeToConsole("done");
+                        module.setZoneTemp(module.getZone(zoneName), Integer.parseInt(periodName) - 1, Double.parseDouble(tempText.getText()));
+                        writeToConsole("[SHH] Updated " + zoneName + ", period " + periodName + " to temperature " + Double.parseDouble(tempText.getText()) + "\u00B0" + "C");
                     } else {
-                        writeToConsole("no zone");
                     }
                 } catch (NumberFormatException ex) {
-                    writeToConsole("not num");
+                    tempText.getStyleClass().add("redText");
+                    tempText.getStyleClass().remove("blackText");
                 }
             });
             periodSelecter.setOnAction((e) -> {
                 if (zoneSelecter.getSelectionModel().getSelectedItem() != null && periodSelecter.getSelectionModel().getSelectedItem() != null) {
-                    tempText.setText(String.format("%.2f", module.getZoneTemp(module.getZone(zoneSelecter.getSelectionModel().getSelectedItem()), Integer.parseInt(periodSelecter.getSelectionModel().getSelectedItem()))));
+                    tempText.setText(String.format("%.2f", module.getZoneTemp(module.getZone(zoneSelecter.getSelectionModel().getSelectedItem()), Integer.parseInt(periodSelecter.getSelectionModel().getSelectedItem()) - 1)));
                 }
             });
             zoneSelecter.setOnAction((e) -> {
                 if (zoneSelecter.getSelectionModel().getSelectedItem() != null && periodSelecter.getSelectionModel().getSelectedItem() != null) {
-                    tempText.setText(String.format("%.2f", module.getZoneTemp(module.getZone(zoneSelecter.getSelectionModel().getSelectedItem()), Integer.parseInt(periodSelecter.getSelectionModel().getSelectedItem()))));
+                    tempText.setText(String.format("%.2f", module.getZoneTemp(module.getZone(zoneSelecter.getSelectionModel().getSelectedItem()), Integer.parseInt(periodSelecter.getSelectionModel().getSelectedItem()) - 1)));
                 }
             });
 
@@ -1278,11 +1277,12 @@ public class SimulationWindowController implements Initializable {
 
             for (String roomName : module.getOverriddenRooms()) {
                 Label roomLabel = new Label(roomName);
-                TextField tempTexts = new TextField(String.format("%.2f", module.getRoomTemp(roomName)));
+                TextField tempTexts = new TextField(String.format("%.2f", module.getOverriddenRoomTemp(roomName)));
                 tempTexts.setPrefWidth(75);
-                tempTexts.setOnAction((e) -> {
+                tempTexts.setOnKeyReleased((e) -> {
                     try {
-                        module.setRoomTemp(roomName, Double.parseDouble(tempTexts.getText()));
+                        module.addOverriddenRoom(roomName, Double.parseDouble(tempTexts.getText()));
+                        writeToConsole("[SHH] " + roomName + " is overriden to " + tempTexts.getText() + "\u00B0" + "C");
                         tempTexts.getStyleClass().add("blackText");
                         tempTexts.getStyleClass().remove("redText");
                     } catch (NumberFormatException ex) {
@@ -1310,7 +1310,6 @@ public class SimulationWindowController implements Initializable {
                 ComboBox<String> rooms = new ComboBox<>(FXCollections.observableArrayList(allRooms));
                 rooms.setPromptText("Rooms");
                 rooms.setOnAction((ev) -> {
-
                     String roomName = rooms.getSelectionModel().getSelectedItem();
                     module.addOverriddenRoom(roomName, module.getRoomTemp(roomName));
                     overridenRooms.getChildren().remove(rooms);
@@ -1327,9 +1326,10 @@ public class SimulationWindowController implements Initializable {
             Label winterLabel = new Label("Winter Temp");
             TextField winterText = new TextField(String.format("%.2f", module.getWinterDefault()));
             winterText.setPrefWidth(75);
-            winterText.setOnAction((e) -> {
+            winterText.setOnKeyReleased((e) -> {
                 try {
                     module.setWinterDefault(Double.parseDouble(winterText.getText()));
+                    writeToConsole("[SHH] Away winter temperature  is set to " + winterText.getText() + "\u00B0" + "C");
                     winterText.getStyleClass().add("blackText");
                     winterText.getStyleClass().remove("redText");
                 } catch (NumberFormatException ex) {
@@ -1342,9 +1342,10 @@ public class SimulationWindowController implements Initializable {
             Label summerLabel = new Label("Summer Temp");
             TextField summerText = new TextField(String.format("%.2f", module.getSummerDefault()));
             summerText.setPrefWidth(75);
-            summerText.setOnAction((e) -> {
+            summerText.setOnKeyReleased((e) -> {
                 try {
                     module.setSummerDefault(Double.parseDouble(summerText.getText()));
+                    writeToConsole("[SHH] Away summer temperature  is set to " + summerText.getText() + "\u00B0" + "C");
                     summerText.getStyleClass().add("blackText");
                     summerText.getStyleClass().remove("redText");
                 } catch (NumberFormatException ex) {
@@ -1382,6 +1383,7 @@ public class SimulationWindowController implements Initializable {
                         }
                     } catch (Exception ex) {
                         this.stop();
+                        updateSHHOn = false;
                     }
                 }
             };
@@ -1410,10 +1412,10 @@ public class SimulationWindowController implements Initializable {
             CheckBox auto = new CheckBox("Auto");
             auto.setSelected(updateSHHOn);
             auto.setOnAction((e) -> {
-                if (auto.isSelected()){
+                if (auto.isSelected()) {
                     updateSHHClock.start();
                     updateSHHOn = true;
-                }else{
+                } else {
                     updateSHHClock.stop();
                     updateSHHOn = false;
                 }
