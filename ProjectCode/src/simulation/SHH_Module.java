@@ -7,7 +7,9 @@ import HouseObjects.Window;
 import gui.Driver;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -92,7 +94,7 @@ public class SHH_Module extends Module {
     /**
      * Used to format date and time
      */
-    DateTimeFormatter parser = DateTimeFormatter.ofPattern("HH:MM:SS");
+    DateTimeFormatter parser = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     /**
      * Default constructor
@@ -108,6 +110,8 @@ public class SHH_Module extends Module {
         this.havcOn = false;
         this.lowThresh = 0;
         this.highThresh = 40;
+        this.p1start = "00:00:00";
+        this.p1end = "23:59:59";
     }
     
     /**
@@ -140,13 +144,13 @@ public class SHH_Module extends Module {
     	//adjust temperature per zone
     	else{
     		for(Zone z : zones){
-    			if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p1end, parser))){
+    			if(sim.getSimulationTime().isBefore(sim.getSimulationTime().with(LocalTime.parse(p1end, parser)))){
     				targetTemp = z.getTemp(0);
     			}
-    			else if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p2end, parser))){
+    			else if(sim.getSimulationTime().isBefore(sim.getSimulationTime().with(LocalTime.parse(p2end, parser)))){
     				targetTemp = z.getTemp(1);
     			}
-    			else if(sim.getSimulationTime().isBefore(LocalDateTime.parse(p3end, parser))){
+    			else if(sim.getSimulationTime().isBefore(sim.getSimulationTime().with(LocalTime.parse(p3end, parser)))){
     				targetTemp = z.getTemp(2);
     			}
     			this.adjustTemp(z, targetTemp);
