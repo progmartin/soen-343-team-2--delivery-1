@@ -160,7 +160,9 @@ public class SHH_Module extends Module {
         for (Zone z : zones) {
             for (Room r : z.getRooms()) {
                 badTemp = this.checkThreshold(r);
+                if(badTemp!=0) break;
             }
+            if(badTemp!=0) break;
         }
 
         updateGUI = true;
