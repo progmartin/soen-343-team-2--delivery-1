@@ -26,6 +26,8 @@ public class RoomObjtoDisplay {
     private static final double heightOfPerson = 20.0;
     private static final double widthOfLight = 10.0;
     private static final double heightOfLight = 10.0;
+    private static final double widthOfHAVC = 10.0;
+    private static final double heightOfHAVC = 10.0;
 
     /**
      * Creates the house layout using the array of rooms on the pane. The house
@@ -167,11 +169,24 @@ public class RoomObjtoDisplay {
                 lights.add(light);
             }
             
+            // Adding Heater and AC
+            ArrayList<Rectangle> havcs = new ArrayList<>();
+            if (room.getAcOn() || room.getHeaterOn()){
+                double havcOffsetX = ((roomRect.getWidth() - widthOfHAVC - 10));
+                double havcOffsetY = ((roomRect.getHeight() - heightOfHAVC - 10));
+                ImagePattern havcImage = new ImagePattern(AssetManager.getACImage());
+                Rectangle havc = new Rectangle(widthOfHAVC, heightOfHAVC, havcImage);
+                havc.setX(havcOffsetX);
+                havc.setY(havcOffsetY);
+                havcs.add(havc);
+            }
+            
             roomPane = new AnchorPane(roomRect, text);
             roomPane.getChildren().addAll(doors.toArray(new Arc[doors.size()]));
             roomPane.getChildren().addAll(people.toArray(new Rectangle[people.size()]));
             roomPane.getChildren().addAll(windows.toArray(new Rectangle[windows.size()]));
             roomPane.getChildren().addAll(lights.toArray(new Rectangle[lights.size()]));
+            roomPane.getChildren().addAll(havcs.toArray(new Rectangle[havcs.size()]));
             roomPane.setLayoutX(initOffsetX + (((roomIdx - 1) % numOfRoomsWide) * lengthOfRoom));
             roomPane.setLayoutY(initOffsetY + ((Math.floor((roomIdx - 1) / numOfRoomsWide) + 1) * lengthOfRoom));
             root.getChildren().add(roomPane);

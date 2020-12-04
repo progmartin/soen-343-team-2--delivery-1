@@ -466,6 +466,7 @@ public class SimulationWindowController implements Initializable {
             });
             editStage.show();
         } catch (IOException ex) {
+            ex.printStackTrace();
             editStage = null;
             event.consume();
         }
