@@ -1,7 +1,7 @@
 Room: name: Backyard Temperature: 10 Doors 2 Windows: 0 Lights: 3
-Room: name: Kitchen Temperature: 67 Doors: 2 Windows: 1 Lights: 4
-Room: name: Bedroom Temperature: -45 Doors: 3 Windows: 2 Lights: 2
-Room: name: Bathroom Temperature: 26 Doors: 1 Windows: 1 Lights: 5
-Room: name: Dining Room Temperature: 18 Doors: 3 Windows: 0 Lights: 3
-Room: name: Garage Temperature: 10 Doors: 1 Windows: 0 Lights: 4
-Room: name: Entrance Temperature: 23 Doors: 2 Windows: 0 Lights: 0
+Room: name: Kitchen Temperature: 22 Doors: 2 Windows: 1 Lights: 4
+Room: name: Bedroom Temperature: 22 Doors: 3 Windows: 2 Lights: 2
+Room: name: Bathroom Temperature: 22 Doors: 1 Windows: 1 Lights: 5
+Room: name: Dining Room Temperature: 22 Doors: 3 Windows: 0 Lights: 3
+Room: name: Garage Temperature: 22 Doors: 1 Windows: 0 Lights: 4
+Room: name: Entrance Temperature: 22 Doors: 2 Windows: 0 Lights: 0

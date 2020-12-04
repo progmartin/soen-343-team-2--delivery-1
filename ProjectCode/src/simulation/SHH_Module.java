@@ -181,9 +181,9 @@ public class SHH_Module extends Module {
                     break;
                 } //adjust temp to outside
                 else {
-                    if (r.getTemp() > targetTemp && !overriddenRooms.containsKey(r)) {
+                    if (r.getTemp() > sim.getRoom("Outside").getTemp() && !overriddenRooms.containsKey(r)) {
                         r.setTemp(r.getTemp() - 0.05);
-                    } else if (r.getTemp() < targetTemp && !overriddenRooms.containsKey(r)) {
+                    } else if (r.getTemp() < sim.getRoom("Outside").getTemp() && !overriddenRooms.containsKey(r)) {
                         r.setTemp(r.getTemp() + 0.05);
                     }
                 }
@@ -247,9 +247,9 @@ public class SHH_Module extends Module {
                 this.havcOn = true;
             } //adjust to outside temp
             else {
-                if (r.getTemp() > targetTemp) {
+                if (r.getTemp() > sim.getRoom("Outside").getTemp()) {
                     r.setTemp(r.getTemp() - 0.05);
-                } else if (r.getTemp() < targetTemp) {
+                } else if (r.getTemp() < sim.getRoom("Outside").getTemp()) {
                     r.setTemp(r.getTemp() + 0.05);
                 }
             }
