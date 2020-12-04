@@ -352,7 +352,7 @@ public class SHH_Module extends Module {
         affectedRooms.remove(Driver.simulation.getRoom("Outside"));
         affectedRooms.remove(Driver.simulation.getRoom("Backyard"));
         Zone z = new Zone();
-        for (Room r : affectedRooms){
+        for (Room r : affectedRooms) {
             z.addRoom(r);
         }
         zones.add(z);
@@ -399,32 +399,36 @@ public class SHH_Module extends Module {
         // add room to new zone
         zone.addRoom(room);
     }
-    
+
     /**
      * A method for adding a new zone to the ArrayList of zones.
+     *
      * @param name The name of the new zone
-     * @param temps an array of target temperature (1-3) for each period of the day.
+     * @param temps an array of target temperature (1-3) for each period of the
+     * day.
      */
-    public void addNewZone(String name, double... temps){
+    public void addNewZone(String name, double... temps) {
         Zone z = new Zone();
         z.setName(name);
-        for (int i = 0; i < temps.length; i++){
+        for (int i = 0; i < temps.length; i++) {
             z.setTemp(temps[i], i);
         }
         zones.add(z);
     }
-    
+
     /**
-     * A method for removing a zone from the simulation. Puts all rooms from that zone into the default zone.
+     * A method for removing a zone from the simulation. Puts all rooms from
+     * that zone into the default zone.
+     *
      * @param name The name of the zone you wish to remove.
      */
-    public void removeZone(String name){
+    public void removeZone(String name) {
         Zone z = getZone(name);
         ArrayList<Room> roomsInZone = z.getRooms();
         zones.remove(z);
         zones.get(0).addAllRooms(roomsInZone);
     }
-    
+
     /**
      * A method for finding a zone by its name.
      *
@@ -581,6 +585,16 @@ public class SHH_Module extends Module {
     }
 
     /**
+     * Returns the desired temperature of the overridden room.
+     *
+     * @param room the room temperature
+     * @return the desired temperature of the room
+     */
+    public double getOverriddenRoomTemp(String room) {
+        return overriddenRooms.get(getRoom(room));
+    }
+
+    /**
      * Adds room to list of overridden rooms
      *
      * @param room The room to add.
@@ -607,10 +621,10 @@ public class SHH_Module extends Module {
     public int getNoPeriods() {
         return this.noPeriods;
     }
-    
-    public ArrayList<String> getRoomNames(){
+
+    public ArrayList<String> getRoomNames() {
         ArrayList<String> names = new ArrayList<>();
-        for (Room r : affectedRooms){
+        for (Room r : affectedRooms) {
             names.add(r.getName());
         }
         return names;
@@ -625,10 +639,10 @@ public class SHH_Module extends Module {
     public Room getRoom(String name) {
         return sim.getRoom(name);
     }
-    
-    public Zone getRoomZone(Room room){
-        for (Zone z : zones){
-            if (z.getRooms().contains(room)){
+
+    public Zone getRoomZone(Room room) {
+        for (Zone z : zones) {
+            if (z.getRooms().contains(room)) {
                 return z;
             }
         }
@@ -655,7 +669,7 @@ public class SHH_Module extends Module {
         Room r = sim.getRoom(name);
         r.setTemp(temp);
     }
-    
+
     /**
      * A method for setting the default Winter temperature.
      *
@@ -911,12 +925,13 @@ public class SHH_Module extends Module {
         public void addRoom(Room r) {
             this.rooms.add(r);
         }
-        
+
         /**
          * A method for adding all rooms to the zone.
+         *
          * @param rooms the collection of rooms to be added.
          */
-        public void addAllRooms(Collection<Room> rooms){
+        public void addAllRooms(Collection<Room> rooms) {
             this.rooms.addAll(rooms);
         }
 
