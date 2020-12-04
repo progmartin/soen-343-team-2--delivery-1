@@ -172,9 +172,16 @@ public class RoomObjtoDisplay {
             // Adding Heater and AC
             ArrayList<Rectangle> havcs = new ArrayList<>();
             if (room.getAcOn() || room.getHeaterOn()){
+                
+                ImagePattern havcImage = null;
+                if (room.getAcOn()) {
+                    havcImage = new ImagePattern(AssetManager.getACImage());
+                }else if (room.getHeaterOn()){
+                    havcImage = new ImagePattern(AssetManager.getHeaterImage());
+                }
+                
                 double havcOffsetX = ((roomRect.getWidth() - widthOfHAVC - 10));
                 double havcOffsetY = ((roomRect.getHeight() - heightOfHAVC - 10));
-                ImagePattern havcImage = new ImagePattern(AssetManager.getACImage());
                 Rectangle havc = new Rectangle(widthOfHAVC, heightOfHAVC, havcImage);
                 havc.setX(havcOffsetX);
                 havc.setY(havcOffsetY);
