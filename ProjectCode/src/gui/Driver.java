@@ -16,6 +16,9 @@ import javafx.stage.FileChooser;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import HouseObjects.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import simulation.MissingRoomException;
 import simulation.Module;
 
 /**
@@ -44,7 +47,13 @@ public class Driver extends Application {
             }
 
             //ArrayList of rooms
-            ArrayList<Room> roomArray = readFile(chosenFile.getPath());
+            ArrayList<Room> roomArray = null;
+            try {
+                roomArray = readFile(chosenFile.getPath());
+            } catch (MissingRoomException ex) {
+                System.out.println(ex.getMessage());
+                System.exit(1);
+            }
             roomArray.add(new Room("Outside"));
 
             Driver.simulation = new Simulation(roomArray);
@@ -112,7 +121,7 @@ public class Driver extends Application {
      * @param f the file name
      * @return a list of Rooms
      */
-    public static ArrayList<Room> readFile(String f) {
+    public static ArrayList<Room> readFile(String f) throws MissingRoomException {
 
         ArrayList<Room> rooms = new ArrayList<>();
         //new scanner
@@ -182,6 +191,14 @@ public class Driver extends Application {
             }
         }
         input.close();
+        if (rooms.isEmpty()) {
+            throw new MissingRoomException();
+        }
+        if (!rooms.get(0).getName().equalsIgnoreCase("Backyard")) {
+            throw new MissingRoomException("Missing Room Backyard as first room");
+        } else if (!rooms.get(rooms.size() - 1).getName().equalsIgnoreCase("Entrance")) {
+            throw new MissingRoomException("Missing Room Entrance as last room");
+        }
         return rooms;
     }
     //End of readFile
