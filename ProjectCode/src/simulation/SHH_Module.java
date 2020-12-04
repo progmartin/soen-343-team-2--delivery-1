@@ -215,7 +215,7 @@ public class SHH_Module extends Module {
                     //adjust numbers
                     r.setTemp(r.getTemp() - 0.1);
                 } //adjust by heater
-                else if (r.getTemp() <= targetTemp && !overriddenRooms.containsKey(r)) {
+                else if (r.getTemp() <= targetTemp - 0.25 && !overriddenRooms.containsKey(r)) {
                     r.setHeaterOn(true);
                     r.setAcOn(false);
                     r.setTemp(r.getTemp() + 0.1);
@@ -277,7 +277,7 @@ public class SHH_Module extends Module {
                 }
                 r.setTemp(r.getTemp() - 0.1);
             } //adjust temp by heater
-            else if (r.getTemp() <= targetTemp) {
+            else if (r.getTemp() <= targetTemp - 0.25) {
                 r.setHeaterOn(true);
                 r.setAcOn(false);
                 r.setTemp(r.getTemp() + 0.1);
