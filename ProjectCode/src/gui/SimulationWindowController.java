@@ -27,6 +27,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import javafx.animation.AnimationTimer;
@@ -153,6 +154,7 @@ public class SimulationWindowController implements Initializable {
 
     protected HashMap<String, Account> accounts = new HashMap<>();
     protected Person editedUser = null;
+    private boolean simulationOn;
     private String loggedInUser;
     private AnimationTimer simulationClock;
     private double timeSpeed;
@@ -168,6 +170,7 @@ public class SimulationWindowController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         Driver.simulationController = this;
         editStage = null;
+        simulationOn = true;
 
         updateOutsideTemp(15);
 
@@ -198,11 +201,15 @@ public class SimulationWindowController implements Initializable {
         ToggleButton simulation = (ToggleButton) event.getSource();
         if (simulation.isSelected()) {
             // Simulation was OFF, turning ON
+            simulationOn = true;
             for (Node node : shsControls) {
                 node.setDisable(false);
             }
             for (Tab tab : moduleContainer.getTabs()) {
                 if (!tab.getText().equals("SHS")) {
+                    if (tab.equals(addTab) && loggedInUser == null) {
+                        continue;
+                    }
                     tab.setDisable(false);
                 }
             }
@@ -213,6 +220,7 @@ public class SimulationWindowController implements Initializable {
 
         } else {
             // Simulation was ON, turning OFF
+            simulationOn = false;
             simulationClock.stop();
             locationPane.getChildren().remove(locationOptions);
             for (Node node : shsControls) {
@@ -629,7 +637,9 @@ public class SimulationWindowController implements Initializable {
         usernameDisplay.setText(loggedInUser);
         userAccessibilityDisplay.setText("(" + Driver.simulation.getUser(loggedInUser).getUserTypeAsString() + ")");
         usersList.getItems().remove(loggedInUser);
-        addTab.setDisable(false);
+        if (simulationOn) {
+            addTab.setDisable(false);
+        }
 
         locationPane.setVisible(true);
         String location = Driver.simulation.getUserLocation(loggedInUser);
@@ -677,6 +687,7 @@ public class SimulationWindowController implements Initializable {
         for (int i = 0; i < moduleContainer.getTabs().size(); ++i) {
             Tab tab = moduleContainer.getTabs().get(i);
             if (!tab.equals(shsTab) && !tab.equals(addTab)) {
+                tab.setDisable(false);
                 AnchorPane tabPane = (AnchorPane) tab.getContent();
                 for (Node node : tabPane.getChildrenUnmodifiable()) {
                     if (node instanceof Button) {
@@ -1066,6 +1077,7 @@ public class SimulationWindowController implements Initializable {
             for (String roomName : module.getRoomNames()) {
                 roomLabel = new Label(roomName);
                 ComboBox<String> zoneName = new ComboBox<>(FXCollections.observableArrayList(module.getZoneNames()));
+                zoneName.getSelectionModel().select(module.getRoomZone(module.getRoom(roomName)).getName());
                 zoneName.setOnAction((e) -> {
                     module.changeZone(module.getRoom(roomName), module.getZone(zoneName.getSelectionModel().getSelectedItem()));
                 });
@@ -1079,33 +1091,30 @@ public class SimulationWindowController implements Initializable {
             add.setOnAction((e) -> {
                 add.setManaged(false);
                 add.setVisible(false);
-                
+
                 VBox newZone = new VBox();
 
                 TextField zoneName = new TextField();
                 zoneName.setPromptText("Zone Name");
-                zoneName.setOnKeyPressed((ev) -> {
-                    zoneName.getStyleClass().remove("redText");
-                    zoneName.getStyleClass().add("blackText");
-                });
+                /*zoneName.setOnKeyPressed((ev) -> {
+                 zoneName.getStyleClass().remove("redText");
+                 zoneName.getStyleClass().add("blackText");
+                 });*/
                 newZone.getChildren().add(zoneName);
-                
+
                 TextField[] periods = new TextField[module.getNoPeriods()];
                 for (int i = 0; i < module.getNoPeriods(); ++i) {
                     TextField periodTemp = new TextField();
                     periodTemp.setPromptText("Period " + (i + 1) + " Temp");
-                    periodTemp.setOnKeyPressed((ev) -> {
-                        periodTemp.getStyleClass().remove("redText");
-                        periodTemp.getStyleClass().add("blackText");
-                    });
+                    /*periodTemp.setOnKeyPressed((ev) -> {
+                     periodTemp.getStyleClass().remove("redText");
+                     periodTemp.getStyleClass().add("blackText");
+                     });*/
                     newZone.getChildren().add(periodTemp);
                     periods[i] = periodTemp;
                 }
 
                 Button addZone = new Button("Confirm");
-                Button cancel = new Button("Cancel");
-                newZone.getChildren().addAll(addZone, cancel);
-                
                 addZone.setOnAction((ev) -> {
                     // validate zone
                     boolean valid = true;
@@ -1115,12 +1124,17 @@ public class SimulationWindowController implements Initializable {
                             zoneName.getStyleClass().add("redText");
                             zoneName.getStyleClass().remove("blackText");
                             break;
+                        } else {
+                            zoneName.getStyleClass().add("blackText");
+                            zoneName.getStyleClass().remove("redText");
                         }
                     }
 
                     for (TextField period : periods) {
                         try {
                             Double.parseDouble(period.getText());
+                            period.getStyleClass().add("blackText");
+                            period.getStyleClass().remove("redText");
                         } catch (NumberFormatException ex) {
                             valid = false;
                             period.getStyleClass().add("redText");
@@ -1131,7 +1145,7 @@ public class SimulationWindowController implements Initializable {
 
                     if (valid) {
                         double[] temps = new double[periods.length];
-                        for (int i = 0; i < periods.length; i++){
+                        for (int i = 0; i < periods.length; i++) {
                             temps[i] = Double.parseDouble(periods[i].getText());
                         }
                         module.addNewZone(zoneName.getText(), temps);
@@ -1139,12 +1153,27 @@ public class SimulationWindowController implements Initializable {
                         handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
                     }
                 });
+
+                Button cancel = new Button("Cancel");
                 cancel.setOnAction((ev) -> {
                     addPane.getChildren().remove(newZone);
                     handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
-                }); 
+                });
+
+                newZone.getChildren().addAll(addZone, cancel);
+                addPane.getChildren().add(newZone);
             });
             shhCommandOptionsPane.getChildren().add(addPane);
+            ComboBox<String> remove = new ComboBox<>(FXCollections.observableArrayList(module.getZoneNames()));
+            if (remove.getItems().size() == 1) {
+                remove.setDisable(true);
+            }
+            remove.setPromptText("Remove Zone");
+            remove.setOnAction((ev) -> {
+                module.removeZone(remove.getSelectionModel().getSelectedItem());
+                handleSelectSHHItem(new ActionEvent(shhCommands, Event.NULL_SOURCE_TARGET));
+            });
+            shhCommandOptionsPane.getChildren().add(remove);
         } else if (command.contains("Periods")) {
 
             for (int i = 1; i <= module.getNoPeriods(); i++) {
@@ -1203,19 +1232,30 @@ public class SimulationWindowController implements Initializable {
             shhCommandOptionsPane.getChildren().add(row);
 
             Label tempName = new Label("Temperature");
-            String temp = "";
-            if (zoneSelecter.getSelectionModel().getSelectedItem() != null && periodSelecter.getSelectionModel().getSelectedItem() != null) {
-                temp = String.valueOf(module.getZoneTemp(module.getZone(zoneSelecter.getSelectionModel().getSelectedItem()), Integer.parseInt(periodSelecter.getSelectionModel().getSelectedItem())));
-            }
-            TextField tempText = new TextField(temp);
-            tempText.setOnAction((e) -> {
+            TextField tempText = new TextField();
+            tempText.setPrefWidth(75);
+            tempText.setOnKeyPressed((e) -> {
                 try {
                     String zoneName = zoneSelecter.getSelectionModel().getSelectedItem();
                     String periodName = periodSelecter.getSelectionModel().getSelectedItem();
                     if (zoneName != null && periodName != null) {
                         module.setZoneTemp(module.getZone(zoneName), Integer.parseInt(periodName), Double.parseDouble(tempText.getText()));
+                        writeToConsole("done");
+                    }else{
+                        writeToConsole("no zone");
                     }
                 } catch (NumberFormatException ex) {
+                    writeToConsole("not num");
+                }
+            });
+            periodSelecter.setOnAction((e) -> {
+                if (zoneSelecter.getSelectionModel().getSelectedItem() != null && periodSelecter.getSelectionModel().getSelectedItem() != null) {
+                    tempText.setText(String.format("%.2f", module.getZoneTemp(module.getZone(zoneSelecter.getSelectionModel().getSelectedItem()), Integer.parseInt(periodSelecter.getSelectionModel().getSelectedItem()))));
+                }
+            });
+            zoneSelecter.setOnAction((e) -> {
+                if(zoneSelecter.getSelectionModel().getSelectedItem() != null && periodSelecter.getSelectionModel().getSelectedItem() != null) {
+                    tempText.setText(String.format("%.2f", module.getZoneTemp(module.getZone(zoneSelecter.getSelectionModel().getSelectedItem()), Integer.parseInt(periodSelecter.getSelectionModel().getSelectedItem()))));
                 }
             });
 
@@ -1236,17 +1276,23 @@ public class SimulationWindowController implements Initializable {
 
             for (String roomName : module.getOverriddenRooms()) {
                 Label roomLabel = new Label(roomName);
-                TextField tempTexts = new TextField(String.valueOf(module.getRoomTemp(roomName)));
+                TextField tempTexts = new TextField(String.format("%.2f", module.getRoomTemp(roomName)));
+                tempTexts.setPrefWidth(75);
                 tempTexts.setOnKeyPressed((e) -> {
                     try {
                         module.setRoomTemp(roomName, Double.parseDouble(tempTexts.getText()));
+                        tempTexts.getStyleClass().add("blackText");
+                        tempTexts.getStyleClass().remove("redText");
                     } catch (NumberFormatException ex) {
+                        tempTexts.getStyleClass().add("redText");
+                        tempTexts.getStyleClass().remove("blackText");
                     }
                 });
                 Button remove = new Button("Remove");
                 HBox newrow = new HBox(roomLabel, tempTexts, remove);
 
                 remove.setOnAction((e) -> {
+                    module.removeOverridenRoom(roomName);
                     overridenRooms.getChildren().remove(newrow);
                 });
                 overridenRooms.getChildren().add(newrow);
@@ -1454,7 +1500,7 @@ public class SimulationWindowController implements Initializable {
             shcCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 180);
             ScrollPane scroll = new ScrollPane(shcCommandOptionsPane);
             scroll.getStyleClass().add("simulationSubItem");
-            scroll.setPrefSize(itemsPane.getWidth(), 250);
+            scroll.setPrefSize(itemsPane.getWidth(), 300);
             topPane.getChildren().add(scroll);
 
             moduleContainer.applyCss();
@@ -1508,7 +1554,7 @@ public class SimulationWindowController implements Initializable {
             shpCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 180);
             ScrollPane scroll = new ScrollPane(shpCommandOptionsPane);
             scroll.getStyleClass().add("simulationSubItem");
-            scroll.setPrefSize(itemsPane.getWidth(), 250);
+            scroll.setPrefSize(itemsPane.getWidth(), 300);
             topPane.getChildren().add(scroll);
 
             moduleContainer.applyCss();
@@ -1561,7 +1607,7 @@ public class SimulationWindowController implements Initializable {
             shhCommandOptionsPane.setPrefSize(itemsPane.getWidth(), 180);
             ScrollPane scroll = new ScrollPane(shhCommandOptionsPane);
             scroll.getStyleClass().add("simulationSubItem");
-            scroll.setPrefSize(itemsPane.getWidth(), 250);
+            scroll.setPrefSize(itemsPane.getWidth(), 300);
             topPane.getChildren().add(scroll);
 
             moduleContainer.applyCss();
