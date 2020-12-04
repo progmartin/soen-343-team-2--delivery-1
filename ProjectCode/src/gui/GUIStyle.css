@@ -38,3 +38,11 @@ and open the template in the editor.
     -fx-spacing: 10px;
     -fx-padding: 10px 0px 0px 10px;
 }
+
+.redText{
+    -fx-text-fill: red;
+}
+
+.blackText{
+    -fx-text-fill: black;
+}
