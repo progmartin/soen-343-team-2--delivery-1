@@ -54,11 +54,6 @@ public class SHH_Module extends Module {
     private String p3end;
 
     /**
-     * boolean representing whether or not away mode in the SHP is on or off
-     */
-    private boolean awayMode;
-
-    /**
      * boolean representing whether or not the HAVC is on
      */
     private boolean havcOn;
@@ -111,7 +106,6 @@ public class SHH_Module extends Module {
         this.noPeriods = 1;
         this.zones = new ArrayList<>();
         this.overriddenRooms = new HashMap<>();
-        this.awayMode = false;
         this.winterDefault = 22;
         this.summerDefault = 20;
         this.havcOn = false;
@@ -128,22 +122,23 @@ public class SHH_Module extends Module {
     public boolean update() {
         boolean updateGUI = false;
         double targetTemp = 22;
+        boolean awayMode = ((SHP_Module) sim.getModuleOfType(SHP_Module.class)).getAwayMode();
 
         //adjust temperature in overridden rooms
         for (Room r : overriddenRooms.keySet()) {
-            this.adjustOverrideTemp(r, overriddenRooms.get(r));
+            this.adjustOverrideTemp(r, overriddenRooms.get(r), awayMode);
         }
 
         //adjust temperature during summer and winter (away mode)
         if (awayMode && this.isSummer(sim)) {
             targetTemp = summerDefault;
             for (Zone z : zones) {
-                this.adjustTemp(z, targetTemp);
+                this.adjustTemp(z, targetTemp, awayMode);
             }
         } else if (awayMode && this.isWinter(sim)) {
             targetTemp = winterDefault;
             for (Zone z : zones) {
-                this.adjustTemp(z, targetTemp);
+                this.adjustTemp(z, targetTemp, awayMode);
             }
         } //adjust temperature per zone
         else {
@@ -155,7 +150,7 @@ public class SHH_Module extends Module {
                 } else if (sim.getSimulationTime().isBefore(sim.getSimulationTime().with(LocalTime.parse(p3end, parser)))) {
                     targetTemp = z.getTemp(2);
                 }
-                this.adjustTemp(z, targetTemp);
+                this.adjustTemp(z, targetTemp, awayMode);
             }
         }
 
@@ -176,7 +171,7 @@ public class SHH_Module extends Module {
      * @param z the current zone
      * @param targetTemp the temperature to be reached
      */
-    private void adjustTemp(Zone z, double targetTemp) {
+    private void adjustTemp(Zone z, double targetTemp, boolean awayMode) {
         //if havc is off
         if (!havcOn) {
             for (Room r : z.getRooms()) {
@@ -244,7 +239,7 @@ public class SHH_Module extends Module {
      * @param r the current room
      * @param targetTemp the temperature the should should be
      */
-    private void adjustOverrideTemp(Room r, double targetTemp) {
+    private void adjustOverrideTemp(Room r, double targetTemp, boolean awayMode) {
         //if havc is off
         if (!havcOn) {
             //turn havc on
@@ -405,6 +400,11 @@ public class SHH_Module extends Module {
         zone.addRoom(room);
     }
     
+    /**
+     * A method for adding a new zone to the ArrayList of zones.
+     * @param name The name of the new zone
+     * @param temps an array of target temperature (1-3) for each period of the day.
+     */
     public void addNewZone(String name, double... temps){
         Zone z = new Zone();
         z.setName(name);
@@ -414,6 +414,10 @@ public class SHH_Module extends Module {
         zones.add(z);
     }
     
+    /**
+     * A method for removing a zone from the simulation. Puts all rooms from that zone into the default zone.
+     * @param name The name of the zone you wish to remove.
+     */
     public void removeZone(String name){
         Zone z = getZone(name);
         ArrayList<Room> roomsInZone = z.getRooms();
@@ -651,26 +655,7 @@ public class SHH_Module extends Module {
         Room r = sim.getRoom(name);
         r.setTemp(temp);
     }
-
-    /**
-     * This puts the SHH in away mode. This only happens if the SHP is in away
-     * mode.
-     *
-     * @param awayMode
-     */
-    public void setAwayMode(boolean awayMode) {
-        this.awayMode = awayMode;
-    }
-
-    /**
-     * This returns the value of whether or not the SHH is in away mode.
-     *
-     * @return true if in away mode.
-     */
-    public boolean getAwayMode() {
-        return this.awayMode;
-    }
-
+    
     /**
      * A method for setting the default Winter temperature.
      *
@@ -927,6 +912,10 @@ public class SHH_Module extends Module {
             this.rooms.add(r);
         }
         
+        /**
+         * A method for adding all rooms to the zone.
+         * @param rooms the collection of rooms to be added.
+         */
         public void addAllRooms(Collection<Room> rooms){
             this.rooms.addAll(rooms);
         }
