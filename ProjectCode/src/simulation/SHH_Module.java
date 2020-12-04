@@ -92,6 +92,8 @@ public class SHH_Module extends Module {
      * Higher threshold temperature
      */
     private double highThresh;
+    private int badTemp= 0;
+    private boolean blockedWindow=false;
 
     /**
      * Used to format date and time
@@ -157,7 +159,7 @@ public class SHH_Module extends Module {
         //verify thresholds
         for (Zone z : zones) {
             for (Room r : z.getRooms()) {
-                this.checkThreshold(r);
+                badTemp = this.checkThreshold(r);
             }
         }
 
@@ -194,14 +196,12 @@ public class SHH_Module extends Module {
                 //if temp needs adjusting
                 if (r.getTemp() >= targetTemp + 0.25 && !overriddenRooms.containsKey(r)) {
                     //adjust by open window
-
-                	System.out.println(sim.getSimulationTime().getMonth());
                     if (this.isSummer(sim) && !awayMode && sim.getRoom("Outside").getTemp() < r.getTemp()) {
-                    	System.out.println(this.isSummer(sim));
                         for (Window w : r.getWindows()) {
                             if (!w.getBlocked()) {
                                 w.setOpen(true);
                             }
+                            else blockedWindow = true;
                         }
                         r.setHeaterOn(false);
                         r.setAcOn(false);
@@ -266,11 +266,11 @@ public class SHH_Module extends Module {
             if (r.getTemp() >= targetTemp + 0.25) {
                 //adjust temp by open windows
                 if (this.isSummer(sim) && !awayMode && sim.getRoom("Outside").getTemp() < r.getTemp()) {
-                	System.out.println(this.isSummer(sim));
                     for (Window w : r.getWindows()) {
                         if (!w.getBlocked()) {
                             w.setOpen(true);
                         }
+                        else blockedWindow = true;
                     }
                     r.setHeaterOn(false);
                     r.setAcOn(false);
@@ -753,7 +753,7 @@ public class SHH_Module extends Module {
      * @return the unsafe cold temperature.
      */
     public double getLowThresh() {
-        return this.getLowThresh();
+        return this.lowThresh;
     }
 
     /**
@@ -772,6 +772,34 @@ public class SHH_Module extends Module {
      */
     public double getHighThresh() {
         return this.highThresh;
+    }
+    
+    /**
+     * Contact the user if there is a dangerous temperature in the house.
+     * @return The message to be sent to the user.
+     */
+    public String contactUser(){
+    	if(badTemp<0){
+    		badTemp = 0;
+    		return "It is too cold in the house, pipes could burst!";
+    	}
+    	else if (badTemp>0){
+    		badTemp = 0;
+    		return "It's too hot in your house! That's dangerous.";
+    	}
+    	else return "";
+    }
+    
+    /**
+     * Let's the user know if a window cannot be opened because it is blocked
+     * @return Message to be sent to the user
+     */
+    public String noWindow(){
+    	if(blockedWindow){
+    		blockedWindow = false;
+    		return "A window is blocked and could not be opened.";
+    	}
+    	else return "";
     }
 
     /**
