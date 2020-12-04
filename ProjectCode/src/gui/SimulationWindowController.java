@@ -1241,7 +1241,6 @@ public class SimulationWindowController implements Initializable {
                     String periodName = periodSelecter.getSelectionModel().getSelectedItem();
                     if (zoneName != null && periodName != null) {
                         module.setZoneTemp(module.getZone(zoneName), Integer.parseInt(periodName) - 1, Double.parseDouble(tempText.getText()));
-                        writeToConsole("[SHH] Updated " + zoneName + ", period " + periodName + " to temperature " + Double.parseDouble(tempText.getText()) + "\u00B0" + "C");
                     } else {
                     }
                 } catch (NumberFormatException ex) {
@@ -1282,7 +1281,6 @@ public class SimulationWindowController implements Initializable {
                 tempTexts.setOnKeyReleased((e) -> {
                     try {
                         module.addOverriddenRoom(roomName, Double.parseDouble(tempTexts.getText()));
-                        writeToConsole("[SHH] " + roomName + " is overriden to " + tempTexts.getText() + "\u00B0" + "C");
                         tempTexts.getStyleClass().add("blackText");
                         tempTexts.getStyleClass().remove("redText");
                     } catch (NumberFormatException ex) {
@@ -1329,7 +1327,6 @@ public class SimulationWindowController implements Initializable {
             winterText.setOnKeyReleased((e) -> {
                 try {
                     module.setWinterDefault(Double.parseDouble(winterText.getText()));
-                    writeToConsole("[SHH] Away winter temperature  is set to " + winterText.getText() + "\u00B0" + "C");
                     winterText.getStyleClass().add("blackText");
                     winterText.getStyleClass().remove("redText");
                 } catch (NumberFormatException ex) {
@@ -1345,7 +1342,6 @@ public class SimulationWindowController implements Initializable {
             summerText.setOnKeyReleased((e) -> {
                 try {
                     module.setSummerDefault(Double.parseDouble(summerText.getText()));
-                    writeToConsole("[SHH] Away summer temperature  is set to " + summerText.getText() + "\u00B0" + "C");
                     summerText.getStyleClass().add("blackText");
                     summerText.getStyleClass().remove("redText");
                 } catch (NumberFormatException ex) {
@@ -1356,6 +1352,43 @@ public class SimulationWindowController implements Initializable {
             HBox summerRow = new HBox(summerLabel, summerText);
 
             shhCommandOptionsPane.getChildren().addAll(winterRow, summerRow);
+            
+            line = new Separator(Orientation.HORIZONTAL);
+            shhCommandOptionsPane.getChildren().add(line);
+            
+            Label highLabel = new Label("Upper Threshold");
+            TextField highText = new TextField(String.format("%.2f", module.getHighThresh()));
+            highText.setPrefWidth(75);
+            highText.setOnKeyReleased((e) -> {
+                try {
+                    module.setHighThresh(Double.parseDouble(highText.getText()));
+                    highText.getStyleClass().add("blackText");
+                    highText.getStyleClass().remove("redText");
+                } catch (NumberFormatException ex) {
+                    highText.getStyleClass().add("redText");
+                    highText.getStyleClass().remove("blackText");
+                }
+            });
+            HBox highRow = new HBox(highLabel, highText);
+
+            Label lowLabel = new Label("Lower Threshold");
+            TextField lowText = new TextField(String.format("%.2f", module.getLowThresh()));
+            lowText.setPrefWidth(75);
+            lowText.setOnKeyReleased((e) -> {
+                try {
+                    module.setLowThresh(Double.parseDouble(lowText.getText()));
+                    lowText.getStyleClass().add("blackText");
+                    lowText.getStyleClass().remove("redText");
+                } catch (NumberFormatException ex) {
+                    lowText.getStyleClass().add("redText");
+                    lowText.getStyleClass().remove("blackText");
+                }
+            });
+            HBox lowRow = new HBox(lowLabel, lowText);
+
+            shhCommandOptionsPane.getChildren().addAll(highRow, lowRow);
+            
+            
         } else if (command.contains("Monitor Temp")) {
 
             final AnimationTimer updateSHHClock = new AnimationTimer() {
@@ -1449,6 +1482,17 @@ public class SimulationWindowController implements Initializable {
                         if (!contact.equals("")) {
                             writeToConsole("[SHP] " + contact);
                         }
+                        SHH_Module shh = (SHH_Module) Driver.simulation.getModuleOfType(SHH_Module.class);
+                        contact = shh.contactUser();
+                        if (!contact.equals("")) {
+                            writeToConsole("[SHH] " + contact);
+                        }
+                        contact = shh.noWindow();
+                        if (!contact.equals("")) {
+                            writeToConsole("[SHH] " + contact);
+                        }
+                        
+                        
                     }
                 }
                 prev = now;
