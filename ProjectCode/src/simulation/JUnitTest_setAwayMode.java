@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 *
 * @author Francesco Benvenuto
 */
-class JUnitTest_setAwayMode {
+public class JUnitTest_setAwayMode {
 
 	/**
 	 *
@@ -16,7 +16,7 @@ class JUnitTest_setAwayMode {
 	 *
 	 */
 	@Test
-	void testsetAwayOn() {
+	public void testsetAwayOn() {
 		
 		SHP_Module testObject = new SHP_Module();
 		
@@ -34,7 +34,7 @@ class JUnitTest_setAwayMode {
 	 *
 	 */
 	@Test
-	void testsetAwayOff() {
+	public void testsetAwayOff() {
 		
 		SHP_Module testObject = new SHP_Module();
 		

@@ -121,7 +121,7 @@ public class SHP_Module extends Module {
         }
         
         for (int x = 0; x < sim.getRooms().size(); x++) {
-            if (!sim.getRooms().get(x).getName().equalsIgnoreCase("Outside") && !sim.getRooms().get(x).getPeople().isEmpty()) {
+            if (this.isRoomEmpty(x)) {
                 return false;
             }
         }
@@ -155,6 +155,18 @@ public class SHP_Module extends Module {
         awayMode = true;
         return true;
 
+    }
+    
+    /**
+     * A method for determining if a room is empty
+     * @param x The index of the room
+     * @return true if empty, false if occupied
+     */
+    private boolean isRoomEmpty(int x){
+    	if(!sim.getRooms().get(x).getName().equalsIgnoreCase("Outside") && !sim.getRooms().get(x).getPeople().isEmpty()){
+    		return true;
+    	}
+    	return false;
     }
 
     /**
