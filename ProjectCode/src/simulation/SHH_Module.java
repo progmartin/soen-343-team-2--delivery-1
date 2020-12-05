@@ -170,7 +170,7 @@ public class SHH_Module extends Module {
     }
 
     /**
-     * adjusts the temperature of the in the appropriate way
+     * adjusts the temperature of the zone in the appropriate way
      *
      * @param z the current zone
      * @param targetTemp the temperature to be reached
