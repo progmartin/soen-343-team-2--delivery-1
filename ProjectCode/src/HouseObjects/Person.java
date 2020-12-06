@@ -80,6 +80,7 @@ public class Person {
         this.modulePermissions = new HashMap<>();
         this.initializeDefaultPermissions(SHC_Module.class);
         this.initializeDefaultPermissions(SHP_Module.class);
+        this.initializeDefaultPermissions(SHH_Module.class);
     }
 
     /**
@@ -109,6 +110,16 @@ public class Person {
                 }
             }
         } else if (mod.getName().equals("SHP")) {
+            if (this.userType.equals(Person.UserTypes.ADULT) || this.userType.equals(Person.UserTypes.CHILD)) {
+                for (String command : mod.getCommands()) {
+                    this.updateModulePermission(module, command, true);
+                }
+            } else if (this.userType.equals(Person.UserTypes.GUEST) || this.userType.equals(Person.UserTypes.STRANGER)) {
+                for (String command : mod.getCommands()) {
+                    this.updateModulePermission(module, command, false);
+                }
+            }
+        } else if (mod.getName().equals("SHH")) {
             if (this.userType.equals(Person.UserTypes.ADULT) || this.userType.equals(Person.UserTypes.CHILD)) {
                 for (String command : mod.getCommands()) {
                     this.updateModulePermission(module, command, true);

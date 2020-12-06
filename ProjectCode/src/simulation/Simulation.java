@@ -35,7 +35,7 @@ public class Simulation {
     public Simulation(ArrayList<Room> rooms) {
         this.rooms = rooms;
         this.simModules = new ArrayList<>();
-        this.simModules.addAll(Arrays.asList(new SHC_Module(), new SHP_Module()));
+        this.simModules.addAll(Arrays.asList(new SHC_Module(), new SHP_Module(), new SHH_Module()));
         this.simTime = LocalDateTime.now();
         
 

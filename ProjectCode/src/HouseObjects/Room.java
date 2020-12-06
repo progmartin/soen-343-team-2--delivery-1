@@ -16,6 +16,14 @@ public class Room {
      * Temperature of the room.
      */
     double heatingTemp;
+    /**
+     * If heater is on.
+     */
+    boolean heaterOn;
+    /**
+     * If AC is on.
+     */
+    boolean acOn;
 
     /**
      * People currently in the room.
@@ -43,6 +51,8 @@ public class Room {
     public Room() {
         this.name = "Empty Room";
         this.heatingTemp = 21;
+        this.heaterOn = false;
+        this.acOn = false;
     }
 
     /**
@@ -53,6 +63,8 @@ public class Room {
     public Room(String name) {
         this.name = name;
         this.heatingTemp = 21;
+        this.heaterOn = false;
+        this.acOn = false;
     }
 
     /**
@@ -64,6 +76,8 @@ public class Room {
     public Room(String name, double temp) {
         this.name = name;
         this.heatingTemp = temp;
+        this.heaterOn = false;
+        this.acOn = false;
     }
 
     /**
@@ -257,6 +271,38 @@ public class Room {
      */
     public ArrayList<Light> getLights() {
         return lights;
+    }
+    
+    /**
+     * A method for returning whether or not the heater is on
+     * @return heaterOn true if heater is on
+     */
+    public boolean getHeaterOn(){
+    	return heaterOn;
+    }
+    
+    /**
+     * A method for turning on/off the heater
+     * @param heaterOn true if heater should be on, else false
+     */
+    public void setHeaterOn(boolean heaterOn){
+    	this.heaterOn = heaterOn;
+    }
+    
+    /**
+     * A method for returning whether or not the AC is on
+     * @return true if AC is on
+     */
+    public boolean getAcOn(){
+    	return acOn;
+    }
+    
+    /**
+     * A method for turning on or off the AC
+     * @param acOn true if AC should be turned on
+     */
+    public void setAcOn(boolean acOn){
+    	this.acOn = acOn;
     }
 
     /**
