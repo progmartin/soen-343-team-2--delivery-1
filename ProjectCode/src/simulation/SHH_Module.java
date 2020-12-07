@@ -203,7 +203,7 @@ public class SHH_Module extends Module {
                             if (!w.getBlocked()) {
                                 w.setOpen(true);
                             }
-                            else blockedWindow = true;
+                            else setBlockedWindow(true);
                         }
                         r.setHeaterOn(false);
                         r.setAcOn(false);
@@ -272,7 +272,7 @@ public class SHH_Module extends Module {
                         if (!w.getBlocked()) {
                             w.setOpen(true);
                         }
-                        else blockedWindow = true;
+                        else setBlockedWindow(true);
                     }
                     r.setHeaterOn(false);
                     r.setAcOn(false);
@@ -797,14 +797,31 @@ public class SHH_Module extends Module {
      * @return Message to be sent to the user
      */
     public String noWindow(){
-    	if(blockedWindow){
-    		blockedWindow = false;
+    	if(isBlockedWindow()){
+    		setBlockedWindow(false);
     		return "A window is blocked and could not be opened.";
     	}
     	else return "";
     }
-
+    
     /**
+     * Returns the truth value regarding whether or not the window is blocked
+     * @return true or false depending if window is blocked or not
+     */
+    public boolean isBlockedWindow() {
+		return blockedWindow;
+	}
+    
+    /**
+     * A method for setting the truth value regarding whether the window is blocked or not
+     *
+     * @param x The truth value for the window status(blocked or not blocked)
+     */
+	public void setBlockedWindow(boolean blockedWindow) {
+		this.blockedWindow = blockedWindow;
+	}
+
+	/**
      * An inner class to to SHH. Each zone represents a target temperature for a
      * group of rooms.
      *
