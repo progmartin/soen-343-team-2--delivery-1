@@ -1,5 +1,13 @@
 # soen-343-team-2
 
+important links: Delivery 3
+
+* google drive:
+https://docs.google.com/document/d/1iIc3OuSDfTpBo09NdTG1R4uBNzl1mtwPqGUMyKFztgI/edit
+* flowchartlink:
+https://app.diagrams.net/#G1Uwof67J8vyluhsJ94wJih3YeqV8I9fm5
+
+
 important links: Delivery 2
 
 * google drive:
