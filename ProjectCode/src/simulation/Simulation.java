@@ -50,7 +50,7 @@ public class Simulation {
     public boolean notifyAllModules() {
         boolean updateGUI = false;
         for (Module mod : simModules) {
-            updateGUI = updateGUI || mod.update();
+            updateGUI = mod.update() || updateGUI;
         }
         return updateGUI;
     }
